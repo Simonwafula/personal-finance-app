@@ -1,0 +1,16 @@
+from django.contrib import admin
+from django.urls import path, include
+from django.views.generic import RedirectView
+from backend.auth_views import CurrentUserView
+
+urlpatterns = [
+    path("admin/", admin.site.urls),
+    path("accounts/", include("allauth.urls")),  # <-- allauth
+    path("api/auth/me/", CurrentUserView.as_view()), 
+    path("api/finance/", include("finance.urls")),
+    path("api/budgeting/", include("budgeting.urls")),
+    path("api/wealth/", include("wealth.urls")),
+    path("api/debt/", include("debt_planner.urls")),
+    # Dev: redirect backend root to frontend
+    path("", RedirectView.as_view(url="http://localhost:5173/")),
+]

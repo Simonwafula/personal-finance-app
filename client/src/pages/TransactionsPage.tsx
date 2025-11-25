@@ -1,0 +1,301 @@
+// src/pages/TransactionsPage.tsx
+import { useEffect, useState, FormEvent } from "react";
+import {
+  fetchTransactions,
+  fetchAccounts,
+  fetchCategories,
+  createTransaction,
+} from "../api/finance";
+import type {
+  Transaction,
+  Account,
+  Category,
+  TransactionKind,
+} from "../api/types";
+
+function formatMoney(value: string | number) {
+  const num = typeof value === "string" ? Number(value) : value;
+  if (Number.isNaN(num)) return value.toString();
+  return num.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
+export default function TransactionsPage() {
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  const [loading, setLoading] = useState(false);
+  const [loadingRefs, setLoadingRefs] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Form state
+  const [accountId, setAccountId] = useState<number | "">("");
+  const [kind, setKind] = useState<TransactionKind>("EXPENSE");
+  const [categoryId, setCategoryId] = useState<number | "">("");
+  const [date, setDate] = useState(
+    new Date().toISOString().slice(0, 10) // today
+  );
+  const [amount, setAmount] = useState<string>("");
+  const [description, setDescription] = useState("");
+  const [tags, setTags] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  async function loadRefs() {
+    try {
+      setLoadingRefs(true);
+      const [accs, cats] = await Promise.all([
+        fetchAccounts(),
+        fetchCategories(),
+      ]);
+      setAccounts(accs);
+      setCategories(cats);
+      if (accs.length > 0 && accountId === "") {
+        setAccountId(accs[0].id);
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load accounts/categories");
+    } finally {
+      setLoadingRefs(false);
+    }
+  }
+
+  async function loadTransactions() {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await fetchTransactions();
+      setTransactions(data);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load transactions");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadRefs();
+    loadTransactions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    if (!accountId || !amount) return;
+
+    try {
+      setSaving(true);
+      setError(null);
+
+      await createTransaction({
+        account: accountId as number,
+        date,
+        amount: Number(amount),
+        kind,
+        category: categoryId ? (categoryId as number) : null,
+        description,
+        tags,
+      });
+
+      // Clear some fields for quick entry
+      setAmount("");
+      setDescription("");
+      setTags("");
+
+      await loadTransactions();
+    } catch (err) {
+      console.error(err);
+      setError("Failed to create transaction");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const filteredCategories = categories.filter(
+    (c) => c.kind === kind || c.kind === "EXPENSE" || c.kind === "INCOME"
+  );
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold">Transactions</h3>
+      </div>
+
+      {/* Add transaction form */}
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white rounded-lg shadow p-4 space-y-3"
+      >
+        <div className="text-sm font-medium mb-1">Add Transaction</div>
+
+        {loadingRefs && (
+          <div className="text-xs text-gray-500">Loading accounts…</div>
+        )}
+
+        <div className="grid md:grid-cols-4 gap-3">
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Date</label>
+            <input
+              type="date"
+              className="w-full border rounded px-2 py-1 text-sm"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Account</label>
+            <select
+              className="w-full border rounded px-2 py-1 text-sm"
+              value={accountId}
+              onChange={(e) =>
+                setAccountId(e.target.value ? Number(e.target.value) : "")
+              }
+              required
+            >
+              {accounts.map((acc) => (
+                <option key={acc.id} value={acc.id}>
+                  {acc.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Type</label>
+            <select
+              className="w-full border rounded px-2 py-1 text-sm"
+              value={kind}
+              onChange={(e) => setKind(e.target.value as TransactionKind)}
+            >
+              <option value="EXPENSE">Expense</option>
+              <option value="INCOME">Income</option>
+              <option value="TRANSFER">Transfer</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">
+              Category (optional)
+            </label>
+            <select
+              className="w-full border rounded px-2 py-1 text-sm"
+              value={categoryId}
+              onChange={(e) =>
+                setCategoryId(e.target.value ? Number(e.target.value) : "")
+              }
+            >
+              <option value="">— None —</option>
+              {filteredCategories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name} ({cat.kind})
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-3">
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Amount</label>
+            <input
+              type="number"
+              step="0.01"
+              className="w-full border rounded px-2 py-1 text-sm"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="block text-xs text-gray-500 mb-1">
+              Description
+            </label>
+            <input
+              className="w-full border rounded px-2 py-1 text-sm"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="e.g. Lunch at Java, rent, salary..."
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-xs text-gray-500 mb-1">
+            Tags (optional)
+          </label>
+          <input
+            className="w-full border rounded px-2 py-1 text-sm"
+            value={tags}
+            onChange={(e) => setTags(e.target.value)}
+            placeholder="comma,separated,tags"
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={saving || accounts.length === 0}
+          className="px-3 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60"
+        >
+          {saving ? "Saving…" : "Save Transaction"}
+        </button>
+
+        {error && <div className="text-xs text-red-600 mt-1">{error}</div>}
+      </form>
+
+      {/* Transactions table */}
+      {loading && <div>Loading transactions…</div>}
+
+      {!loading && transactions.length === 0 && (
+        <div className="text-sm text-gray-500">
+          No transactions yet. Use the form above to add some.
+        </div>
+      )}
+
+      {transactions.length > 0 && (
+        <div className="overflow-x-auto bg-white shadow rounded-lg">
+          <table className="min-w-full text-sm">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-3 py-2 text-left">Date</th>
+                <th className="px-3 py-2 text-left">Account</th>
+                <th className="px-3 py-2 text-left">Category</th>
+                <th className="px-3 py-2 text-right">Amount</th>
+                <th className="px-3 py-2 text-left">Type</th>
+                <th className="px-3 py-2 text-left">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              {transactions.map((tx) => (
+                <tr key={tx.id} className="border-t">
+                  <td className="px-3 py-2">{tx.date}</td>
+                  <td className="px-3 py-2">{tx.account_name}</td>
+                  <td className="px-3 py-2">
+                    {tx.category_name ?? (
+                      <span className="text-gray-400">–</span>
+                    )}
+                  </td>
+                  <td className="px-3 py-2 text-right">
+                    {formatMoney(tx.amount)}
+                  </td>
+                  <td className="px-3 py-2">
+                    <span className="inline-block px-2 py-0.5 rounded-full text-xs bg-gray-100">
+                      {tx.kind}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2">{tx.description}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
