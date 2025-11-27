@@ -58,3 +58,16 @@ export async function createTransaction(
   const res = await api.post("/api/finance/transactions/", payload);
   return res.data;
 }
+
+export interface CreateCategoryPayload {
+  name: string;
+  kind: "INCOME" | "EXPENSE" | "TRANSFER";
+  parent?: number | null;
+}
+
+export async function createCategory(
+  payload: CreateCategoryPayload
+): Promise<Category> {
+  const res = await api.post("/api/finance/categories/", payload);
+  return res.data;
+}

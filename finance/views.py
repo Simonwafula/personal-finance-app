@@ -10,41 +10,43 @@ User = get_user_model()
 
 class AccountViewSet(viewsets.ModelViewSet):
     serializer_class = AccountSerializer
-    # DEV: allow calls even if not logged in
-    permission_classes = [permissions.AllowAny]
+    # Require authentication for accounts
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Account.objects.all()
+        # Only show accounts for the current user
+        return Account.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
-        # DEV: if not logged in, attach the first user (usually your superuser)
-        user = self.request.user if self.request.user.is_authenticated else User.objects.first()
-        serializer.save(user=user)
+        # Save as the current user
+        serializer.save(user=self.request.user)
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
     serializer_class = CategorySerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Category.objects.all()
+        return Category.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
-        user = self.request.user if self.request.user.is_authenticated else User.objects.first()
-        serializer.save(user=user)
+        serializer.save(user=self.request.user)
 
 
 class TransactionViewSet(viewsets.ModelViewSet):
     serializer_class = TransactionSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        qs = Transaction.objects.all()
+        # Only the current user's transactions
+        qs = Transaction.objects.filter(user=self.request.user)
         account_id = self.request.query_params.get("account")
         if account_id:
-            qs = qs.filter(account_id=account_id)
+            # Ensure account belongs to user
+            qs = qs.filter(
+                account_id=account_id, account__user=self.request.user
+            )
         return qs
 
     def perform_create(self, serializer):
-        user = self.request.user if self.request.user.is_authenticated else User.objects.first()
-        serializer.save(user=user)
+        serializer.save(user=self.request.user)

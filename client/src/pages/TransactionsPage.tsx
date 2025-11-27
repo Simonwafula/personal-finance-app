@@ -1,5 +1,8 @@
 // src/pages/TransactionsPage.tsx
-import { useEffect, useState, FormEvent } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import TimeRangeSelector from "../components/TimeRangeSelector";
+import type { FormEvent } from "react";
 import {
   fetchTransactions,
   fetchAccounts,
@@ -42,6 +45,12 @@ export default function TransactionsPage() {
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState("");
   const [saving, setSaving] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([]);
+  const [filterStart, setFilterStart] = useState<string | null>(searchParams.get("start"));
+  const [filterEnd, setFilterEnd] = useState<string | null>(searchParams.get("end"));
+  const [filterCategory, setFilterCategory] = useState<number | "">(searchParams.get("category") ? Number(searchParams.get("category")) : "");
+  const [filterKind, setFilterKind] = useState<TransactionKind | "">((searchParams.get("kind") as TransactionKind) || "");
 
   async function loadRefs() {
     try {
@@ -69,6 +78,7 @@ export default function TransactionsPage() {
       setError(null);
       const data = await fetchTransactions();
       setTransactions(data);
+      applyFilters(data, filterStart, filterEnd, filterCategory, filterKind);
     } catch (err) {
       console.error(err);
       setError("Failed to load transactions");
@@ -77,11 +87,45 @@ export default function TransactionsPage() {
     }
   }
 
+  function applyFilters(
+    txs: Transaction[],
+    start?: string | null,
+    end?: string | null,
+    category?: number | "",
+    kindF?: TransactionKind | ""
+  ) {
+    let filtered = txs.slice();
+    if (start) {
+      const s = new Date(start);
+      filtered = filtered.filter((t) => new Date(t.date) >= s);
+    }
+    if (end) {
+      const e = new Date(end);
+      filtered = filtered.filter((t) => new Date(t.date) <= e);
+    }
+    if (category) {
+      filtered = filtered.filter((t) => t.category === category);
+    }
+    if (kindF) {
+      filtered = filtered.filter((t) => t.kind === kindF);
+    }
+    setFilteredTransactions(filtered);
+  }
+
   useEffect(() => {
     loadRefs();
     loadTransactions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    setFilterCategory(searchParams.get("category") ? Number(searchParams.get("category")) : "");
+    setFilterKind((searchParams.get("kind") as TransactionKind) || "");
+    setFilterStart(searchParams.get("start"));
+    setFilterEnd(searchParams.get("end"));
+    applyFilters(transactions, searchParams.get("start"), searchParams.get("end"), searchParams.get("category") ? Number(searchParams.get("category")) : "", (searchParams.get("kind") as TransactionKind) || "");
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -123,6 +167,21 @@ export default function TransactionsPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Transactions</h3>
+      </div>
+
+      <div className="flex justify-between items-center">
+        <div className="text-sm text-gray-500">Filter by time</div>
+        <div className="w-1/2">
+          <TimeRangeSelector
+            initialStart={filterStart ?? undefined}
+            initialEnd={filterEnd ?? undefined}
+            onChange={(r) => {
+              setFilterStart(r.startDate);
+              setFilterEnd(r.endDate);
+              setSearchParams({ start: r.startDate, end: r.endDate, category: String(filterCategory), kind: String(filterKind) });
+            }}
+          />
+        </div>
       </div>
 
       {/* Add transaction form */}
@@ -252,13 +311,12 @@ export default function TransactionsPage() {
       {/* Transactions table */}
       {loading && <div>Loading transactions…</div>}
 
-      {!loading && transactions.length === 0 && (
+      {!loading && filteredTransactions.length === 0 && (
         <div className="text-sm text-gray-500">
           No transactions yet. Use the form above to add some.
         </div>
       )}
-
-      {transactions.length > 0 && (
+      {filteredTransactions.length > 0 && (
         <div className="overflow-x-auto bg-white shadow rounded-lg">
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50">
@@ -272,7 +330,7 @@ export default function TransactionsPage() {
               </tr>
             </thead>
             <tbody>
-              {transactions.map((tx) => (
+              {filteredTransactions.map((tx) => (
                 <tr key={tx.id} className="border-t">
                   <td className="px-3 py-2">{tx.date}</td>
                   <td className="px-3 py-2">{tx.account_name}</td>

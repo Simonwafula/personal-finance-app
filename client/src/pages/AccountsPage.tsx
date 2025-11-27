@@ -1,5 +1,6 @@
 // src/pages/AccountsPage.tsx
-import { useEffect, useState, FormEvent } from "react";
+import { useEffect, useState } from "react";
+import type { FormEvent } from "react";
 import { fetchAccounts, createAccount } from "../api/finance";
 import type { Account } from "../api/types";
 

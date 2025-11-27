@@ -1,19 +1,11 @@
 // src/components/Layout.tsx
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { fetchCurrentUser, type CurrentUser } from "../api/auth";
 
-const navItems = [
-  { path: "/", label: "Dashboard" },
-  { path: "/transactions", label: "Transactions" },
-  { path: "/budgets", label: "Budgets" },
-  { path: "/wealth", label: "Wealth" },
-  { path: "/debt", label: "Debt Planner" },
-  { path: "/accounts", label: "Accounts" },
-];
+// TODO: Add nav items to sidebar
 
 export default function Layout() {
-  const location = useLocation();
   const [user, setUser] = useState<CurrentUser | null>(null);
 
   useEffect(() => {

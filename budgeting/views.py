@@ -34,10 +34,16 @@ class BudgetLineViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return BudgetLine.objects.filter(budget__user=self.request.user)
+        qs = BudgetLine.objects.filter(budget__user=self.request.user)
+        budget_id = self.request.query_params.get("budget")
+        if budget_id:
+            qs = qs.filter(budget_id=budget_id)
+        return qs
 
     def perform_create(self, serializer):
         budget = serializer.validated_data["budget"]
         if budget.user != self.request.user:
-            raise permissions.PermissionDenied("Cannot add lines to another user's budget.")
+            raise permissions.PermissionDenied(
+                "Cannot add lines to another user's budget."
+            )
         serializer.save()

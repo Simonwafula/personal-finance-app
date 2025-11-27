@@ -101,3 +101,72 @@ export interface BudgetSummary {
   lines: BudgetSummaryLine[];
   totals: BudgetSummaryTotals;
 }
+
+export interface BudgetLine {
+  id: number;
+  budget: number;
+  category: number;
+  category_name: string;
+  planned_amount: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Asset {
+  id: number;
+  name: string;
+  asset_type: string;
+  current_value: string;
+  acquisition_date: string | null;
+  cost_basis: string | null;
+  currency: string;
+  linked_account: number | null;
+  notes: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Liability {
+  id: number;
+  name: string;
+  liability_type: string;
+  principal_balance: string;
+  interest_rate: string;
+  minimum_payment: string;
+  due_day_of_month: number | null;
+  linked_account: number | null;
+  notes: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface NetWorthSnapshot {
+  id: number;
+  date: string;
+  total_assets: string;
+  total_liabilities: string;
+  net_worth: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// Debt
+export interface DebtPlan {
+  id: number;
+  strategy: string;
+  monthly_amount_available: string;
+  start_date: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DebtScheduleRow {
+  month: string;
+  liability_id: number;
+  liability_name: string;
+  starting_balance: string;
+  interest: string;
+  payment: string;
+  principal: string;
+  ending_balance: string;
+}
