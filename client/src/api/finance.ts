@@ -30,6 +30,10 @@ export async function fetchCategories(): Promise<Category[]> {
 
 export interface TransactionFilters {
   account?: number;
+  start?: string;
+  end?: string;
+  category?: number;
+  kind?: "INCOME" | "EXPENSE" | "TRANSFER";
 }
 
 export async function fetchTransactions(
@@ -38,6 +42,27 @@ export async function fetchTransactions(
   const res = await api.get("/api/finance/transactions/", {
     params: filters,
   });
+  return res.data;
+}
+
+export interface AggregatedQuery {
+  start?: string;
+  end?: string;
+  group_by?: "day" | "month";
+  kind?: "INCOME" | "EXPENSE" | "TRANSFER";
+}
+
+export async function fetchAggregatedTransactions(
+  q: AggregatedQuery = {}
+): Promise<{ series: Array<{ date: string; income: number; expenses: number }> }> {
+  const res = await api.get("/api/finance/transactions/aggregated/", { params: q });
+  return res.data;
+}
+
+export async function fetchTopCategories(
+  q: { start?: string; end?: string; limit?: number } = {}
+): Promise<{ categories: Array<{ id: number; name: string; amount: number }> }> {
+  const res = await api.get("/api/finance/transactions/top_categories/", { params: q });
   return res.data;
 }
 

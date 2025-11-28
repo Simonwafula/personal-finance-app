@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import { HiMenu, HiOutlineCurrencyDollar } from "react-icons/hi";
 import { Outlet, NavLink, Link } from "react-router-dom";
 import TimeRangeSelector from "../components/TimeRangeSelector";
+import { useTimeRange } from "../contexts/TimeRangeContext";
 import { fetchCurrentUser, type CurrentUser } from "../api/auth";
 
 export default function Layout() {
   const [user, setUser] = useState<CurrentUser | null>(null);
   const [open, setOpen] = useState(false);
+  const { range } = useTimeRange();
 
   useEffect(() => {
     async function loadUser() {
@@ -51,6 +53,7 @@ export default function Layout() {
               <h3 style={{ margin: 0 }}>Finance Dashboard</h3>
               <div className="muted text-xs">Vibrant • Modern • Mobile</div>
             </div>
+            <div className="inline-pill ml-3">{range.startDate} → {range.endDate}</div>
           </div>
 
           <div className="flex items-center gap-3">

@@ -1,12 +1,13 @@
 // src/pages/DashboardPage.tsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchTransactions } from "../api/finance";
+import { fetchAggregatedTransactions, fetchTopCategories } from "../api/finance";
 import { fetchCurrentNetWorth, fetchNetWorthSnapshots } from "../api/wealth";
-import TimeRangeSelector from "../components/TimeRangeSelector";
 import { useTimeRange } from "../contexts/TimeRangeContext";
+import TimeRangeSelector from "../components/TimeRangeSelector";
+// TimeRangeSelector comes from global context
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, CartesianGrid } from "recharts";
-import type { Transaction, NetWorthCurrent } from "../api/types";
+import type { NetWorthCurrent } from "../api/types";
 
 interface DashboardTotals {
   income: number;
@@ -34,7 +35,7 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
 
   const navigate = useNavigate();
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const { range } = useTimeRange();
 
   useEffect(() => {
     async function load() {
@@ -42,32 +43,31 @@ export default function DashboardPage() {
         setLoading(true);
         setError(null);
 
-        const [txs, nw, nws] = await Promise.all([
-          fetchTransactions(),
+        const [nw, nws] = await Promise.all([
           fetchCurrentNetWorth().catch(() => null),
           fetchNetWorthSnapshots().catch(() => []),
         ]);
 
-        // Simple totals over all transactions for now
+        // Aggregated data from backend for the selected range
+        const q: any = {
+          start: range.startDate,
+          end: range.endDate,
+          group_by: 'day',
+        };
+        const [agg, top] = await Promise.all([
+          fetchAggregatedTransactions(q),
+          fetchTopCategories({ start: range.startDate, end: range.endDate, limit: 6 }),
+        ]);
+
+        // no local txs were fetched; aggregated series drives charts
+        setAggregatedSeries(agg.series || []);
+        setCategorySeries(top.categories.map((c:any) => ({ id: c.id, name: c.name, amount: c.amount })));
+
+        // Compute totals from aggregated series
         let income = 0;
         let expenses = 0;
-
-        txs.forEach((tx: Transaction) => {
-          const amount = Number(tx.amount);
-          if (tx.kind === "INCOME") {
-            income += amount;
-          } else if (tx.kind === "EXPENSE") {
-            expenses += amount;
-          }
-        });
-
-        setTotals({
-          income,
-          expenses,
-          savings: income - expenses,
-        });
-
-        setTransactions(txs);
+        (agg.series || []).forEach(p => { income += p.income; expenses += p.expenses; });
+        setTotals({ income, expenses, savings: income - expenses });
 
         if (nw) setNetWorth(nw);
         if (nws && nws.length > 0) {
@@ -82,62 +82,49 @@ export default function DashboardPage() {
     }
 
     load();
-  }, []);
+  }, [range.startDate, range.endDate]);
+
+  // listen for created transactions elsewhere and reload aggregated content
+  useEffect(() => {
+    function onUpdated() {
+      (async () => {
+        try {
+          const q: any = { start: range.startDate, end: range.endDate, group_by: 'day' };
+          const agg = await fetchAggregatedTransactions(q);
+          setAggregatedSeries(agg.series || []);
+          const top = await fetchTopCategories({ start: range.startDate, end: range.endDate, limit: 6 });
+          setCategorySeries(top.categories.map((c:any) => ({ id: c.id, name: c.name, amount: c.amount })));
+          let income = 0; let expenses = 0;
+          (agg.series || []).forEach((p:any) => { income += p.income; expenses += p.expenses; });
+          setTotals({ income, expenses, savings: income - expenses });
+        } catch (err) {
+          // ignore
+        }
+      })();
+    }
+    window.addEventListener('transactionsUpdated', onUpdated);
+    return () => window.removeEventListener('transactionsUpdated', onUpdated);
+  }, [range.startDate, range.endDate]);
 
   // Chart data helpers
-  function buildSeriesForRange(startDate: string, endDate: string) {
-    // build daily or monthly based on span length
-    const sDate = new Date(startDate);
-    const eDate = new Date(endDate);
-    const diffDays = Math.ceil((+eDate - +sDate) / (24 * 60 * 60 * 1000));
-    const bucketBy = diffDays <= 60 ? "day" : "month";
-    const map: Record<string, { date: string; income: number; expenses: number }> = {};
-    txsFiltered.forEach((tx) => {
-      const d = new Date(tx.date);
-      if (d < sDate || d > eDate) return;
-      let key = d.toISOString().slice(0, 10);
-      if (bucketBy === "month") key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2, '0')}`;
-      if (!map[key]) map[key] = { date: key, income: 0, expenses: 0 };
-      if (tx.kind === "INCOME") map[key].income += Number(tx.amount);
-      else if (tx.kind === "EXPENSE") map[key].expenses += Number(tx.amount);
-    });
-    const arr = Object.values(map).sort((a,b) => a.date.localeCompare(b.date));
-    return arr;
-  }
-
-  const { range } = useTimeRange();
   const startDate = range.startDate;
   const endDate = range.endDate;
-  const [txsFiltered, setTxsFiltered] = useState<Transaction[]>([]);
+  const [aggregatedSeries, setAggregatedSeries] = useState<{date:string;income:number;expenses:number}[]>([]);
 
   useEffect(() => {
-    // Apply a client-side filter to transactions by the selected range
-    const s = new Date(startDate), e = new Date(endDate);
-    const filtered = transactions.filter(tx => {
-      const d = new Date(tx.date);
-      return d >= s && d <= e;
-    });
-    setTxsFiltered(filtered);
-  }, [startDate, endDate, transactions]);
+    // nothing; we use aggregatedSeries from API now.
+  }, [startDate, endDate]);
+
+  useEffect(() => {
+    // Whenever the aggregated data changes by range, update the series state
+  }, [aggregatedSeries]);
 
   // nets worth series
   const [snapshots, setSnapshots] = useState<any[]>([]);
   // top categories
   const [categorySeries, setCategorySeries] = useState<any[]>([]);
 
-  useEffect(() => {
-    const map: Record<number, { id: number; name: string; amount: number }> = {};
-    txsFiltered.forEach((tx) => {
-      if (tx.kind === "EXPENSE") {
-        const cid = tx.category || 0;
-        const name = tx.category_name || "Uncategorized";
-        if (!map[cid]) map[cid] = { id: cid, name, amount: 0 };
-        map[cid].amount += Number(tx.amount);
-      }
-    });
-    const arr = Object.values(map).sort((a,b) => b.amount - a.amount).slice(0,6);
-    setCategorySeries(arr);
-  }, [txsFiltered]);
+  // categorySeries is populated by the backend top categories endpoint
 
   return (
     <div className="space-y-4">
@@ -161,7 +148,7 @@ export default function DashboardPage() {
       {!loading && (
         <>
           <div className="grid gap-4 md:grid-cols-3">
-            <div className="card cursor-pointer" onClick={() => navigate(`/transactions?start=${startDate}&end=${endDate}&kind=EXPENSE`)}>
+            <div className="card cursor-pointer" onClick={() => navigate(`/transactions?start=${range.startDate}&end=${range.endDate}&kind=EXPENSE`)}>
               <div className="text-xs text-gray-500 mb-1">Total Income</div>
               <div className="text-2xl font-bold">
                 {formatMoney(totals.income)} KES
@@ -169,7 +156,7 @@ export default function DashboardPage() {
               <div className="mt-2">
                 {/* income vs expenses area chart */}
                 <ResponsiveContainer width="100%" height={80}>
-                  <AreaChart data={buildSeriesForRange(startDate, endDate)} onClick={(e:any) => { const payload = e?.activePayload?.[0]?.payload; if(payload?.date) navigate(`/transactions?start=${payload.date}&end=${payload.date}`) }}>
+                  <AreaChart data={aggregatedSeries} onClick={(e:any) => { const payload = e?.activePayload?.[0]?.payload; if(payload?.date) navigate(`/transactions?start=${payload.date}&end=${payload.date}`) }}>
                     <defs>
                       <linearGradient id="incomeGrad" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#16A34A" stopOpacity={0.8}/>
@@ -238,7 +225,7 @@ export default function DashboardPage() {
                       <XAxis type="number" hide />
                       <YAxis dataKey="name" type="category" width={140} />
                       <Tooltip formatter={(v: any) => formatMoney(v as string | number)} />
-                      <Bar dataKey="amount" fill="#F97316" onClick={(d:any) => { const categoryId = d?.payload?.id; navigate(`/transactions?category=${categoryId}&start=${startDate}&end=${endDate}`) }} />
+                      <Bar dataKey="amount" fill="#F97316" onClick={(d:any) => { const categoryId = d?.payload?.id; navigate(`/transactions?category=${categoryId}&start=${range.startDate}&end=${range.endDate}`) }} />
                     </BarChart>
                   </ResponsiveContainer>
                 )}

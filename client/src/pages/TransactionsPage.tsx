@@ -10,6 +10,7 @@ import {
   fetchCategories,
   createTransaction,
 } from "../api/finance";
+import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import type {
   Transaction,
   Account,
@@ -28,6 +29,7 @@ function formatMoney(value: string | number) {
 
 export default function TransactionsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [aggregatedSeries, setAggregatedSeries] = useState<{date:string;income:number;expenses:number}[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
 
@@ -76,7 +78,7 @@ export default function TransactionsPage() {
     try {
       setLoading(true);
       setError(null);
-      const data = await fetchTransactions();
+      const data = await fetchTransactions({ start: range.startDate, end: range.endDate });
       setTransactions(data);
       applyFilters(data, range.startDate, range.endDate, filterCategory, filterKind);
     } catch (err) {
@@ -86,6 +88,20 @@ export default function TransactionsPage() {
       setLoading(false);
     }
   }
+
+  // Load aggregated data for the mini chart top of the transactions page
+  useEffect(() => {
+    async function loadAggregated() {
+      try {
+        const { fetchAggregatedTransactions } = await import('../api/finance');
+        const res = await fetchAggregatedTransactions({ start: range.startDate, end: range.endDate, group_by: 'day' });
+        setAggregatedSeries(res.series || []);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    loadAggregated();
+  }, [range.startDate, range.endDate]);
 
   function applyFilters(
     txs: Transaction[],
@@ -149,6 +165,14 @@ export default function TransactionsPage() {
       setTags("");
 
       await loadTransactions();
+      // reload aggregated series after creating a new transaction
+      try {
+        const { fetchAggregatedTransactions } = await import('../api/finance');
+        const res = await fetchAggregatedTransactions({ start: range.startDate, end: range.endDate });
+        setAggregatedSeries(res.series || []);
+      } catch (err) {}
+      // notify other pages a transaction was created so they can re-fetch
+      window.dispatchEvent(new Event('transactionsUpdated'));
     } catch (err) {
       console.error(err);
       setError("Failed to create transaction");
@@ -171,6 +195,23 @@ export default function TransactionsPage() {
         <div className="text-sm text-gray-500">Filter by time</div>
         <div className="w-1/2">
           <TimeRangeSelector />
+        </div>
+      </div>
+
+      {/* mini aggregated chart */}
+      <div className="pt-2">
+        <div className="card">
+          <div className="text-xs text-gray-500 mb-1">Cashflow</div>
+          <div style={{ width: '100%', height: 80 }}>
+            <ResponsiveContainer width='100%' height={80}>
+              <AreaChart data={aggregatedSeries}>
+                <XAxis dataKey='date' hide />
+                <Tooltip formatter={(v:any) => formatMoney(v)} />
+                <Area type='monotone' dataKey='income' stroke='#16A34A' fill='#16A34A' />
+                <Area type='monotone' dataKey='expenses' stroke='#DC2626' fill='#DC2626' />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
 
