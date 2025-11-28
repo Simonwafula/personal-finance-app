@@ -18,6 +18,8 @@ from .serializers import (
     TransactionSerializer,
     AggregatedPointSerializer, TopCategorySerializer
 )
+from .models import RecurringTransaction
+from .serializers import RecurringTransactionSerializer
 
 User = get_user_model()
 
@@ -171,6 +173,53 @@ class TransactionViewSet(viewsets.ModelViewSet):
         ]
         return Response({"series": data})
 
+    @action(detail=False, methods=["post"], url_path="import-csv")
+    def import_csv(self, request):
+        """Import transactions from an uploaded CSV file. Expects 'file' in files."""
+        f = request.FILES.get("file")
+        if not f:
+            return Response({"detail": "file is required"}, status=400)
+
+        import csv
+        from io import TextIOWrapper
+        reader = csv.DictReader(TextIOWrapper(f.file, encoding='utf-8'))
+        created = 0
+        errors = []
+        for idx, row in enumerate(reader):
+            try:
+                acc_id = row.get("account")
+                account = Account.objects.filter(user=request.user, id=acc_id).first()
+                if not account:
+                    raise ValueError("account not found")
+                tx = Transaction.objects.create(
+                    user=request.user,
+                    account=account,
+                    date=row.get("date"),
+                    amount=row.get("amount"),
+                    kind=row.get("kind") or "EXPENSE",
+                    description=row.get("description", ""),
+                )
+                created += 1
+            except Exception as e:
+                errors.append({"row": idx + 1, "error": str(e)})
+
+        return Response({"created": created, "errors": errors})
+
+    @action(detail=False, methods=["get"], url_path="export-csv")
+    def export_csv(self, request):
+        """Export filtered transactions as CSV."""
+        qs = self.filter_queryset(self.get_queryset())
+        import csv
+        from io import StringIO
+        out = StringIO()
+        writer = csv.writer(out)
+        writer.writerow(["id", "date", "account", "amount", "kind", "category", "description"]) 
+        for t in qs:
+            writer.writerow([t.id, t.date.isoformat(), getattr(t.account, 'id', ''), str(t.amount), t.kind, getattr(t.category, 'id', ''), t.description])
+        resp = Response(out.getvalue(), content_type='text/csv')
+        resp['Content-Disposition'] = 'attachment; filename=transactions.csv'
+        return resp
+
     @action(detail=False, methods=["get"])
     def top_categories(self, request):
         """
@@ -203,3 +252,37 @@ class TransactionViewSet(viewsets.ModelViewSet):
             for c in cat_series
         ]
         return Response({"categories": data})
+
+
+class RecurringTransactionViewSet(viewsets.ModelViewSet):
+    serializer_class = RecurringTransactionSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return RecurringTransaction.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    @action(detail=True, methods=["get"])
+    def preview(self, request, pk=None):
+        """Return the next few scheduled dates for this recurring transaction."""
+        obj = self.get_object()
+        from datetime import date
+        dates = []
+        d = obj.date
+        for i in range(6):
+            dates.append(d.isoformat())
+            if obj.frequency == obj.Frequency.DAILY:
+                d = d + datetime.timedelta(days=1)
+            elif obj.frequency == obj.Frequency.WEEKLY:
+                d = d + datetime.timedelta(weeks=1)
+            elif obj.frequency == obj.Frequency.MONTHLY:
+                # naive month increment
+                m = d.month + 1
+                y = d.year + (m - 1) // 12
+                m = (m - 1) % 12 + 1
+                d = d.replace(year=y, month=m)
+            else:
+                d = d.replace(year=d.year + 1)
+        return Response({"dates": dates})

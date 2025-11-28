@@ -105,3 +105,40 @@ export async function createCategory(
   const res = await api.post("/api/finance/categories/", payload);
   return res.data;
 }
+
+// Recurring transactions
+export interface CreateRecurringPayload {
+  account: number;
+  date: string; // next due date
+  amount: number;
+  kind: "INCOME" | "EXPENSE" | "TRANSFER";
+  category?: number | null;
+  description?: string;
+  frequency: "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
+  end_date?: string | null;
+}
+
+export async function createRecurring(payload: CreateRecurringPayload) {
+  const res = await api.post("/api/finance/recurring/", payload);
+  return res.data;
+}
+
+export async function fetchRecurring(): Promise<any[]> {
+  const res = await api.get("/api/finance/recurring/");
+  return res.data;
+}
+
+// CSV import/export
+export async function importTransactionsCsv(file: File) {
+  const fd = new FormData();
+  fd.append("file", file);
+  const res = await api.post("/api/finance/transactions/import-csv/", fd, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return res.data;
+}
+
+export async function exportTransactionsCsv(params: any = {}) {
+  const res = await api.get("/api/finance/transactions/export-csv/", { params, responseType: 'blob' });
+  return res.data;
+}

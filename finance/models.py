@@ -98,3 +98,32 @@ class Transaction(TimeStampedModel):
 
     def __str__(self):
         return f"{self.date} - {self.kind} - {self.amount}"
+
+
+class RecurringTransaction(TimeStampedModel):
+    class Frequency(models.TextChoices):
+        DAILY = "DAILY", "Daily"
+        WEEKLY = "WEEKLY", "Weekly"
+        MONTHLY = "MONTHLY", "Monthly"
+        YEARLY = "YEARLY", "Yearly"
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="recurring_transactions"
+    )
+    account = models.ForeignKey(
+        Account, on_delete=models.CASCADE, related_name="recurring_transactions"
+    )
+    date = models.DateField(help_text="Next due date")
+    amount = models.DecimalField(max_digits=14, decimal_places=2)
+    kind = models.CharField(max_length=10, choices=Transaction.Kind.choices)
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
+    description = models.CharField(max_length=255, blank=True)
+    frequency = models.CharField(max_length=10, choices=Frequency.choices, default=Frequency.MONTHLY)
+    end_date = models.DateField(null=True, blank=True)
+    last_executed = models.DateField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-date"]
+
+    def __str__(self):
+        return f"Recurring {self.kind} {self.amount} every {self.frequency} starting {self.date}"
