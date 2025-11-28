@@ -1,11 +1,11 @@
 // src/pages/TransactionsPage.tsx
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import TimeRangeSelector from "../components/TimeRangeSelector";
+// TimeRangeSelector provided globally via Layout
 import { useTimeRange } from "../contexts/TimeRangeContext";
 import type { FormEvent } from "react";
 import {
-  fetchTransactions,
+  fetchTransactionsPaged,
   fetchAccounts,
   fetchCategories,
   createTransaction,
@@ -34,6 +34,9 @@ export default function TransactionsPage() {
   const [categories, setCategories] = useState<Category[]>([]);
 
   const [loading, setLoading] = useState(false);
+  const [pageLimit] = useState(20);
+  const [offset, setOffset] = useState(0);
+  const [totalCount, setTotalCount] = useState<number | null>(null);
   const [loadingRefs, setLoadingRefs] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -78,9 +81,12 @@ export default function TransactionsPage() {
     try {
       setLoading(true);
       setError(null);
-      const data = await fetchTransactions({ start: range.startDate, end: range.endDate });
-      setTransactions(data);
-      applyFilters(data, range.startDate, range.endDate, filterCategory, filterKind);
+      const data = await fetchTransactionsPaged({ start: range.startDate, end: range.endDate, limit: pageLimit, offset });
+      // DRF LimitOffsetPagination returns results + count
+      const items = data.results ?? data;
+      setTransactions(items);
+      setTotalCount(typeof data.count === 'number' ? data.count : null);
+      applyFilters(items, range.startDate, range.endDate, filterCategory, filterKind);
     } catch (err) {
       console.error(err);
       setError("Failed to load transactions");
@@ -95,13 +101,23 @@ export default function TransactionsPage() {
       try {
         const { fetchAggregatedTransactions } = await import('../api/finance');
         const res = await fetchAggregatedTransactions({ start: range.startDate, end: range.endDate, group_by: 'day' });
-        setAggregatedSeries(res.series || []);
+        setAggregatedSeries((res.series && res.series.length > 0) ? res.series : generateEmptyDaySeries(range.startDate, range.endDate));
       } catch (err) {
         console.error(err);
       }
     }
     loadAggregated();
   }, [range.startDate, range.endDate]);
+
+  function generateEmptyDaySeries(start: string, end: string) {
+    const s = new Date(start);
+    const e = new Date(end);
+    const out: {date:string;income:number;expenses:number}[] = [];
+    for (let d = new Date(s); d <= e; d.setDate(d.getDate() + 1)) {
+      out.push({ date: d.toISOString().slice(0,10), income: 0, expenses: 0 });
+    }
+    return out;
+  }
 
   function applyFilters(
     txs: Transaction[],
@@ -140,6 +156,12 @@ export default function TransactionsPage() {
     applyFilters(transactions, range.startDate, range.endDate, searchParams.get("category") ? Number(searchParams.get("category")) : "", (searchParams.get("kind") as TransactionKind) || "");
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
+
+  useEffect(() => {
+    // reload when pagination offset changes
+    loadTransactions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [offset]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -191,12 +213,7 @@ export default function TransactionsPage() {
         <h3 className="text-lg font-semibold">Transactions</h3>
       </div>
 
-      <div className="flex justify-between items-center">
-        <div className="text-sm text-gray-500">Filter by time</div>
-        <div className="w-1/2">
-          <TimeRangeSelector />
-        </div>
-      </div>
+      {/* TimeRangeSelector is provided globally in the header/layout */}
 
       {/* mini aggregated chart */}
       <div className="pt-2">
@@ -340,7 +357,7 @@ export default function TransactionsPage() {
       </form>
 
       {/* Transactions table */}
-      {loading && <div>Loading transactions…</div>}
+      {loading && <div className="skeleton h-8 rounded" />}
 
       {!loading && filteredTransactions.length === 0 && (
         <div className="text-sm text-gray-500">
@@ -385,6 +402,15 @@ export default function TransactionsPage() {
           </table>
         </div>
       )}
+
+      {/* Pagination controls */}
+      <div className="flex items-center justify-between mt-3">
+        <div className="text-sm text-gray-500">{totalCount !== null ? `${offset + 1}-${Math.min(offset + pageLimit, totalCount)} of ${totalCount}` : ''}</div>
+        <div className="flex gap-2">
+          <button className="hud-btn" onClick={() => setOffset(Math.max(0, offset - pageLimit))} disabled={offset === 0}>Prev</button>
+          <button className="hud-btn" onClick={() => setOffset(offset + pageLimit)} disabled={totalCount !== null && offset + pageLimit >= (totalCount)}>Next</button>
+        </div>
+      </div>
     </div>
   );
 }

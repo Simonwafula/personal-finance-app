@@ -52,26 +52,26 @@ export default function TimeRangeSelector({ onChange, initialStart, initialEnd }
 
   return (
     <div className="space-y-2">
-      <div className="flex gap-2">
-        <button aria-label="7 days" aria-pressed={preset === "7d"} onClick={() => applyPreset("7d")} className={`px-2 py-1 rounded ${preset === "7d" ? "bg-[var(--primary-600)] text-white" : "bg-white/5"}`}>
+      <div className="flex gap-2 flex-wrap">
+        <button aria-label="7 days" aria-pressed={preset === "7d"} onClick={() => applyPreset("7d")} className={`text-xs sm:text-sm px-2 py-1 rounded ${preset === "7d" ? "bg-[var(--primary-600)] text-white" : "bg-white/5"}`}>
           7d
         </button>
-        <button aria-label="30 days" aria-pressed={preset === "30d"} onClick={() => applyPreset("30d")} className={`px-2 py-1 rounded ${preset === "30d" ? "bg-[var(--primary-600)] text-white" : "bg-white/5"}`}>
+        <button aria-label="30 days" aria-pressed={preset === "30d"} onClick={() => applyPreset("30d")} className={`text-xs sm:text-sm px-2 py-1 rounded ${preset === "30d" ? "bg-[var(--primary-600)] text-white" : "bg-white/5"}`}>
           30d
         </button>
-        <button aria-label="90 days" aria-pressed={preset === "90d"} onClick={() => applyPreset("90d")} className={`px-2 py-1 rounded ${preset === "90d" ? "bg-[var(--primary-600)] text-white" : "bg-white/5"}`}>
+        <button aria-label="90 days" aria-pressed={preset === "90d"} onClick={() => applyPreset("90d")} className={`text-xs sm:text-sm px-2 py-1 rounded ${preset === "90d" ? "bg-[var(--primary-600)] text-white" : "bg-white/5"}`}>
           90d
         </button>
-        <button aria-label="1 year" aria-pressed={preset === "1y"} onClick={() => applyPreset("1y")} className={`px-2 py-1 rounded ${preset === "1y" ? "bg-[var(--primary-600)] text-white" : "bg-white/5"}`}>
+        <button aria-label="1 year" aria-pressed={preset === "1y"} onClick={() => applyPreset("1y")} className={`text-xs sm:text-sm px-2 py-1 rounded ${preset === "1y" ? "bg-[var(--primary-600)] text-white" : "bg-white/5"}`}>
           1y
         </button>
       </div>
 
-      <div className="flex gap-2 items-center">
-        <label className="text-xs muted">Start</label>
-        <input type="date" value={start} onChange={(e) => { setStart(e.target.value); setPreset("custom"); if (onChange) onChange({ startDate: e.target.value, endDate: end }); else ctx?.setRange({ startDate: e.target.value, endDate: end }); }} className="rounded px-2 py-1 text-sm bg-transparent border border-white/5" />
-        <label className="text-xs muted">End</label>
-        <input type="date" value={end} onChange={(e) => { setEnd(e.target.value); setPreset("custom"); if (onChange) onChange({ startDate: start, endDate: e.target.value }); else ctx?.setRange({ startDate: start, endDate: e.target.value }); }} className="rounded px-2 py-1 text-sm bg-transparent border border-white/5" />
+      <div className="flex gap-2 items-center flex-wrap">
+        <label className="text-xs muted hidden sm:inline">Start</label>
+        <input type="date" value={start} onChange={(e) => { setStart(e.target.value); setPreset("custom"); if (onChange) onChange({ startDate: e.target.value, endDate: end }); else ctx?.setRange({ startDate: e.target.value, endDate: end }); }} className="rounded px-2 py-1 text-sm bg-transparent border border-white/5 max-w-[150px]" />
+        <label className="text-xs muted hidden sm:inline">End</label>
+        <input type="date" value={end} onChange={(e) => { setEnd(e.target.value); setPreset("custom"); if (onChange) onChange({ startDate: start, endDate: e.target.value }); else ctx?.setRange({ startDate: start, endDate: e.target.value }); }} className="rounded px-2 py-1 text-sm bg-transparent border border-white/5 max-w-[150px]" />
       </div>
     </div>
   );

@@ -2,10 +2,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchAggregatedTransactions, fetchTopCategories } from "../api/finance";
+import { fetchTransactions } from "../api/finance";
 import { fetchCurrentNetWorth, fetchNetWorthSnapshots } from "../api/wealth";
 import { useTimeRange } from "../contexts/TimeRangeContext";
-import TimeRangeSelector from "../components/TimeRangeSelector";
-// TimeRangeSelector comes from global context
+// TimeRangeSelector comes from global context (rendered in Layout)
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, CartesianGrid } from "recharts";
 import type { NetWorthCurrent } from "../api/types";
 
@@ -54,14 +54,16 @@ export default function DashboardPage() {
           end: range.endDate,
           group_by: 'day',
         };
-        const [agg, top] = await Promise.all([
+        const [agg, top, recent] = await Promise.all([
           fetchAggregatedTransactions(q),
           fetchTopCategories({ start: range.startDate, end: range.endDate, limit: 6 }),
+          fetchTransactions({ start: range.startDate, end: range.endDate, limit: 6 }).catch(() => []),
         ]);
 
         // no local txs were fetched; aggregated series drives charts
-        setAggregatedSeries(agg.series || []);
+        setAggregatedSeries((agg.series && agg.series.length > 0) ? agg.series : generateEmptyDaySeries(range.startDate, range.endDate));
         setCategorySeries(top.categories.map((c:any) => ({ id: c.id, name: c.name, amount: c.amount })));
+        setRecentTx(recent || []);
 
         // Compute totals from aggregated series
         let income = 0;
@@ -91,9 +93,11 @@ export default function DashboardPage() {
         try {
           const q: any = { start: range.startDate, end: range.endDate, group_by: 'day' };
           const agg = await fetchAggregatedTransactions(q);
-          setAggregatedSeries(agg.series || []);
+          setAggregatedSeries((agg.series && agg.series.length > 0) ? agg.series : generateEmptyDaySeries(range.startDate, range.endDate));
           const top = await fetchTopCategories({ start: range.startDate, end: range.endDate, limit: 6 });
           setCategorySeries(top.categories.map((c:any) => ({ id: c.id, name: c.name, amount: c.amount })));
+          const recent = await fetchTransactions({ start: range.startDate, end: range.endDate, limit: 6 }).catch(() => []);
+          setRecentTx(recent || []);
           let income = 0; let expenses = 0;
           (agg.series || []).forEach((p:any) => { income += p.income; expenses += p.expenses; });
           setTotals({ income, expenses, savings: income - expenses });
@@ -111,6 +115,16 @@ export default function DashboardPage() {
   const endDate = range.endDate;
   const [aggregatedSeries, setAggregatedSeries] = useState<{date:string;income:number;expenses:number}[]>([]);
 
+  function generateEmptyDaySeries(start: string, end: string) {
+    const s = new Date(start);
+    const e = new Date(end);
+    const out: {date:string;income:number;expenses:number}[] = [];
+    for (let d = new Date(s); d <= e; d.setDate(d.getDate() + 1)) {
+      out.push({ date: d.toISOString().slice(0,10), income: 0, expenses: 0 });
+    }
+    return out;
+  }
+
   useEffect(() => {
     // nothing; we use aggregatedSeries from API now.
   }, [startDate, endDate]);
@@ -123,6 +137,7 @@ export default function DashboardPage() {
   const [snapshots, setSnapshots] = useState<any[]>([]);
   // top categories
   const [categorySeries, setCategorySeries] = useState<any[]>([]);
+  const [recentTx, setRecentTx] = useState<any[]>([]);
 
   // categorySeries is populated by the backend top categories endpoint
 
@@ -133,7 +148,7 @@ export default function DashboardPage() {
       <div className="flex items-center justify-between">
         <div />
         <div className="w-1/3">
-          <TimeRangeSelector />
+          {/* TimeRangeSelector is provided globally in the header/layout */}
         </div>
       </div>
       {loading && (
@@ -143,10 +158,83 @@ export default function DashboardPage() {
           <div className="skeleton h-28 rounded" />
         </div>
       )}
-      {error && <div className="text-red-600 text-sm">{error}</div>}
+      {error && (
+        <div className="text-red-600 text-sm flex items-center gap-3">
+          <div>{error}</div>
+          <button className="btn-secondary" onClick={() => window.location.reload()}>Retry</button>
+        </div>
+      )}
 
       {!loading && (
         <>
+          {/* Sparkline mini-cards */}
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="card spark-card">
+              <div style={{flex:1}}>
+                <div className="text-xs text-gray-500">Income (spark)</div>
+                <div className="spark-value">{formatMoney(totals.income)} KES</div>
+              </div>
+              <div style={{width:120, height:40}}>
+                <ResponsiveContainer width="100%" height={36}>
+                  <AreaChart data={aggregatedSeries}>
+                    <Area dataKey="income" stroke="#16A34A" fillOpacity={0.12} fill="#16A34A" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            <div className="card spark-card">
+              <div style={{flex:1}}>
+                <div className="text-xs text-gray-500">Expenses (spark)</div>
+                <div className="spark-value">{formatMoney(totals.expenses)} KES</div>
+              </div>
+              <div style={{width:120, height:40}}>
+                <ResponsiveContainer width="100%" height={36}>
+                  <AreaChart data={aggregatedSeries}>
+                    <Area dataKey="expenses" stroke="#DC2626" fillOpacity={0.12} fill="#DC2626" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            <div className="card spark-card">
+              <div style={{flex:1}}>
+                <div className="text-xs text-gray-500">Net (spark)</div>
+                <div className="spark-value">{formatMoney(totals.savings)} KES</div>
+              </div>
+              <div style={{width:120, height:40}}>
+                <ResponsiveContainer width="100%" height={36}>
+                  <AreaChart data={aggregatedSeries.map(s => ({ date: s.date, net: s.income - s.expenses }))}>
+                    <Area dataKey="net" stroke="#3B82F6" fillOpacity={0.12} fill="#3B82F6" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+
+          {/* Recent transactions */}
+          <div className="card">
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-xs text-gray-500">Recent transactions</div>
+              <a href="/transactions" className="text-xs">View all</a>
+            </div>
+            <div>
+              {recentTx.length === 0 && <div className="text-sm text-gray-500">No recent transactions</div>}
+              {recentTx.length > 0 && (
+                <ul className="space-y-2">
+                  {recentTx.map((t:any) => (
+                    <li key={t.id} className="flex items-center justify-between">
+                      <div>
+                        <div style={{fontWeight:600}}>{t.description || t.category_name || 'Transaction'}</div>
+                        <div className="text-xs muted">{t.date} • {t.account_name || ''}</div>
+                      </div>
+                      <div style={{fontWeight:700, color: t.amount < 0 ? 'var(--danger-500)' : 'var(--success-500)'}}>{formatMoney(t.amount)} KES</div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
           <div className="grid gap-4 md:grid-cols-3">
             <div className="card cursor-pointer" onClick={() => navigate(`/transactions?start=${range.startDate}&end=${range.endDate}&kind=EXPENSE`)}>
               <div className="text-xs text-gray-500 mb-1">Total Income</div>

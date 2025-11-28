@@ -11,3 +11,34 @@ export async function fetchCurrentUser(): Promise<CurrentUser> {
   const res = await api.get("/api/auth/me/");
   return res.data;
 }
+
+export interface RegisterPayload {
+  email: string;
+  password: string;
+  username?: string;
+}
+
+export async function register(payload: RegisterPayload): Promise<CurrentUser> {
+  const res = await api.post('/api/auth/register/', payload);
+  return res.data;
+}
+
+export async function login(payload: { email?: string; username?: string; password: string }): Promise<CurrentUser> {
+  const res = await api.post('/api/auth/login/', payload);
+  return res.data;
+}
+
+export async function forgotPassword(email: string): Promise<{ message: string }> {
+  const res = await api.post('/api/auth/forgot-password/', { email });
+  return res.data;
+}
+
+export async function resetPassword(uid: string, token: string, newPassword: string): Promise<{ message: string }> {
+  const res = await api.post('/api/auth/reset-password/', {
+    uid,
+    token,
+    new_password: newPassword,
+  });
+  return res.data;
+}
+

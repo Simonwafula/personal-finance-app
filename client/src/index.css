@@ -24,10 +24,84 @@
   color: #e6eef8;
   background-color: var(--bg-body);
 
+  /* Logo color tokens */
+  --logo-bg: #0B1120;
+  --logo-grad-start: #2563EB;
+  --logo-grad-end: #16A34A;
+  --logo-bar-fill: #1E293B;
+  --logo-trend: #38BDF8;
+  --logo-baseline: #0F172A;
+
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+/* Dark theme overrides applied when document.documentElement has class "dark" */
+.dark {
+  --bg-body: #0b1220;
+  --surface: #071026;
+  --border-subtle: #111827;
+  --text-main: #E6EEF8;
+  --text-muted: #9CA3AF;
+  --primary-600: #60A5FA;
+  --primary-500: #3B82F6;
+  --primary-100: rgba(96,165,250,0.08);
+  --accent-500: #FB923C;
+  --success-500: #34D399;
+  --danger-500: #FB7185;
+  --surface-glass: rgba(255,255,255,0.02);
+  background-color: var(--bg-body);
+  color: var(--text-main);
+
+  /* dark theme logo tokens */
+  --logo-bg: #071026;
+  --logo-grad-start: #60A5FA;
+  --logo-grad-end: #34D399;
+  --logo-bar-fill: #0F172A;
+  --logo-trend: #7DD3FC;
+  --logo-baseline: #0B1220;
+}
+
+/* HUD quick toggle buttons */
+.hud { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.hud-btn {
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
+  font-size: 0.875rem;
+}
+.hud-btn.active { background: var(--primary-600); color: white; border-color: transparent; }
+.hud-btn:focus { box-shadow: 0 0 0 3px rgba(37,99,235,0.12); outline: none; }
+
+/* compact icon button used in header for controls like calendar */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 6px;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
+}
+.icon-btn:hover { background: rgba(0,0,0,0.04); }
+
+/* visually hidden (screen reader only) */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
 }
 /* Tailwind container defaults are used; our custom `.app-container` is kept for layout constraints */
 
@@ -53,7 +127,7 @@ body {
 .app-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 16px;
 }
 
 /* card utility */
@@ -62,7 +136,7 @@ body {
   border: 1px solid var(--border-subtle);
   border-radius: 1rem; /* rounded-2xl */
   box-shadow: 0 1px 2px rgba(16,24,40,0.06); /* subtle */
-  padding: 16px;
+  padding: 12px;
 }
 
 /* Buttons */
@@ -181,6 +255,7 @@ h1 {
   line-height: 1.1;
 }
 
+/* Base button reset — keep neutral so `.btn-*` classes control appearance */
 button {
   border-radius: 8px;
   border: 1px solid transparent;
@@ -188,9 +263,10 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: transparent;
+  color: var(--text-main);
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: border-color 0.20s, background-color 0.18s, color 0.18s;
 }
 button:hover {
   border-color: #646cff;
@@ -235,3 +311,25 @@ input:focus, textarea:focus, select:focus {
     background-color: #f9f9f9;
   }
 }
+
+/* Small-screen selector slide panel animation */
+.slide-panel {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 220ms cubic-bezier(.2,.8,.2,1), opacity 180ms ease;
+}
+.slide-panel.open {
+  max-height: 420px; /* enough to fit selector content */
+  opacity: 1;
+}
+
+/* Tiny sparkline card */
+.spark-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+}
+.spark-value { font-weight: 600; font-size: 1rem; }
+.spark-sub { font-size: 0.85rem; color: var(--text-muted); }

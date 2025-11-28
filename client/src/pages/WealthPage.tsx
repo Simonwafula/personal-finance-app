@@ -9,7 +9,7 @@ import {
   createNetWorthSnapshot,
   fetchNetWorthSnapshots,
 } from "../api/wealth";
-import TimeRangeSelector from "../components/TimeRangeSelector";
+// TimeRangeSelector provided globally via Layout
 import { useTimeRange } from "../contexts/TimeRangeContext";
 import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from "recharts";
 import type { Asset, Liability, NetWorthCurrent } from "../api/types";
@@ -71,6 +71,16 @@ export default function WealthPage() {
     return true;
   });
 
+  function generateEmptyDaySeries(start: string, end: string) {
+    const s = new Date(start);
+    const e = new Date(end);
+    const out: {date:string; net:number}[] = [];
+    for (let d = new Date(s); d <= e; d.setDate(d.getDate() + 1)) {
+      out.push({ date: d.toISOString().slice(0,10), net: 0 });
+    }
+    return out;
+  }
+
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Wealth</h3>
@@ -99,7 +109,7 @@ export default function WealthPage() {
 
             <div className="grid gap-4 md:grid-cols-2">
                 <div className="flex items-center justify-end">
-                <TimeRangeSelector />
+                {/* TimeRangeSelector is provided globally in the header/layout */}
               </div>
             <div className="bg-white rounded-lg shadow p-4">
               <div className="text-sm font-medium mb-2">Add Asset</div>
@@ -209,20 +219,18 @@ export default function WealthPage() {
                 )}
               </div>
               <div className="mt-4">
-                {filteredSnapshots.length > 0 && (
-                  <div className="mt-4">
-                    <div className="text-xs text-gray-500 mb-1">Net worth snapshots</div>
-                    <div style={{ width: "100%", height: 180 }}>
-                      <ResponsiveContainer width="100%" height={140}>
-                        <AreaChart data={filteredSnapshots.map(s => ({ date: s.date, net: Number(s.net_worth) }))}>
-                          <XAxis dataKey="date" />
-                          <Tooltip formatter={(v:any) => formatMoney(v as string | number)} />
-                          <Area type="monotone" dataKey="net" stroke="#3B82F6" fill="#3B82F6" />
-                        </AreaChart>
-                      </ResponsiveContainer>
-                    </div>
+                <div className="mt-4">
+                  <div className="text-xs text-gray-500 mb-1">Net worth snapshots</div>
+                  <div style={{ width: "100%", height: 180 }}>
+                    <ResponsiveContainer width="100%" height={140}>
+                      <AreaChart data={(filteredSnapshots.length > 0 ? filteredSnapshots : generateEmptyDaySeries(range.startDate, range.endDate)).map((s:any) => ({ date: s.date, net: Number(s.net_worth ?? s.net) }))}>
+                        <XAxis dataKey="date" />
+                        <Tooltip formatter={(v:any) => formatMoney(v as string | number)} />
+                        <Area type="monotone" dataKey="net" stroke="#3B82F6" fill="#3B82F6" />
+                      </AreaChart>
+                    </ResponsiveContainer>
                   </div>
-                )}
+                </div>
               </div>
                 <div className="mt-4">
                 <button

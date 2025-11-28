@@ -57,3 +57,28 @@ class TransactionSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
+
+
+class AggregatedPointSerializer(serializers.Serializer):
+    """Serializer for aggregated transaction data points."""
+    date = serializers.CharField()
+    income = serializers.FloatField()
+    expenses = serializers.FloatField()
+
+
+class TopCategorySerializer(serializers.Serializer):
+    """Serializer for top expense categories."""
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    amount = serializers.FloatField()
+
+
+class AggregatedResponseSerializer(serializers.Serializer):
+    """Response wrapper for aggregated transactions."""
+    series = AggregatedPointSerializer(many=True)
+
+
+class TopCategoriesResponseSerializer(serializers.Serializer):
+    """Response wrapper for top categories."""
+    categories = TopCategorySerializer(many=True)
+

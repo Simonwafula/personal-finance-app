@@ -34,6 +34,8 @@ export interface TransactionFilters {
   end?: string;
   category?: number;
   kind?: "INCOME" | "EXPENSE" | "TRANSFER";
+  limit?: number;
+  offset?: number;
 }
 
 export async function fetchTransactions(
@@ -42,6 +44,13 @@ export async function fetchTransactions(
   const res = await api.get("/api/finance/transactions/", {
     params: filters,
   });
+  return res.data;
+}
+
+export async function fetchTransactionsPaged(
+  filters: TransactionFilters & { limit?: number; offset?: number } = {}
+): Promise<any> {
+  const res = await api.get("/api/finance/transactions/", { params: filters });
   return res.data;
 }
 
