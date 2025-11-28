@@ -10,6 +10,7 @@ import {
   fetchNetWorthSnapshots,
 } from "../api/wealth";
 import TimeRangeSelector from "../components/TimeRangeSelector";
+import { useTimeRange } from "../contexts/TimeRangeContext";
 import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from "recharts";
 import type { Asset, Liability, NetWorthCurrent } from "../api/types";
 
@@ -61,14 +62,12 @@ export default function WealthPage() {
   useEffect(() => {
     loadAll();
   }, []);
-  const [snapStart, setSnapStart] = useState<string | undefined>(undefined);
-  const [snapEnd, setSnapEnd] = useState<string | undefined>(undefined);
+  const { range } = useTimeRange();
 
   const filteredSnapshots = snapshots.filter(s => {
-    if (!snapStart && !snapEnd) return true;
     const d = new Date(s.date);
-    if (snapStart && d < new Date(snapStart)) return false;
-    if (snapEnd && d > new Date(snapEnd)) return false;
+    if (range.startDate && d < new Date(range.startDate)) return false;
+    if (range.endDate && d > new Date(range.endDate)) return false;
     return true;
   });
 
@@ -99,12 +98,8 @@ export default function WealthPage() {
           </div>
 
             <div className="grid gap-4 md:grid-cols-2">
-              <div className="flex items-center justify-end">
-                <TimeRangeSelector
-                  initialStart={snapStart}
-                  initialEnd={snapEnd}
-                  onChange={(r) => { setSnapStart(r.startDate); setSnapEnd(r.endDate); }}
-                />
+                <div className="flex items-center justify-end">
+                <TimeRangeSelector />
               </div>
             <div className="bg-white rounded-lg shadow p-4">
               <div className="text-sm font-medium mb-2">Add Asset</div>
@@ -127,7 +122,7 @@ export default function WealthPage() {
                   <input type="number" step="0.01" className="w-full border rounded px-2 py-1 text-sm" value={assetValue} onChange={(e) => setAssetValue(e.target.value)} />
                 </div>
                 <div className="mt-2">
-                  <button className="px-3 py-2 text-sm rounded-md bg-blue-600 text-white">Add Asset</button>
+                  <button className="btn-primary text-sm">Add Asset</button>
                 </div>
               </form>
 
@@ -135,8 +130,8 @@ export default function WealthPage() {
                 <div className="text-xs text-gray-500 mb-1">Assets</div>
                 {assets.length === 0 && <div className="text-sm text-gray-500">No assets yet.</div>}
                 {assets.length > 0 && (
-                  <table className="min-w-full text-xs md:text-sm">
-                    <thead className="bg-gray-50">
+                  <table className="min-w-full text-xs md:text-sm table-hover">
+                    <thead className="bg-gray-50 table-sticky">
                       <tr>
                         <th className="px-2 py-1 text-left">Name</th>
                         <th className="px-2 py-1 text-right">Value</th>
@@ -187,7 +182,7 @@ export default function WealthPage() {
                   <input type="number" step="0.01" className="w-full border rounded px-2 py-1 text-sm" value={liabilityMinimum} onChange={(e) => setLiabilityMinimum(e.target.value)} placeholder="Minimum payment" />
                 </div>
                 <div className="mt-2">
-                  <button className="px-3 py-2 text-sm rounded-md bg-blue-600 text-white">Add Liability</button>
+                  <button className="btn-primary text-sm">Add Liability</button>
                 </div>
               </form>
 
@@ -195,7 +190,7 @@ export default function WealthPage() {
                 <div className="text-xs text-gray-500 mb-1">Liabilities</div>
                 {liabilities.length === 0 && <div className="text-sm text-gray-500">No liabilities yet.</div>}
                 {liabilities.length > 0 && (
-                  <table className="min-w-full text-xs md:text-sm">
+                  <table className="min-w-full text-xs md:text-sm table-hover">
                     <thead className="bg-gray-50">
                       <tr>
                         <th className="px-2 py-1 text-left">Name</th>
@@ -222,16 +217,16 @@ export default function WealthPage() {
                         <AreaChart data={filteredSnapshots.map(s => ({ date: s.date, net: Number(s.net_worth) }))}>
                           <XAxis dataKey="date" />
                           <Tooltip formatter={(v:any) => formatMoney(v as string | number)} />
-                          <Area type="monotone" dataKey="net" stroke="#6366f1" fill="#6366f1" />
+                          <Area type="monotone" dataKey="net" stroke="#3B82F6" fill="#3B82F6" />
                         </AreaChart>
                       </ResponsiveContainer>
                     </div>
                   </div>
                 )}
               </div>
-              <div className="mt-4">
+                <div className="mt-4">
                 <button
-                  className="px-3 py-2 text-sm rounded-md bg-green-600 text-white mr-2"
+                  className="btn-success text-sm mr-2"
                   onClick={async () => {
                     try {
                       await createNetWorthSnapshot();

@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "./index.css";
 
 import Layout from "./components/Layout";
+import { TimeRangeProvider } from "./contexts/TimeRangeContext";
 import DashboardPage from "./pages/DashboardPage";
 import TransactionsPage from "./pages/TransactionsPage";
 import BudgetsPage from "./pages/BudgetsPage";
@@ -14,6 +15,7 @@ import AccountsPage from "./pages/AccountsPage";
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <BrowserRouter>
+      <TimeRangeProvider>
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<DashboardPage />} />
@@ -24,6 +26,7 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
           <Route path="accounts" element={<AccountsPage />} />
         </Route>
       </Routes>
+      </TimeRangeProvider>
     </BrowserRouter>
   </React.StrictMode>
 );

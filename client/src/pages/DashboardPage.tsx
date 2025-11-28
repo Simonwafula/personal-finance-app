@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { fetchTransactions } from "../api/finance";
 import { fetchCurrentNetWorth, fetchNetWorthSnapshots } from "../api/wealth";
 import TimeRangeSelector from "../components/TimeRangeSelector";
+import { useTimeRange } from "../contexts/TimeRangeContext";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, CartesianGrid } from "recharts";
 import type { Transaction, NetWorthCurrent } from "../api/types";
 
@@ -104,8 +105,9 @@ export default function DashboardPage() {
     return arr;
   }
 
-  const [startDate, setStartDate] = useState<string>(new Date(Date.now() - 30 * 24*60*60*1000).toISOString().slice(0,10));
-  const [endDate, setEndDate] = useState<string>(new Date().toISOString().slice(0,10));
+  const { range } = useTimeRange();
+  const startDate = range.startDate;
+  const endDate = range.endDate;
   const [txsFiltered, setTxsFiltered] = useState<Transaction[]>([]);
 
   useEffect(() => {
@@ -144,23 +146,22 @@ export default function DashboardPage() {
       <div className="flex items-center justify-between">
         <div />
         <div className="w-1/3">
-          <TimeRangeSelector
-            initialStart={startDate}
-            initialEnd={endDate}
-            onChange={(r) => {
-              setStartDate(r.startDate);
-              setEndDate(r.endDate);
-            }}
-          />
+          <TimeRangeSelector />
         </div>
       </div>
-      {loading && <div>Loading…</div>}
+      {loading && (
+        <div className="grid gap-4 md:grid-cols-3">
+          <div className="skeleton h-28 rounded" />
+          <div className="skeleton h-28 rounded" />
+          <div className="skeleton h-28 rounded" />
+        </div>
+      )}
       {error && <div className="text-red-600 text-sm">{error}</div>}
 
       {!loading && (
         <>
           <div className="grid gap-4 md:grid-cols-3">
-            <div className="p-4 rounded-lg bg-white shadow">
+            <div className="card cursor-pointer" onClick={() => navigate(`/transactions?start=${startDate}&end=${endDate}&kind=EXPENSE`)}>
               <div className="text-xs text-gray-500 mb-1">Total Income</div>
               <div className="text-2xl font-bold">
                 {formatMoney(totals.income)} KES
@@ -171,31 +172,31 @@ export default function DashboardPage() {
                   <AreaChart data={buildSeriesForRange(startDate, endDate)} onClick={(e:any) => { const payload = e?.activePayload?.[0]?.payload; if(payload?.date) navigate(`/transactions?start=${payload.date}&end=${payload.date}`) }}>
                     <defs>
                       <linearGradient id="incomeGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#34d399" stopOpacity={0.8}/>
+                        <stop offset="5%" stopColor="#16A34A" stopOpacity={0.8}/>
                         <stop offset="95%" stopColor="#34d399" stopOpacity={0}/>
                       </linearGradient>
                       <linearGradient id="expenseGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#f87171" stopOpacity={0.8}/>
+                        <stop offset="5%" stopColor="#DC2626" stopOpacity={0.8}/>
                         <stop offset="95%" stopColor="#f87171" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
                     <XAxis dataKey="date" hide />
                     <Tooltip formatter={(value: any) => formatMoney(value as string | number)} />
-                    <Area type="monotone" dataKey="income" stroke="#10b981" fill="url(#incomeGrad)" />
-                    <Area type="monotone" dataKey="expenses" stroke="#ef4444" fill="url(#expenseGrad)" />
+                    <Area type="monotone" dataKey="income" stroke="#16A34A" fill="url(#incomeGrad)" />
+                    <Area type="monotone" dataKey="expenses" stroke="#DC2626" fill="url(#expenseGrad)" />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
             </div>
 
-            <div className="p-4 rounded-lg bg-white shadow">
+            <div className="card">
               <div className="text-xs text-gray-500 mb-1">Total Expenses</div>
               <div className="text-2xl font-bold text-red-600">
                 {formatMoney(totals.expenses)} KES
               </div>
             </div>
 
-            <div className="p-4 rounded-lg bg-white shadow">
+            <div className="card">
               <div className="text-xs text-gray-500 mb-1">Net Savings</div>
               <div className={"text-2xl font-bold " + (totals.savings >= 0 ? "text-green-600" : "text-red-600")}>
                 {formatMoney(totals.savings)} KES
@@ -203,7 +204,7 @@ export default function DashboardPage() {
             </div>
           </div>
           <div className="grid gap-4 md:grid-cols-3">
-            <div className="p-4 rounded-lg bg-white shadow">
+            <div className="card">
               <div className="text-xs text-gray-500 mb-1">Net Worth</div>
               {netWorth ? (
                 <>
@@ -212,10 +213,10 @@ export default function DashboardPage() {
                   <div className="mt-2">
                     {snapshots.length > 0 && (
                       <ResponsiveContainer width="100%" height={120}>
-                        <AreaChart data={snapshots.map((s:any) => ({ date: s.date, net: Number(s.net_worth) })).sort((a,b)=>a.date.localeCompare(b.date))}>
+                          <AreaChart data={snapshots.map((s:any) => ({ date: s.date, net: Number(s.net_worth) })).sort((a,b)=>a.date.localeCompare(b.date))}>
                           <XAxis dataKey="date" />
                           <Tooltip formatter={(v: any) => formatMoney(v as string | number)} />
-                          <Area type="monotone" dataKey="net" stroke="#6366f1" fill="#6366f1" onClick={(e:any) => { const payload = e?.payload; if(payload?.date) navigate(`/wealth?date=${payload.date}`) }} />
+                          <Area type="monotone" dataKey="net" stroke="#3B82F6" fill="#3B82F6" onClick={(e:any) => { const payload = e?.payload; if(payload?.date) navigate(`/wealth?date=${payload.date}`) }} />
                         </AreaChart>
                       </ResponsiveContainer>
                     )}
@@ -226,7 +227,7 @@ export default function DashboardPage() {
               )}
             </div>
 
-            <div className="p-4 rounded-lg bg-white shadow">
+            <div className="card">
               <div className="text-xs text-gray-500 mb-1">Top Expense Categories</div>
               <div style={{ width: "100%", height: 180 }}>
                 {categorySeries.length === 0 && <div className="text-sm text-gray-500">No data</div>}
@@ -237,14 +238,14 @@ export default function DashboardPage() {
                       <XAxis type="number" hide />
                       <YAxis dataKey="name" type="category" width={140} />
                       <Tooltip formatter={(v: any) => formatMoney(v as string | number)} />
-                      <Bar dataKey="amount" fill="#f97316" onClick={(d:any) => { const categoryId = d?.payload?.id; navigate(`/transactions?category=${categoryId}&start=${startDate}&end=${endDate}`) }} />
+                      <Bar dataKey="amount" fill="#F97316" onClick={(d:any) => { const categoryId = d?.payload?.id; navigate(`/transactions?category=${categoryId}&start=${startDate}&end=${endDate}`) }} />
                     </BarChart>
                   </ResponsiveContainer>
                 )}
               </div>
             </div>
 
-            <div className="p-4 rounded-lg bg-white shadow">
+            <div className="card">
               <div className="text-xs text-gray-500 mb-1">Quick notes (future widgets)</div>
               <div className="text-sm text-gray-600">Here we’ll later add charts: cashflow over time, top spending categories, etc.</div>
             </div>

@@ -153,7 +153,7 @@ export default function AccountsPage() {
         <button
           type="submit"
           disabled={saving}
-          className="px-3 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60"
+          className="btn-primary text-sm"
         >
           {saving ? "Saving…" : "Save Account"}
         </button>

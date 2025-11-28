@@ -169,7 +169,7 @@ export default function BudgetsPage() {
       {loadingBudgets && <div>Loading budgets…</div>}
 
       {/* Create budget form */}
-      <div className="bg-white rounded-lg shadow p-4 max-w-xl">
+      <div className="card max-w-xl">
         <div className="text-sm font-medium mb-2">Create Budget</div>
         <form
           onSubmit={async (e) => {
@@ -249,7 +249,7 @@ export default function BudgetsPage() {
             <button
               type="submit"
               disabled={creating}
-              className="px-3 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60"
+              className="btn-primary text-sm disabled:opacity-60"
             >
               {creating ? "Creating…" : "Create Budget"}
             </button>
@@ -259,7 +259,7 @@ export default function BudgetsPage() {
 
       {/* Budget line creation */}
       {selectedId && (
-        <div className="bg-white rounded-lg shadow p-4 max-w-xl">
+        <div className="card max-w-xl">
           <div className="text-sm font-medium mb-2">Add Budget Line</div>
           <form
             onSubmit={async (e) => {
@@ -311,7 +311,7 @@ export default function BudgetsPage() {
               <div>
                 <button
                   type="submit"
-                  className="px-3 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60"
+                  className="btn-primary text-sm disabled:opacity-60"
                 >
                   Add Line
                 </button>
@@ -324,8 +324,8 @@ export default function BudgetsPage() {
             <div className="text-xs text-gray-500 mb-1">Lines</div>
             {lines.length === 0 && <div className="text-sm text-gray-500">No lines for this budget.</div>}
             {lines.length > 0 && (
-              <table className="min-w-full text-xs md:text-sm">
-                <thead className="bg-gray-50">
+              <table className="min-w-full text-xs md:text-sm table-hover">
+                <thead className="bg-gray-50 table-sticky">
                   <tr>
                     <th className="px-2 py-1 text-left">Category</th>
                     <th className="px-2 py-1 text-right">Planned</th>
@@ -370,7 +370,7 @@ export default function BudgetsPage() {
                           {editing ? (
                             <div className="flex gap-2">
                               <button
-                                className="px-2 py-1 bg-green-600 text-white rounded text-xs"
+                                className="btn-success text-xs px-2 py-1 rounded"
                                 onClick={async () => {
                                   try {
                                     await updateBudgetLine(line.id, {
@@ -393,7 +393,7 @@ export default function BudgetsPage() {
                                 Save
                               </button>
                               <button
-                                className="px-2 py-1 bg-gray-200 text-xs rounded"
+                                className="btn-secondary text-xs px-2 py-1 rounded"
                                 onClick={() => setEditingId(null)}
                               >
                                 Cancel
@@ -402,7 +402,7 @@ export default function BudgetsPage() {
                           ) : (
                             <div className="flex gap-2">
                               <button
-                                className="px-2 py-1 bg-blue-600 text-white rounded text-xs"
+                                className="btn-primary text-xs px-2 py-1 rounded"
                                 onClick={() => {
                                   setEditingId(line.id);
                                   setEditCategoryId(line.category);
@@ -412,7 +412,7 @@ export default function BudgetsPage() {
                                 Edit
                               </button>
                               <button
-                                className="px-2 py-1 bg-red-600 text-white rounded text-xs"
+                                className="btn-danger text-xs px-2 py-1 rounded"
                                 onClick={async () => {
                                   if (!confirm("Delete this budget line?")) return;
                                   try {

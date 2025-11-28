@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import TimeRangeSelector from "../components/TimeRangeSelector";
+import { useTimeRange } from "../contexts/TimeRangeContext";
 import type { FormEvent } from "react";
 import {
   fetchTransactions,
@@ -45,10 +46,9 @@ export default function TransactionsPage() {
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState("");
   const [saving, setSaving] = useState(false);
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([]);
-  const [filterStart, setFilterStart] = useState<string | null>(searchParams.get("start"));
-  const [filterEnd, setFilterEnd] = useState<string | null>(searchParams.get("end"));
+  const { range } = useTimeRange();
   const [filterCategory, setFilterCategory] = useState<number | "">(searchParams.get("category") ? Number(searchParams.get("category")) : "");
   const [filterKind, setFilterKind] = useState<TransactionKind | "">((searchParams.get("kind") as TransactionKind) || "");
 
@@ -78,7 +78,7 @@ export default function TransactionsPage() {
       setError(null);
       const data = await fetchTransactions();
       setTransactions(data);
-      applyFilters(data, filterStart, filterEnd, filterCategory, filterKind);
+      applyFilters(data, range.startDate, range.endDate, filterCategory, filterKind);
     } catch (err) {
       console.error(err);
       setError("Failed to load transactions");
@@ -121,9 +121,7 @@ export default function TransactionsPage() {
   useEffect(() => {
     setFilterCategory(searchParams.get("category") ? Number(searchParams.get("category")) : "");
     setFilterKind((searchParams.get("kind") as TransactionKind) || "");
-    setFilterStart(searchParams.get("start"));
-    setFilterEnd(searchParams.get("end"));
-    applyFilters(transactions, searchParams.get("start"), searchParams.get("end"), searchParams.get("category") ? Number(searchParams.get("category")) : "", (searchParams.get("kind") as TransactionKind) || "");
+    applyFilters(transactions, range.startDate, range.endDate, searchParams.get("category") ? Number(searchParams.get("category")) : "", (searchParams.get("kind") as TransactionKind) || "");
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
@@ -172,22 +170,14 @@ export default function TransactionsPage() {
       <div className="flex justify-between items-center">
         <div className="text-sm text-gray-500">Filter by time</div>
         <div className="w-1/2">
-          <TimeRangeSelector
-            initialStart={filterStart ?? undefined}
-            initialEnd={filterEnd ?? undefined}
-            onChange={(r) => {
-              setFilterStart(r.startDate);
-              setFilterEnd(r.endDate);
-              setSearchParams({ start: r.startDate, end: r.endDate, category: String(filterCategory), kind: String(filterKind) });
-            }}
-          />
+          <TimeRangeSelector />
         </div>
       </div>
 
       {/* Add transaction form */}
       <form
         onSubmit={handleSubmit}
-        className="bg-white rounded-lg shadow p-4 space-y-3"
+        className="card space-y-3"
       >
         <div className="text-sm font-medium mb-1">Add Transaction</div>
 
@@ -300,7 +290,7 @@ export default function TransactionsPage() {
         <button
           type="submit"
           disabled={saving || accounts.length === 0}
-          className="px-3 py-2 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60"
+          className="btn-primary text-sm disabled:opacity-60"
         >
           {saving ? "Saving…" : "Save Transaction"}
         </button>
@@ -317,9 +307,9 @@ export default function TransactionsPage() {
         </div>
       )}
       {filteredTransactions.length > 0 && (
-        <div className="overflow-x-auto bg-white shadow rounded-lg">
+          <div className="overflow-x-auto card table-hover">
           <table className="min-w-full text-sm">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 table-sticky">
               <tr>
                 <th className="px-3 py-2 text-left">Date</th>
                 <th className="px-3 py-2 text-left">Account</th>

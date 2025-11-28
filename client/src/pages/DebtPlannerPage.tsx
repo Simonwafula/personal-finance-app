@@ -66,7 +66,7 @@ export default function DebtPlannerPage() {
       {loading && <div>Loading…</div>}
       {error && <div className="text-red-600 text-sm">{error}</div>}
 
-      <div className="bg-white rounded-lg shadow p-4 max-w-xl">
+      <div className="card max-w-xl">
         <div className="text-sm font-medium mb-2">Create Debt Plan</div>
         <form onSubmit={async (e) => {
           e.preventDefault();
@@ -90,7 +90,7 @@ export default function DebtPlannerPage() {
             <input type="number" step="0.01" className="w-full border rounded px-2 py-1 text-sm" value={monthly} onChange={(e) => setMonthly(e.target.value)} />
             <input type="date" className="w-full border rounded px-2 py-1 text-sm" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
           </div>
-          <div className="mt-2"><button className="px-3 py-2 rounded text-white bg-blue-600" disabled={creating}>{creating ? 'Creating…' : 'Create Plan'}</button></div>
+          <div className="mt-2"><button className="btn-primary text-sm" disabled={creating}>{creating ? 'Creating…' : 'Create Plan'}</button></div>
         </form>
       </div>
 
@@ -100,7 +100,7 @@ export default function DebtPlannerPage() {
           <div className="text-xs text-gray-500 mb-2">Plans</div>
           {plans.map(p => (
             <div key={p.id} className={`mb-1`}> 
-              <button onClick={() => setSelectedId(p.id)} className={`w-full text-left px-3 py-2 rounded-md text-sm ${selectedId === p.id ? 'bg-blue-600 text-white' : 'bg-gray-100 hover:bg-gray-200'}`}>
+              <button onClick={() => setSelectedId(p.id)} className={`w-full text-left px-3 py-2 rounded-md text-sm ${selectedId === p.id ? 'btn-primary text-white' : 'bg-gray-100 hover:bg-gray-200'}`}>
                 <div className="font-medium">{p.strategy}</div>
                 <div className="text-[11px] text-gray-500">{p.start_date} • {formatMoney(Number(p.monthly_amount_available))}</div>
               </button>
