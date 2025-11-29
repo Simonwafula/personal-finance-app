@@ -18,14 +18,26 @@ export async function createDebtPlan(payload: CreateDebtPlanPayload): Promise<De
   return res.data;
 }
 
-export async function fetchDebtSchedule(planId: number): Promise<DebtScheduleRow[]> {
-  const res = await api.get(`/api/debt/debt-plans/${planId}/schedule/`);
+export async function fetchDebtSchedule(planId: number, strategyOverride?: string): Promise<DebtScheduleRow[]> {
+  const url = strategyOverride
+    ? `/api/debt/debt-plans/${planId}/schedule/?strategy=${encodeURIComponent(strategyOverride)}`
+    : `/api/debt/debt-plans/${planId}/schedule/`;
+  const res = await api.get(url);
   return res.data?.schedule || res.data;
 }
 
 export async function fetchDebtPlan(planId: number): Promise<DebtPlan> {
   const res = await api.get(`/api/debt/debt-plans/${planId}/`);
   return res.data;
+}
+
+export async function updateDebtPlan(planId: number, payload: Partial<CreateDebtPlanPayload>): Promise<DebtPlan> {
+  const res = await api.patch(`/api/debt/debt-plans/${planId}/`, payload);
+  return res.data;
+}
+
+export async function deleteDebtPlan(planId: number): Promise<void> {
+  await api.delete(`/api/debt/debt-plans/${planId}/`);
 }
 
 export default {};

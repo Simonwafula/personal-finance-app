@@ -25,5 +25,9 @@ class DebtPlanViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["get"])
     def schedule(self, request, pk=None):
         plan = self.get_object()
-        data = generate_debt_schedule(plan)
+        strategy = request.query_params.get("strategy")
+        # validate strategy value
+        if strategy not in (None, *[c.value for c in DebtPlan.Strategy]):
+            strategy = None
+        data = generate_debt_schedule(plan, strategy_override=strategy)
         return Response(data)

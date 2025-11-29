@@ -1,5 +1,5 @@
 // src/pages/BudgetsPage.tsx
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { fetchBudgets, fetchBudgetSummary, createBudget, createBudgetLine, fetchBudgetLines, updateBudgetLine, deleteBudgetLine } from "../api/budgeting";
 import { fetchCategories, fetchTransactions } from "../api/finance";
 import TimeRangeSelector from "../components/TimeRangeSelector";
@@ -39,6 +39,21 @@ export default function BudgetsPage() {
   const [customStart, setCustomStart] = useState<string | null>(null);
   const [customEnd, setCustomEnd] = useState<string | null>(null);
   const [customSummary, setCustomSummary] = useState<BudgetSummary | null>(null);
+  const threshold = 0.9;
+
+  const activeSummary = customSummary ?? summary;
+  const overThreshold = useMemo(() => {
+    if (!activeSummary) return [] as Array<{ name: string; ratio: number }>;
+    return activeSummary.lines
+      .map((l) => {
+        const planned = Number(l.planned);
+        const actual = Number(l.actual);
+        const ratio = planned > 0 ? actual / planned : 0;
+        return { name: l.category_name, ratio };
+      })
+      .filter((x) => x.ratio >= threshold)
+      .sort((a, b) => b.ratio - a.ratio);
+  }, [activeSummary]);
 
   useEffect(() => {
     async function loadBudgets() {
@@ -161,16 +176,57 @@ export default function BudgetsPage() {
   }, [customStart, customEnd, selectedId, lines, categories]);
 
   return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold">Budgets</h3>
+    <div className="space-y-6 pb-20 max-w-7xl mx-auto">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Budgets
+          </h3>
+          <p className="text-sm text-[var(--text-muted)] mt-1">
+            Plan and track your spending against budget goals
+          </p>
+        </div>
+      </div>
 
-      {error && <div className="text-red-600 text-sm">{error}</div>}
+      {error && (
+        <div className="card bg-red-50 border-red-200 text-red-700 text-sm p-4 animate-slide-in">
+          {error}
+        </div>
+      )}
 
-      {loadingBudgets && <div>Loading budgets…</div>}
+      {loadingBudgets && <div className="skeleton h-32 rounded" />}
+
+      {/* Create budget form */
+      {activeSummary && overThreshold.length > 0 && (
+        <div className="card border-yellow-300 bg-yellow-50 text-yellow-900 animate-slide-in">
+          <div className="flex items-start gap-3">
+            <div className="text-xl">⚠️</div>
+            <div className="flex-1">
+              <div className="font-semibold">Budget usage warning</div>
+              <div className="text-sm">
+                {overThreshold.length} categor{overThreshold.length === 1 ? "y" : "ies"} at or above 90% of planned amount.
+              </div>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {overThreshold.slice(0, 5).map((x) => (
+                  <span key={x.name} className="badge bg-yellow-200 text-yellow-900">
+                    {x.name}: {Math.round(x.ratio * 100)}%
+                  </span>
+                ))}
+                {overThreshold.length > 5 && (
+                  <span className="badge bg-yellow-200 text-yellow-900">+{overThreshold.length - 5} more</span>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Create budget form */}
-      <div className="card max-w-xl">
-        <div className="text-sm font-medium mb-2">Create Budget</div>
+      <div className="card animate-slide-in">
+        <div className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <span>📝</span>
+          Create Budget
+        </div>
         <form
           onSubmit={async (e) => {
             e.preventDefault();
@@ -201,21 +257,23 @@ export default function BudgetsPage() {
             }
           }}
         >
-          <div className="grid md:grid-cols-3 gap-3">
-            <div className="md:col-span-2">
+          <div className="grid sm:grid-cols-3 gap-4">
+            <div className="sm:col-span-2">
+              <label className="block text-sm font-medium mb-2">Budget Name *</label>
               <input
-                className="w-full border rounded px-2 py-1 text-sm"
+                className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none transition-colors"
                 value={budgetName}
                 onChange={(e) => setBudgetName(e.target.value)}
-                placeholder="Budget name"
+                placeholder="e.g., January 2025, Q1 Budget"
                 required
               />
             </div>
             <div>
+              <label className="block text-sm font-medium mb-2">Period Type</label>
               <select
                 value={periodType}
                 onChange={(e) => setPeriodType(e.target.value as any)}
-                className="w-full border rounded px-2 py-1 text-sm"
+                className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none transition-colors"
               >
                 <option value="MONTHLY">Monthly</option>
                 <option value="ANNUAL">Annual</option>
@@ -223,33 +281,41 @@ export default function BudgetsPage() {
               </select>
             </div>
           </div>
-          <div className="grid md:grid-cols-2 gap-3 mt-2">
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="w-full border rounded px-2 py-1 text-sm"
-            />
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="w-full border rounded px-2 py-1 text-sm"
-            />
+          <div className="grid sm:grid-cols-2 gap-4 mt-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Start Date</label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none transition-colors"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">End Date</label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none transition-colors"
+              />
+            </div>
           </div>
-          <div className="mt-2">
+          <div className="mt-4">
+            <label className="block text-sm font-medium mb-2">Notes (optional)</label>
             <textarea
-              className="w-full border rounded px-2 py-1 text-sm"
+              className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none transition-colors"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Notes (optional)"
+              placeholder="Add any additional notes..."
+              rows={3}
             />
           </div>
-          <div className="mt-2">
+          <div className="mt-6 pt-4 border-t border-[var(--border-subtle)]">
             <button
               type="submit"
               disabled={creating}
-              className="btn-primary text-sm disabled:opacity-60"
+              className="btn-primary disabled:opacity-60"
             >
               {creating ? "Creating…" : "Create Budget"}
             </button>
@@ -259,8 +325,11 @@ export default function BudgetsPage() {
 
       {/* Budget line creation */}
       {selectedId && (
-        <div className="card max-w-xl">
-          <div className="text-sm font-medium mb-2">Add Budget Line</div>
+        <div className="card animate-slide-in">
+          <div className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <span>➕</span>
+            Add Budget Line
+          </div>
           <form
             onSubmit={async (e) => {
               e.preventDefault();
@@ -284,14 +353,16 @@ export default function BudgetsPage() {
               }
             }}
           >
-            <div className="grid md:grid-cols-3 gap-3">
-              <div>
+            <div className="grid sm:grid-cols-3 gap-4">
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-medium mb-2">Category *</label>
                 <select
                   value={categoryId}
                   onChange={(e) =>
                     setCategoryId(e.target.value ? Number(e.target.value) : "")
                   }
-                  className="w-full border rounded px-2 py-1 text-sm"
+                  className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none transition-colors"
+                  required
                 >
                   <option value="">— select category —</option>
                   {categories.map((c) => (
@@ -300,280 +371,307 @@ export default function BudgetsPage() {
                 </select>
               </div>
               <div>
+                <label className="block text-sm font-medium mb-2">Planned Amount *</label>
                 <input
                   type="number"
                   step="0.01"
                   value={plannedAmount}
                   onChange={(e) => setPlannedAmount(e.target.value)}
-                  className="w-full border rounded px-2 py-1 text-sm"
+                  className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none transition-colors"
+                  required
                 />
               </div>
-              <div>
-                <button
-                  type="submit"
-                  className="btn-primary text-sm disabled:opacity-60"
-                >
-                  Add Line
-                </button>
-              </div>
+            </div>
+            <div className="mt-4">
+              <button
+                type="submit"
+                className="btn-primary disabled:opacity-60"
+              >
+                Add Line
+              </button>
             </div>
           </form>
 
-          {/* Better: show lines */}
-          <div className="mt-3">
-            <div className="text-xs text-gray-500 mb-1">Lines</div>
-            {lines.length === 0 && <div className="text-sm text-gray-500">No lines for this budget.</div>}
+          {/* Budget lines list */}
+          <div className="mt-6 pt-6 border-t border-[var(--border-subtle)]">
+            <div className="text-sm font-semibold mb-3 text-[var(--text-muted)] uppercase tracking-wide">
+              Budget Lines {lines.length > 0 && `(${lines.length})`}
+            </div>
+            {lines.length === 0 && (
+              <div className="text-center py-8 text-[var(--text-muted)]">
+                <div className="text-4xl mb-2">📋</div>
+                <p className="text-sm">No lines for this budget yet</p>
+              </div>
+            )}
             {lines.length > 0 && (
-              <table className="min-w-full text-xs md:text-sm table-hover">
-                <thead className="bg-gray-50 table-sticky">
-                  <tr>
-                    <th className="px-2 py-1 text-left">Category</th>
-                    <th className="px-2 py-1 text-right">Planned</th>
-                    <th className="px-2 py-1 text-left">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {lines.map((line) => {
-                    const editing = editingId === line.id;
-                    return (
-                      <tr key={line.id} className="border-t">
-                        <td className="px-2 py-1">
-                          {editing ? (
-                            <select
-                              className="w-full border rounded px-2 py-1 text-sm"
-                              value={editCategoryId}
-                              onChange={(e) => setEditCategoryId(e.target.value ? Number(e.target.value) : "")}
-                            >
-                              <option value="">— select category —</option>
-                              {categories.map((c) => (
-                                <option key={c.id} value={c.id}>{c.name} ({c.kind})</option>
-                              ))}
-                            </select>
-                          ) : (
-                            line.category_name
-                          )}
-                        </td>
-                        <td className="px-2 py-1 text-right">
-                          {editing ? (
-                            <input
-                              type="number"
-                              step="0.01"
-                              className="w-full border rounded px-2 py-1 text-sm"
-                              value={editPlannedAmount}
-                              onChange={(e) => setEditPlannedAmount(e.target.value)}
-                            />
-                          ) : (
-                            formatMoney(line.planned_amount)
-                          )}
-                        </td>
-                        <td className="px-2 py-1 text-left">
-                          {editing ? (
-                            <div className="flex gap-2">
-                              <button
-                                className="btn-success text-xs px-2 py-1 rounded"
-                                onClick={async () => {
-                                  try {
-                                    await updateBudgetLine(line.id, {
-                                      category: editCategoryId as number,
-                                      planned_amount: Number(editPlannedAmount),
-                                    });
-                                    setEditingId(null);
-                                    const [s, blines] = await Promise.all([
-                                      fetchBudgetSummary(selectedId as number),
-                                      fetchBudgetLines(selectedId as number),
-                                    ]);
-                                    setSummary(s);
-                                    setLines(blines);
-                                  } catch (err) {
-                                    console.error(err);
-                                    setError("Failed to update line");
-                                  }
-                                }}
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm">
+                  <thead className="bg-[var(--surface)] sticky top-0">
+                    <tr>
+                      <th className="px-4 py-3 text-left font-semibold">Category</th>
+                      <th className="px-4 py-3 text-right font-semibold">Planned</th>
+                      <th className="px-4 py-3 text-right font-semibold">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[var(--border-subtle)]">
+                  <tbody className="divide-y divide-[var(--border-subtle)]">
+                    {lines.map((line) => {
+                      const editing = editingId === line.id;
+                      return (
+                        <tr key={line.id} className="hover:bg-[var(--surface)] transition-colors">
+                          <td className="px-4 py-3">
+                            {editing ? (
+                              <select
+                                className="w-full border-2 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+                                value={editCategoryId}
+                                onChange={(e) => setEditCategoryId(e.target.value ? Number(e.target.value) : "")}
                               >
-                                Save
-                              </button>
-                              <button
-                                className="btn-secondary text-xs px-2 py-1 rounded"
-                                onClick={() => setEditingId(null)}
-                              >
-                                Cancel
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="flex gap-2">
-                              <button
-                                className="btn-primary text-xs px-2 py-1 rounded"
-                                onClick={() => {
-                                  setEditingId(line.id);
-                                  setEditCategoryId(line.category);
-                                  setEditPlannedAmount(String(line.planned_amount));
-                                }}
-                              >
-                                Edit
-                              </button>
-                              <button
-                                className="btn-danger text-xs px-2 py-1 rounded"
-                                onClick={async () => {
-                                  if (!confirm("Delete this budget line?")) return;
-                                  try {
-                                    await deleteBudgetLine(line.id);
-                                    const [s, blines] = await Promise.all([
-                                      fetchBudgetSummary(selectedId as number),
-                                      fetchBudgetLines(selectedId as number),
-                                    ]);
-                                    setSummary(s);
-                                    setLines(blines);
-                                  } catch (err) {
-                                    console.error(err);
-                                    setError("Failed to delete line");
-                                  }
-                                }}
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                                <option value="">— select category —</option>
+                                {categories.map((c) => (
+                                  <option key={c.id} value={c.id}>{c.name} ({c.kind})</option>
+                                ))}
+                              </select>
+                            ) : (
+                              <span className="font-medium">{line.category_name}</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            {editing ? (
+                              <input
+                                type="number"
+                                step="0.01"
+                                className="w-full border-2 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+                                value={editPlannedAmount}
+                                onChange={(e) => setEditPlannedAmount(e.target.value)}
+                              />
+                            ) : (
+                              <span className="font-semibold">{formatMoney(line.planned_amount)}</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            {editing ? (
+                              <div className="flex gap-2 justify-end">
+                                <button
+                                  className="btn-primary text-xs px-3 py-1.5 rounded"
+                                  onClick={async () => {
+                                    try {
+                                      await updateBudgetLine(line.id, {
+                                        category: editCategoryId as number,
+                                        planned_amount: Number(editPlannedAmount),
+                                      });
+                                      setEditingId(null);
+                                      const [s, blines] = await Promise.all([
+                                        fetchBudgetSummary(selectedId as number),
+                                        fetchBudgetLines(selectedId as number),
+                                      ]);
+                                      setSummary(s);
+                                      setLines(blines);
+                                    } catch (err) {
+                                      console.error(err);
+                                      setError("Failed to update line");
+                                    }
+                                  }}
+                                >
+                                  Save
+                                </button>
+                                <button
+                                  className="btn-secondary text-xs px-3 py-1.5 rounded"
+                                  onClick={() => setEditingId(null)}
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="flex gap-2 justify-end">
+                                <button
+                                  className="btn-edit text-xs px-3 py-1.5 rounded inline-flex items-center gap-1"
+                                  onClick={() => {
+                                    setEditingId(line.id);
+                                    setEditCategoryId(line.category);
+                                    setEditPlannedAmount(String(line.planned_amount));
+                                  }}
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  className="btn-delete text-xs px-3 py-1.5 rounded inline-flex items-center gap-1"
+                                  onClick={async () => {
+                                    if (!confirm("Delete this budget line?")) return;
+                                    try {
+                                      await deleteBudgetLine(line.id);
+                                      const [s, blines] = await Promise.all([
+                                        fetchBudgetSummary(selectedId as number),
+                                        fetchBudgetLines(selectedId as number),
+                                      ]);
+                                      setSummary(s);
+                                      setLines(blines);
+                                    } catch (err) {
+                                      console.error(err);
+                                      setError("Failed to delete line");
+                                    }
+                                  }}
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         </div>
       )}
 
       {!loadingBudgets && budgets.length === 0 && (
-        <div className="text-sm text-gray-500">
-          No budgets yet. Create some via Django admin for now.
+        <div className="card text-center py-16">
+          <div className="text-5xl mb-4">💰</div>
+          <p className="text-lg mb-2 font-medium">No budgets yet</p>
+          <p className="text-sm text-[var(--text-muted)]">Create your first budget above to start tracking</p>
         </div>
-      )}
-
-      {budgets.length > 0 && (
-        <div className="flex flex-col md:flex-row gap-4">
+      )}      {budgets.length > 0 && (
+        <div className="grid lg:grid-cols-3 gap-6">
           {/* Budget list */}
-          <div className="md:w-1/3 bg-white rounded-lg shadow p-3">
-            <div className="text-xs text-gray-500 mb-2">Select a budget</div>
-            <ul className="space-y-1">
-              {budgets.map((b) => {
-                const active = b.id === selectedId;
-                return (
-                  <li key={b.id}>
-                    <button
-                      className={
-                        "w-full text-left px-3 py-2 rounded-md text-sm " +
-                        (active
-                          ? "bg-blue-600 text-white"
-                          : "bg-gray-100 hover:bg-gray-200")
-                      }
-                      onClick={() => setSelectedId(b.id)}
-                    >
-                      <div className="font-medium">{b.name}</div>
-                      <div className="text-[11px] text-gray-500">
-                        {b.start_date} → {b.end_date}
-                      </div>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
+          <div className="lg:col-span-1">
+            <div className="card">
+              <div className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <span>📊</span>
+                Your Budgets
+              </div>
+              <ul className="space-y-2">
+                {budgets.map((b) => {
+                  const active = b.id === selectedId;
+                  return (
+                    <li key={b.id}>
+                      <button
+                        className={
+                          "w-full text-left px-4 py-3 rounded-lg text-sm transition-all " +
+                          (active
+                            ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
+                            : "bg-[var(--surface)] hover:bg-[var(--surface-hover)] hover:shadow-md")
+                        }
+                        onClick={() => setSelectedId(b.id)}
+                      >
+                        <div className="font-semibold">{b.name}</div>
+                        <div className={`text-xs mt-1 ${active ? 'text-white/80' : 'text-[var(--text-muted)]'}`}>
+                          {b.start_date} → {b.end_date}
+                        </div>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
           </div>
 
           {/* Budget summary */}
-          <div className="md:flex-1 bg-white rounded-lg shadow p-3">
-            {loadingSummary && <div>Loading summary…</div>}
+          <div className="lg:col-span-2">
+            <div className="card">
+              {loadingSummary && <div className="skeleton h-64 rounded" />}
 
-            {!loadingSummary && summary && (
-              <>
-                <div className="flex justify-between items-center mb-2">
-                  <div />
-                  <div className="w-1/2 flex items-center justify-end">
-                    <TimeRangeSelector
-                      onChange={(r) => { setCustomStart(r.startDate); setCustomEnd(r.endDate); }}
-                      initialStart={customStart ?? undefined}
-                      initialEnd={customEnd ?? undefined}
-                    />
-                    {customStart && customEnd && (
-                      <button className="ml-2 px-2 py-1 text-xs bg-gray-200 rounded" onClick={() => { setCustomStart(null); setCustomEnd(null); setCustomSummary(null); }}>
-                        Clear
-                      </button>
-                    )}
+              {!loadingSummary && summary && (
+                <>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                    <div>
+                      <div className="text-lg font-semibold">
+                        {(customSummary ?? summary)?.budget.name}
+                      </div>
+                      <div className="text-sm text-[var(--text-muted)]">
+                        {(customSummary ?? summary)?.budget.start_date} → {(customSummary ?? summary)?.budget.end_date}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <TimeRangeSelector
+                        onChange={(r) => { setCustomStart(r.startDate); setCustomEnd(r.endDate); }}
+                        initialStart={customStart ?? undefined}
+                        initialEnd={customEnd ?? undefined}
+                      />
+                      {customStart && customEnd && (
+                        <button 
+                          className="btn-secondary text-xs px-3 py-2" 
+                          onClick={() => { 
+                            setCustomStart(null); 
+                            setCustomEnd(null); 
+                            setCustomSummary(null); 
+                          }}
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
-                <div className="mb-3">
-                  <div className="text-sm font-semibold">
-                    {(customSummary ?? summary)?.budget.name}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    {(customSummary ?? summary)?.budget.start_date} → {(customSummary ?? summary)?.budget.end_date}
-                  </div>
-                </div>
 
-                <div className="overflow-x-auto">
-                  <table className="min-w-full text-xs md:text-sm">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-2 py-1 text-left">Category</th>
-                        <th className="px-2 py-1 text-right">Planned</th>
-                        <th className="px-2 py-1 text-right">Actual</th>
-                        <th className="px-2 py-1 text-right">Difference</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(customSummary ? customSummary.lines : summary.lines).map((line) => (
-                        <tr key={line.category_id} className="border-t">
-                          <td className="px-2 py-1">{line.category_name}</td>
-                          <td className="px-2 py-1 text-right">
-                            {formatMoney(line.planned)}
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full text-sm">
+                      <thead className="bg-[var(--surface)]">
+                        <tr>
+                          <th className="px-4 py-3 text-left font-semibold">Category</th>
+                          <th className="px-4 py-3 text-right font-semibold">Planned</th>
+                          <th className="px-4 py-3 text-right font-semibold">Actual</th>
+                          <th className="px-4 py-3 text-right font-semibold">Difference</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[var(--border-subtle)]">
+                        {(customSummary ? customSummary.lines : summary.lines).map((line) => (
+                          <tr key={line.category_id} className="hover:bg-[var(--surface)] transition-colors">
+                            <td className="px-4 py-3 font-medium">{line.category_name}</td>
+                            <td className="px-4 py-3 text-right font-semibold">
+                              {formatMoney(line.planned)}
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              {formatMoney(line.actual)}
+                            </td>
+                            <td
+                              className={
+                                "px-4 py-3 text-right font-semibold " +
+                                (Number(line.difference) >= 0
+                                  ? "text-green-600 dark:text-green-400"
+                                  : "text-red-600 dark:text-red-400")
+                              }
+                            >
+                              {formatMoney(line.difference)}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                      <tfoot className="bg-[var(--surface)] border-t-2 border-[var(--border-subtle)]">
+                        <tr className="font-bold">
+                          <td className="px-4 py-4">Total</td>
+                          <td className="px-4 py-4 text-right">
+                            {formatMoney((customSummary ? customSummary.totals.planned : summary.totals.planned))}
                           </td>
-                          <td className="px-2 py-1 text-right">
-                            {formatMoney(line.actual)}
+                          <td className="px-4 py-4 text-right">
+                            {formatMoney((customSummary ? customSummary.totals.actual : summary.totals.actual))}
                           </td>
                           <td
                             className={
-                              "px-2 py-1 text-right " +
-                              (Number(line.difference) >= 0
-                                ? "text-green-600"
-                                : "text-red-600")
+                              "px-4 py-4 text-right text-lg " +
+                              (Number((customSummary ? customSummary.totals.difference : summary.totals.difference)) >= 0
+                                ? "text-green-600 dark:text-green-400"
+                                : "text-red-600 dark:text-red-400")
                             }
                           >
-                            {formatMoney(line.difference)}
+                            {formatMoney((customSummary ? customSummary.totals.difference : summary.totals.difference))}
                           </td>
                         </tr>
-                      ))}
-                    </tbody>
-                        <tfoot className="bg-gray-50 border-t">
-                      <tr>
-                        <td className="px-2 py-1 font-semibold">Total</td>
-                        <td className="px-2 py-1 text-right font-semibold">
-                          {formatMoney((customSummary ? customSummary.totals.planned : summary.totals.planned))}
-                        </td>
-                        <td className="px-2 py-1 text-right font-semibold">
-                          {formatMoney((customSummary ? customSummary.totals.actual : summary.totals.actual))}
-                        </td>
-                        <td
-                          className={
-                            "px-2 py-1 text-right font-semibold " +
-                            (Number((customSummary ? customSummary.totals.difference : summary.totals.difference)) >= 0
-                              ? "text-green-600"
-                              : "text-red-600")
-                          }
-                        >
-                          {formatMoney((customSummary ? customSummary.totals.difference : summary.totals.difference))}
-                        </td>
-                      </tr>
-                    </tfoot>
-                  </table>
-                </div>
-              </>
-            )}
+                      </tfoot>
+                    </table>
+                  </div>
+                </>
+              )}
 
-            {!loadingSummary && !summary && (
-              <div className="text-sm text-gray-500">
-                Select a budget from the list.
-              </div>
-            )}
+              {!loadingSummary && !summary && (
+                <div className="text-center py-16 text-[var(--text-muted)]">
+                  <div className="text-5xl mb-4">📋</div>
+                  <p className="text-lg mb-2 font-medium">Select a budget</p>
+                  <p className="text-sm">Choose a budget from the list to view its summary</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

@@ -170,3 +170,18 @@ export interface DebtScheduleRow {
   principal: string;
   ending_balance: string;
 }
+
+export interface Tag {
+  id: number;
+  name: string;
+  color: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TagAnalysis {
+  name: string;
+  total: number;
+  count: number;
+  color: string;
+}

@@ -2,7 +2,7 @@
 import axios from "axios";
 
 export const api = axios.create({
-  baseURL: "http://127.0.0.1:8000", // DRF server
+  baseURL: "", // Use relative URLs - Vite proxy will forward to backend
   withCredentials: true, // send cookies (for session auth)
   xsrfCookieName: "csrftoken", // Django default cookie name
   xsrfHeaderName: "X-CSRFToken", // header Django expects

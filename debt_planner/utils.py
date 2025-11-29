@@ -1,13 +1,16 @@
 # debt_planner/utils.py
 from decimal import Decimal
-from datetime import date
 from dateutil.relativedelta import relativedelta  # pip install python-dateutil
 
+from typing import Optional
 from wealth.models import Liability
 from .models import DebtPlan
 
 
-def generate_debt_schedule(plan: DebtPlan):
+def generate_debt_schedule(
+    plan: DebtPlan,
+    strategy_override: Optional[str] = None,
+):
     """
     Generate a simple monthly payoff schedule for all liabilities of the user
     using either Avalanche (highest rate) or Snowball (lowest balance).
@@ -32,7 +35,9 @@ def generate_debt_schedule(plan: DebtPlan):
         }
 
     # ordering
-    if plan.strategy == DebtPlan.Strategy.AVALANCHE:
+    strategy = strategy_override or plan.strategy
+
+    if strategy == DebtPlan.Strategy.AVALANCHE:
         debts.sort(key=lambda d: d.interest_rate, reverse=True)
     else:  # SNOWBALL
         debts.sort(key=lambda d: d.principal_balance)
@@ -63,7 +68,9 @@ def generate_debt_schedule(plan: DebtPlan):
             if bal <= 0:
                 continue
 
-            monthly_rate = Decimal(d.interest_rate) / Decimal("100") / Decimal("12")
+            monthly_rate = (
+                Decimal(d.interest_rate) / Decimal("100") / Decimal("12")
+            )
             interest = (bal * monthly_rate).quantize(Decimal("0.01"))
 
             payment = d.minimum_payment
@@ -98,7 +105,7 @@ def generate_debt_schedule(plan: DebtPlan):
     months_used = m + 1
 
     return {
-        "strategy": plan.strategy,
+        "strategy": strategy,
         "months": months_used,
         "monthly_amount_available": plan.monthly_amount_available,
         "schedule": schedule,

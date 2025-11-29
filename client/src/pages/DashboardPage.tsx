@@ -142,189 +142,386 @@ export default function DashboardPage() {
   // categorySeries is populated by the backend top categories endpoint
 
   return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold mb-2">Overview</h3>
-
-      <div className="flex items-center justify-between">
-        <div />
-        <div className="w-1/3">
-          {/* TimeRangeSelector is provided globally in the header/layout */}
+    <div className="space-y-6 animate-fade-in">
+      {/* Page Header */}
+      <div className="section-header">
+        <div>
+          <h1 className="section-title">Dashboard</h1>
+          <p className="text-sm text-[var(--text-muted)] mt-1">
+            {range.startDate} → {range.endDate}
+          </p>
         </div>
       </div>
+
       {loading && (
-        <div className="grid gap-4 md:grid-cols-3">
-          <div className="skeleton h-28 rounded" />
-          <div className="skeleton h-28 rounded" />
-          <div className="skeleton h-28 rounded" />
+        <div className="kpi-grid">
+          <div className="skeleton h-32 rounded-xl" />
+          <div className="skeleton h-32 rounded-xl" />
+          <div className="skeleton h-32 rounded-xl" />
+          <div className="skeleton h-32 rounded-xl" />
         </div>
       )}
+
       {error && (
-        <div className="text-red-600 text-sm flex items-center gap-3">
-          <div>{error}</div>
-          <button className="btn-secondary" onClick={() => window.location.reload()}>Retry</button>
+        <div className="card-elevated p-4 bg-red-500/10 border-red-500/20 animate-slide-in">
+          <div className="flex items-center justify-between">
+            <div className="text-red-400">{error}</div>
+            <button className="btn-secondary" onClick={() => window.location.reload()}>
+              Retry
+            </button>
+          </div>
         </div>
       )}
 
       {!loading && (
         <>
-          {/* Sparkline mini-cards */}
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="card spark-card">
-              <div style={{flex:1}}>
-                <div className="text-xs text-gray-500">Income (spark)</div>
-                <div className="spark-value">{formatMoney(totals.income)} KES</div>
+          {/* Enhanced KPI Cards */}
+          <div className="kpi-grid">
+            {/* Income Card */}
+            <div className="kpi-card">
+              <div className="kpi-label">Total Income</div>
+              <div className="kpi-value" style={{ color: 'var(--success-400)' }}>
+                {formatMoney(totals.income)}
               </div>
-              <div style={{width:120, height:40}}>
-                <ResponsiveContainer width="100%" height={36}>
+              <div className="text-xs text-[var(--text-muted)] mb-3">KES</div>
+              <div style={{height:60}}>
+                <ResponsiveContainer width="100%" height={60}>
                   <AreaChart data={aggregatedSeries}>
-                    <Area dataKey="income" stroke="#16A34A" fillOpacity={0.12} fill="#16A34A" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            <div className="card spark-card">
-              <div style={{flex:1}}>
-                <div className="text-xs text-gray-500">Expenses (spark)</div>
-                <div className="spark-value">{formatMoney(totals.expenses)} KES</div>
-              </div>
-              <div style={{width:120, height:40}}>
-                <ResponsiveContainer width="100%" height={36}>
-                  <AreaChart data={aggregatedSeries}>
-                    <Area dataKey="expenses" stroke="#DC2626" fillOpacity={0.12} fill="#DC2626" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            <div className="card spark-card">
-              <div style={{flex:1}}>
-                <div className="text-xs text-gray-500">Net (spark)</div>
-                <div className="spark-value">{formatMoney(totals.savings)} KES</div>
-              </div>
-              <div style={{width:120, height:40}}>
-                <ResponsiveContainer width="100%" height={36}>
-                  <AreaChart data={aggregatedSeries.map(s => ({ date: s.date, net: s.income - s.expenses }))}>
-                    <Area dataKey="net" stroke="#3B82F6" fillOpacity={0.12} fill="#3B82F6" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </div>
-
-          {/* Recent transactions */}
-          <div className="card">
-            <div className="flex items-center justify-between mb-2">
-              <div className="text-xs text-gray-500">Recent transactions</div>
-              <a href="/transactions" className="text-xs">View all</a>
-            </div>
-            <div>
-              {recentTx.length === 0 && <div className="text-sm text-gray-500">No recent transactions</div>}
-              {recentTx.length > 0 && (
-                <ul className="space-y-2">
-                  {recentTx.map((t:any) => (
-                    <li key={t.id} className="flex items-center justify-between">
-                      <div>
-                        <div style={{fontWeight:600}}>{t.description || t.category_name || 'Transaction'}</div>
-                        <div className="text-xs muted">{t.date} • {t.account_name || ''}</div>
-                      </div>
-                      <div style={{fontWeight:700, color: t.amount < 0 ? 'var(--danger-500)' : 'var(--success-500)'}}>{formatMoney(t.amount)} KES</div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </div>
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="card cursor-pointer" onClick={() => navigate(`/transactions?start=${range.startDate}&end=${range.endDate}&kind=EXPENSE`)}>
-              <div className="text-xs text-gray-500 mb-1">Total Income</div>
-              <div className="text-2xl font-bold">
-                {formatMoney(totals.income)} KES
-              </div>
-              <div className="mt-2">
-                {/* income vs expenses area chart */}
-                <ResponsiveContainer width="100%" height={80}>
-                  <AreaChart data={aggregatedSeries} onClick={(e:any) => { const payload = e?.activePayload?.[0]?.payload; if(payload?.date) navigate(`/transactions?start=${payload.date}&end=${payload.date}`) }}>
                     <defs>
-                      <linearGradient id="incomeGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#16A34A" stopOpacity={0.8}/>
-                        <stop offset="95%" stopColor="#34d399" stopOpacity={0}/>
-                      </linearGradient>
-                      <linearGradient id="expenseGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#DC2626" stopOpacity={0.8}/>
-                        <stop offset="95%" stopColor="#f87171" stopOpacity={0}/>
+                      <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="var(--success-400)" stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor="var(--success-400)" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
-                    <XAxis dataKey="date" hide />
-                    <Tooltip formatter={(value: any) => formatMoney(value as string | number)} />
-                    <Area type="monotone" dataKey="income" stroke="#16A34A" fill="url(#incomeGrad)" />
-                    <Area type="monotone" dataKey="expenses" stroke="#DC2626" fill="url(#expenseGrad)" />
+                    <Area
+                      dataKey="income"
+                      stroke="var(--success-400)"
+                      strokeWidth={2}
+                      fill="url(#incomeGradient)"
+                    />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
             </div>
 
-            <div className="card">
-              <div className="text-xs text-gray-500 mb-1">Total Expenses</div>
-              <div className="text-2xl font-bold text-red-600">
-                {formatMoney(totals.expenses)} KES
+            {/* Expenses Card */}
+            <div className="kpi-card">
+              <div className="kpi-label">Total Expenses</div>
+              <div className="kpi-value" style={{ color: 'var(--danger-400)' }}>
+                {formatMoney(totals.expenses)}
+              </div>
+              <div className="text-xs text-[var(--text-muted)] mb-3">KES</div>
+              <div style={{height:60}}>
+                <ResponsiveContainer width="100%" height={60}>
+                  <AreaChart data={aggregatedSeries}>
+                    <defs>
+                      <linearGradient id="expenseGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="var(--danger-400)" stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor="var(--danger-400)" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <Area
+                      dataKey="expenses"
+                      stroke="var(--danger-400)"
+                      strokeWidth={2}
+                      fill="url(#expenseGradient)"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
               </div>
             </div>
 
-            <div className="card">
-              <div className="text-xs text-gray-500 mb-1">Net Savings</div>
-              <div className={"text-2xl font-bold " + (totals.savings >= 0 ? "text-green-600" : "text-red-600")}>
-                {formatMoney(totals.savings)} KES
+            {/* Savings Card */}
+            <div className="kpi-card">
+              <div className="kpi-label">Net Savings</div>
+              <div className="kpi-value" style={{ color: totals.savings >= 0 ? 'var(--primary-400)' : 'var(--danger-400)' }}>
+                {formatMoney(totals.savings)}
+              </div>
+              <div className="text-xs text-[var(--text-muted)] mb-3">KES</div>
+              <div style={{height:60}}>
+                <ResponsiveContainer width="100%" height={60}>
+                  <AreaChart data={aggregatedSeries.map(s => ({ date: s.date, net: s.income - s.expenses }))}>
+                    <defs>
+                      <linearGradient id="netGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="var(--primary-400)" stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor="var(--primary-400)" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <Area
+                      dataKey="net"
+                      stroke="var(--primary-400)"
+                      strokeWidth={2}
+                      fill="url(#netGradient)"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
               </div>
             </div>
+
+            {/* Net Worth Card */}
+            {netWorth && (
+              <div className="kpi-card cursor-pointer" onClick={() => navigate('/wealth')}>
+                <div className="kpi-label">Net Worth</div>
+                <div className="kpi-value" style={{ color: 'var(--accent-400)' }}>
+                  {formatMoney(netWorth.net_worth)}
+                </div>
+                <div className="text-xs text-[var(--text-muted)] mb-3">KES</div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="kpi-change positive">
+                    ↑ Assets: {formatMoney(netWorth.total_assets)}
+                  </span>
+                  <span className="kpi-change negative">
+                    ↓ Debt: {formatMoney(netWorth.total_liabilities)}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="card">
-              <div className="text-xs text-gray-500 mb-1">Net Worth</div>
-              {netWorth ? (
-                <>
-                  <div className="text-2xl font-bold">{formatMoney(netWorth.net_worth)} KES</div>
-                  <div className="text-xs text-gray-500 mt-1">Assets: {formatMoney(netWorth.total_assets)} • Liabilities: {formatMoney(netWorth.total_liabilities)}</div>
-                  <div className="mt-2">
-                    {snapshots.length > 0 && (
-                      <ResponsiveContainer width="100%" height={120}>
-                          <AreaChart data={snapshots.map((s:any) => ({ date: s.date, net: Number(s.net_worth) })).sort((a,b)=>a.date.localeCompare(b.date))}>
-                          <XAxis dataKey="date" />
-                          <Tooltip formatter={(v: any) => formatMoney(v as string | number)} />
-                          <Area type="monotone" dataKey="net" stroke="#3B82F6" fill="#3B82F6" onClick={(e:any) => { const payload = e?.payload; if(payload?.date) navigate(`/wealth?date=${payload.date}`) }} />
-                        </AreaChart>
-                      </ResponsiveContainer>
-                    )}
-                  </div>
-                </>
-              ) : (
-                <div className="text-sm text-gray-500">No net worth data yet. Add assets & liabilities.</div>
+
+          {/* Recent Transactions */}
+          <div className="card-elevated">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold">Recent Transactions</h3>
+              <button
+                onClick={() => navigate('/transactions')}
+                className="text-sm font-semibold text-[var(--primary-400)] hover:text-[var(--primary-500)] transition-colors"
+              >
+                View all →
+              </button>
+            </div>
+            <div>
+              {recentTx.length === 0 && (
+                <div className="text-center py-8 text-[var(--text-muted)]">
+                  No recent transactions
+                </div>
+              )}
+              {recentTx.length > 0 && (
+                <div className="space-y-3">
+                  {recentTx.map((t:any) => (
+                    <div
+                      key={t.id}
+                      className="flex items-center justify-between p-3 rounded-lg bg-[var(--surface-glass)] hover:bg-[var(--surface-hover)] transition-all cursor-pointer"
+                      onClick={() => navigate('/transactions')}
+                    >
+                      <div className="flex-1">
+                        <div className="font-semibold text-[var(--text-main)]">
+                          {t.description || t.category_name || 'Transaction'}
+                        </div>
+                        <div className="text-xs text-[var(--text-muted)] mt-1">
+                          {t.date} • {t.account_name || ''}
+                        </div>
+                      </div>
+                      <div
+                        className="text-lg font-bold"
+                        style={{
+                          color: t.amount < 0 ? 'var(--danger-400)' : 'var(--success-400)'
+                        }}
+                      >
+                        {t.amount < 0 ? '-' : '+'}{formatMoney(Math.abs(t.amount))} KES
+                      </div>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
+          </div>
 
-            <div className="card">
-              <div className="text-xs text-gray-500 mb-1">Top Expense Categories</div>
-              <div style={{ width: "100%", height: 180 }}>
-                {categorySeries.length === 0 && <div className="text-sm text-gray-500">No data</div>}
-                {categorySeries.length > 0 && (
-                  <ResponsiveContainer width="100%" height={140}>
-                    <BarChart layout="vertical" data={categorySeries}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis type="number" hide />
-                      <YAxis dataKey="name" type="category" width={140} />
-                      <Tooltip formatter={(v: any) => formatMoney(v as string | number)} />
-                      <Bar dataKey="amount" fill="#F97316" onClick={(d:any) => { const categoryId = d?.payload?.id; navigate(`/transactions?category=${categoryId}&start=${range.startDate}&end=${range.endDate}`) }} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                )}
+          {/* Charts Grid */}
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Cashflow Chart */}
+            <div className="chart-container">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-bold">Cashflow Trend</h3>
+                  <p className="text-xs text-[var(--text-muted)] mt-1">
+                    Income vs Expenses over time
+                  </p>
+                </div>
               </div>
+              <ResponsiveContainer width="100%" height={280}>
+                <AreaChart
+                  data={aggregatedSeries}
+                  onClick={(e:any) => {
+                    const payload = e?.activePayload?.[0]?.payload;
+                    if(payload?.date) navigate(`/transactions?start=${payload.date}&end=${payload.date}`)
+                  }}
+                >
+                  <defs>
+                    <linearGradient id="chartIncomeGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--success-400)" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="var(--success-400)" stopOpacity={0}/>
+                    </linearGradient>
+                    <linearGradient id="chartExpenseGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--danger-400)" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="var(--danger-400)" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" opacity={0.3} />
+                  <XAxis
+                    dataKey="date"
+                    stroke="var(--text-muted)"
+                    fontSize={11}
+                    tickFormatter={(val) => new Date(val).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  />
+                  <YAxis stroke="var(--text-muted)" fontSize={11} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'var(--surface)',
+                      border: '1px solid var(--glass-border)',
+                      borderRadius: '12px',
+                      padding: '12px',
+                      backdropFilter: 'blur(20px)',
+                    }}
+                    labelStyle={{ color: 'var(--text-main)', fontWeight: 600 }}
+                    itemStyle={{ color: 'var(--text-muted)' }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="income"
+                    stroke="var(--success-400)"
+                    strokeWidth={2}
+                    fill="url(#chartIncomeGrad)"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="expenses"
+                    stroke="var(--danger-400)"
+                    strokeWidth={2}
+                    fill="url(#chartExpenseGrad)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
             </div>
-
-            <div className="card">
-              <div className="text-xs text-gray-500 mb-1">Quick notes (future widgets)</div>
-              <div className="text-sm text-gray-600">Here we’ll later add charts: cashflow over time, top spending categories, etc.</div>
+            <div className="chart-container">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-bold">Top Expense Categories</h3>
+                  <p className="text-xs text-[var(--text-muted)] mt-1">
+                    Breakdown by spending category
+                  </p>
+                </div>
+              </div>
+              {categorySeries.length === 0 && (
+                <div className="text-center py-12 text-[var(--text-muted)]">
+                  No category data available
+                </div>
+              )}
+              {categorySeries.length > 0 && (
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart
+                    layout="vertical"
+                    data={categorySeries}
+                    onClick={(d:any) => {
+                      const categoryId = d?.activePayload?.[0]?.payload?.id;
+                      if (categoryId) navigate(`/transactions?category=${categoryId}&start=${range.startDate}&end=${range.endDate}`)
+                    }}
+                  >
+                    <defs>
+                      <linearGradient id="categoryBarGrad" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stopColor="var(--accent-400)" stopOpacity={0.8}/>
+                        <stop offset="100%" stopColor="var(--accent-500)" stopOpacity={1}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" opacity={0.3} />
+                    <XAxis type="number" stroke="var(--text-muted)" fontSize={11} />
+                    <YAxis
+                      dataKey="name"
+                      type="category"
+                      width={120}
+                      stroke="var(--text-muted)"
+                      fontSize={11}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'var(--surface)',
+                        border: '1px solid var(--glass-border)',
+                        borderRadius: '12px',
+                        padding: '12px',
+                        backdropFilter: 'blur(20px)',
+                      }}
+                      labelStyle={{ color: 'var(--text-main)', fontWeight: 600 }}
+                      itemStyle={{ color: 'var(--text-muted)' }}
+                      formatter={(v: any) => formatMoney(v as string | number)}
+                    />
+                    <Bar
+                      dataKey="amount"
+                      fill="url(#categoryBarGrad)"
+                      radius={[0, 8, 8, 0]}
+                      cursor="pointer"
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
             </div>
           </div>
+
+          {/* Net Worth Trend */}
+          {netWorth && snapshots.length > 0 && (
+            <div className="chart-container">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-bold">Net Worth Over Time</h3>
+                  <p className="text-xs text-[var(--text-muted)] mt-1">
+                    Historical net worth snapshots
+                  </p>
+                </div>
+                <button
+                  onClick={() => navigate('/wealth')}
+                  className="text-sm font-semibold text-[var(--primary-400)] hover:text-[var(--primary-500)] transition-colors"
+                >
+                  Manage →
+                </button>
+              </div>
+              <ResponsiveContainer width="100%" height={280}>
+                <AreaChart
+                  data={snapshots.map((s:any) => ({
+                    date: s.date,
+                    net: Number(s.net_worth),
+                    assets: Number(s.total_assets),
+                    liabilities: Number(s.total_liabilities)
+                  })).sort((a,b)=>a.date.localeCompare(b.date))}
+                  onClick={(e:any) => {
+                    const payload = e?.activePayload?.[0]?.payload;
+                    if (payload?.date) navigate(`/wealth?date=${payload.date}`)
+                  }}
+                >
+                  <defs>
+                    <linearGradient id="netWorthGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--primary-400)" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="var(--primary-400)" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" opacity={0.3} />
+                  <XAxis
+                    dataKey="date"
+                    stroke="var(--text-muted)"
+                    fontSize={11}
+                    tickFormatter={(val) => new Date(val).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  />
+                  <YAxis stroke="var(--text-muted)" fontSize={11} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'var(--surface)',
+                      border: '1px solid var(--glass-border)',
+                      borderRadius: '12px',
+                      padding: '12px',
+                      backdropFilter: 'blur(20px)',
+                    }}
+                    labelStyle={{ color: 'var(--text-main)', fontWeight: 600 }}
+                    itemStyle={{ color: 'var(--text-muted)' }}
+                    formatter={(v: any) => formatMoney(v as string | number)}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="net"
+                    stroke="var(--primary-400)"
+                    strokeWidth={2}
+                    fill="url(#netWorthGrad)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          )}
         </>
       )}
     </div>

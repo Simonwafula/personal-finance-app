@@ -17,10 +17,12 @@ urlpatterns = [
     path("api/auth/login/", login_view),
     path("api/auth/forgot-password/", forgot_password_view),
     path("api/auth/reset-password/", reset_password_view),
+    path("api/auth/profile/", include("profiles.urls")),
     path("api/finance/", include("finance.urls")),
     path("api/budgeting/", include("budgeting.urls")),
     path("api/wealth/", include("wealth.urls")),
     path("api/debt/", include("debt_planner.urls")),
+    path("api/", include("notifications.urls")),
     # Dev: redirect backend root to frontend
     path("", RedirectView.as_view(url="http://localhost:5173/")),
 ]

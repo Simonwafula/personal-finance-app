@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Account, Category, Transaction
+from .models import Account, Category, Transaction, Tag
 from .models import RecurringTransaction
 
 
@@ -103,6 +103,19 @@ class RecurringTransactionSerializer(serializers.ModelSerializer):
             "frequency",
             "end_date",
             "last_executed",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "created_at", "updated_at"]
+
+
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = [
+            "id",
+            "name",
+            "color",
             "created_at",
             "updated_at",
         ]

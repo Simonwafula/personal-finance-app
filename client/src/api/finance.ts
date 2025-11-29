@@ -1,6 +1,6 @@
 // src/api/finance.ts
 import { api } from "./client";
-import type { Account, Transaction, Category } from "./types";
+import type { Account, Transaction, Category, Tag, TagAnalysis } from "./types";
 
 export async function fetchAccounts(): Promise<Account[]> {
   const res = await api.get("/api/finance/accounts/");
@@ -21,6 +21,18 @@ export async function createAccount(
 ): Promise<Account> {
   const res = await api.post("/api/finance/accounts/", payload);
   return res.data;
+}
+
+export async function updateAccount(
+  id: number,
+  payload: Partial<CreateAccountPayload>
+): Promise<Account> {
+  const res = await api.patch(`/api/finance/accounts/${id}/`, payload);
+  return res.data;
+}
+
+export async function deleteAccount(id: number): Promise<void> {
+  await api.delete(`/api/finance/accounts/${id}/`);
 }
 
 export async function fetchCategories(): Promise<Category[]> {
@@ -93,6 +105,18 @@ export async function createTransaction(
   return res.data;
 }
 
+export async function updateTransaction(
+  id: number,
+  payload: Partial<CreateTransactionPayload>
+): Promise<Transaction> {
+  const res = await api.patch(`/api/finance/transactions/${id}/`, payload);
+  return res.data;
+}
+
+export async function deleteTransaction(id: number): Promise<void> {
+  await api.delete(`/api/finance/transactions/${id}/`);
+}
+
 export interface CreateCategoryPayload {
   name: string;
   kind: "INCOME" | "EXPENSE" | "TRANSFER";
@@ -104,6 +128,18 @@ export async function createCategory(
 ): Promise<Category> {
   const res = await api.post("/api/finance/categories/", payload);
   return res.data;
+}
+
+export async function updateCategory(
+  id: number,
+  payload: Partial<CreateCategoryPayload>
+): Promise<Category> {
+  const res = await api.patch(`/api/finance/categories/${id}/`, payload);
+  return res.data;
+}
+
+export async function deleteCategory(id: number): Promise<void> {
+  await api.delete(`/api/finance/categories/${id}/`);
 }
 
 // Recurring transactions
@@ -128,6 +164,25 @@ export async function fetchRecurring(): Promise<any[]> {
   return res.data;
 }
 
+export async function updateRecurring(id: number, payload: Partial<CreateRecurringPayload>) {
+  const res = await api.patch(`/api/finance/recurring/${id}/`, payload);
+  return res.data;
+}
+
+export async function deleteRecurring(id: number): Promise<void> {
+  await api.delete(`/api/finance/recurring/${id}/`);
+}
+
+export async function previewRecurring(id: number): Promise<{ dates: string[] }> {
+  const res = await api.get(`/api/finance/recurring/${id}/preview/`);
+  return res.data;
+}
+
+export async function materializeRecurring(days: number = 30): Promise<{ created: number; days: number }> {
+  const res = await api.post(`/api/finance/recurring/materialize/`, { days });
+  return res.data;
+}
+
 // CSV import/export
 export async function importTransactionsCsv(file: File) {
   const fd = new FormData();
@@ -140,5 +195,41 @@ export async function importTransactionsCsv(file: File) {
 
 export async function exportTransactionsCsv(params: any = {}) {
   const res = await api.get("/api/finance/transactions/export-csv/", { params, responseType: 'blob' });
+  return res.data;
+}
+
+// Tags
+export async function fetchTags(): Promise<Tag[]> {
+  const res = await api.get("/api/finance/tags/");
+  return res.data;
+}
+
+export interface CreateTagPayload {
+  name: string;
+  color?: string;
+}
+
+export async function createTag(payload: CreateTagPayload): Promise<Tag> {
+  const res = await api.post("/api/finance/tags/", payload);
+  return res.data;
+}
+
+export async function updateTag(
+  id: number,
+  payload: Partial<CreateTagPayload>
+): Promise<Tag> {
+  const res = await api.patch(`/api/finance/tags/${id}/`, payload);
+  return res.data;
+}
+
+export async function deleteTag(id: number): Promise<void> {
+  await api.delete(`/api/finance/tags/${id}/`);
+}
+
+export async function fetchTagAnalysis(params: {
+  start?: string;
+  end?: string;
+}): Promise<{ tags: TagAnalysis[] }> {
+  const res = await api.get("/api/finance/tags/analysis/", { params });
   return res.data;
 }

@@ -4,8 +4,11 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "./index.css";
 
 import Layout from "./components/Layout";
+import RequireAuth from "./components/RequireAuth";
+const LandingPage = React.lazy(() => import("./pages/LandingPage"));
 import { TimeRangeProvider } from "./contexts/TimeRangeContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { AuthProvider } from "./contexts/AuthContext";
 import { Suspense } from "react";
 
 const DashboardPage = React.lazy(() => import("./pages/DashboardPage"));
@@ -19,30 +22,48 @@ const LoginPage = React.lazy(() => import("./pages/LoginPage"));
 const ForgotPasswordPage = React.lazy(() => import("./pages/ForgotPasswordPage"));
 const ResetPasswordPage = React.lazy(() => import("./pages/ResetPasswordPage"));
 const OAuthCallback = React.lazy(() => import("./pages/OAuthCallback"));
+const ProfilePage = React.lazy(() => import("./pages/ProfilePage"));
+const SavingsPage = React.lazy(() => import("./pages/SavingsPage"));
+const CategoriesPage = React.lazy(() => import("./pages/CategoriesPage"));
+const SubscriptionsPage = React.lazy(() => import("./pages/SubscriptionsPage"));
+const NotificationsPage = React.lazy(() => import("./pages/NotificationsPage"));
+const NotFoundPage = React.lazy(() => import("./pages/NotFoundPage"));
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <ThemeProvider>
       <BrowserRouter>
+        <AuthProvider>
         <TimeRangeProvider>
           <Suspense fallback={<div className="app-container p-4">Loading…</div>}>
             <Routes>
               <Route path="/" element={<Layout />}>
-                <Route index element={<DashboardPage />} />
-                <Route path="transactions" element={<TransactionsPage />} />
-                <Route path="budgets" element={<BudgetsPage />} />
-                <Route path="wealth" element={<WealthPage />} />
-                <Route path="debt" element={<DebtPlannerPage />} />
-                <Route path="accounts" element={<AccountsPage />} />
-                <Route path="signup" element={<SignupPage />} />
+                {/* Public landing & auth routes */}
+                <Route index element={<LandingPage />} />
                 <Route path="login" element={<LoginPage />} />
+                <Route path="signup" element={<SignupPage />} />
                 <Route path="forgot-password" element={<ForgotPasswordPage />} />
                 <Route path="reset-password" element={<ResetPasswordPage />} />
                 <Route path="oauth-callback" element={<OAuthCallback />} />
+
+                {/* Protected application routes */}
+                <Route path="dashboard" element={<RequireAuth><DashboardPage /></RequireAuth>} />
+                <Route path="transactions" element={<RequireAuth><TransactionsPage /></RequireAuth>} />
+                <Route path="budgets" element={<RequireAuth><BudgetsPage /></RequireAuth>} />
+                <Route path="wealth" element={<RequireAuth><WealthPage /></RequireAuth>} />
+                <Route path="debt" element={<RequireAuth><DebtPlannerPage /></RequireAuth>} />
+                <Route path="accounts" element={<RequireAuth><AccountsPage /></RequireAuth>} />
+                <Route path="profile" element={<RequireAuth><ProfilePage /></RequireAuth>} />
+                <Route path="savings" element={<RequireAuth><SavingsPage /></RequireAuth>} />
+                <Route path="categories" element={<RequireAuth><CategoriesPage /></RequireAuth>} />
+                <Route path="subscriptions" element={<RequireAuth><SubscriptionsPage /></RequireAuth>} />
+                <Route path="notifications" element={<RequireAuth><NotificationsPage /></RequireAuth>} />
+                <Route path="*" element={<NotFoundPage />} />
               </Route>
             </Routes>
           </Suspense>
         </TimeRangeProvider>
+        </AuthProvider>
       </BrowserRouter>
     </ThemeProvider>
   </React.StrictMode>

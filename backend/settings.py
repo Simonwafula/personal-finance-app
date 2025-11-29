@@ -56,6 +56,8 @@ INSTALLED_APPS = [
     'budgeting',
     'wealth',
     'debt_planner',
+    'profiles',
+    'notifications',
 ]
 
 MIDDLEWARE = [
@@ -164,12 +166,14 @@ CORS_ALLOWED_ORIGINS = [
 
 CORS_ALLOW_CREDENTIALS = True
 
-# For local dev with frontend on a different port, allow cross-site cookies
-SESSION_COOKIE_SAMESITE = 'None'
-CSRF_COOKIE_SAMESITE = 'None'
-# In development we keep cookies over HTTP; in production set these to True
+# Development: Since we're using Vite proxy, requests come from same origin
+# Cookies work normally without cross-origin restrictions
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_PATH = '/'
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -226,6 +230,9 @@ if DEBUG:
     # Development: use console email backend (prints to console)
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
     DEFAULT_FROM_EMAIL = 'noreply@finance-dev.local'
+    # Ensure cookies set for the frontend dev host
+    SESSION_COOKIE_DOMAIN = 'localhost'
+    CSRF_COOKIE_DOMAIN = 'localhost'
 else:
     # Production: use SMTP
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

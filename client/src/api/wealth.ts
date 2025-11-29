@@ -17,6 +17,15 @@ export async function createAsset(payload: Partial<Asset>): Promise<Asset> {
   return res.data;
 }
 
+export async function updateAsset(id: number, payload: Partial<Asset>): Promise<Asset> {
+  const res = await api.patch(`/api/wealth/assets/${id}/`, payload);
+  return res.data;
+}
+
+export async function deleteAsset(id: number): Promise<void> {
+  await api.delete(`/api/wealth/assets/${id}/`);
+}
+
 export async function fetchLiabilities(): Promise<Liability[]> {
   const res = await api.get("/api/wealth/liabilities/");
   return res.data;
@@ -25,6 +34,15 @@ export async function fetchLiabilities(): Promise<Liability[]> {
 export async function createLiability(payload: Partial<Liability>): Promise<Liability> {
   const res = await api.post("/api/wealth/liabilities/", payload);
   return res.data;
+}
+
+export async function updateLiability(id: number, payload: Partial<Liability>): Promise<Liability> {
+  const res = await api.patch(`/api/wealth/liabilities/${id}/`, payload);
+  return res.data;
+}
+
+export async function deleteLiability(id: number): Promise<void> {
+  await api.delete(`/api/wealth/liabilities/${id}/`);
 }
 
 export async function createNetWorthSnapshot(): Promise<NetWorthSnapshot> {

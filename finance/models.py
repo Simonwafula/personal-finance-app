@@ -127,3 +127,21 @@ class RecurringTransaction(TimeStampedModel):
 
     def __str__(self):
         return f"Recurring {self.kind} {self.amount} every {self.frequency} starting {self.date}"
+
+
+class Tag(TimeStampedModel):
+    """Tags for organizing and analyzing transactions"""
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="tags"
+    )
+    name = models.CharField(max_length=50)
+    color = models.CharField(
+        max_length=7, default="#3B82F6", help_text="Hex color code"
+    )
+    
+    class Meta:
+        unique_together = ("user", "name")
+        ordering = ["name"]
+    
+    def __str__(self):
+        return self.name
