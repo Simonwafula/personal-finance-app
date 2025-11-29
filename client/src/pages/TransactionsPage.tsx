@@ -219,7 +219,7 @@ export default function TransactionsPage() {
           <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             Transactions
           </h3>
-          <p className="text-sm text-[var(--text-muted)] mt-1">
+          <p className="text-base text-[var(--text-muted)] mt-1 font-medium">
             Track your income and expenses
           </p>
         </div>
@@ -375,7 +375,7 @@ export default function TransactionsPage() {
               <label className="block text-sm font-medium mb-2">Date *</label>
               <input
                 type="date"
-                className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none transition-colors"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 required
@@ -385,7 +385,7 @@ export default function TransactionsPage() {
             <div>
               <label className="block text-sm font-medium mb-2">Account *</label>
               <select
-                className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none transition-colors"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
                 value={accountId}
                 onChange={(e) =>
                   setAccountId(e.target.value ? Number(e.target.value) : "")
@@ -404,7 +404,7 @@ export default function TransactionsPage() {
             <div>
               <label className="block text-sm font-medium mb-2">Type *</label>
               <select
-                className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none transition-colors"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
                 value={kind}
                 onChange={(e) => setKind(e.target.value as TransactionKind)}
               >
@@ -419,7 +419,7 @@ export default function TransactionsPage() {
               <input
                 type="number"
                 step="0.01"
-                className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none transition-colors"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0.00"
@@ -430,7 +430,7 @@ export default function TransactionsPage() {
             <div className="sm:col-span-2">
               <label className="block text-sm font-medium mb-2">Category</label>
               <select
-                className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none transition-colors"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
                 value={categoryId}
                 onChange={(e) =>
                   setCategoryId(e.target.value ? Number(e.target.value) : "")
@@ -448,7 +448,7 @@ export default function TransactionsPage() {
             <div className="sm:col-span-2">
               <label className="block text-sm font-medium mb-2">Description</label>
               <input
-                className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none transition-colors"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="e.g. Lunch at Java, rent, salary..."
@@ -488,7 +488,7 @@ export default function TransactionsPage() {
                 </div>
               )}
               <input
-                className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none transition-colors"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400"
                 value={tags}
                 onChange={(e) => setTags(e.target.value)}
                 placeholder="comma,separated,tags"

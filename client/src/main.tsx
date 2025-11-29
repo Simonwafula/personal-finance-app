@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "./index.css";
 
 import Layout from "./components/Layout";
+import ErrorBoundary from "./components/ErrorBoundary";
 import RequireAuth from "./components/RequireAuth";
 const LandingPage = React.lazy(() => import("./pages/LandingPage"));
 import { TimeRangeProvider } from "./contexts/TimeRangeContext";
@@ -37,7 +38,7 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
         <TimeRangeProvider>
           <Suspense fallback={<div className="app-container p-4">Loading…</div>}>
             <Routes>
-              <Route path="/" element={<Layout />}>
+              <Route path="/" element={<ErrorBoundary><Layout /></ErrorBoundary>}>
                 {/* Public landing & auth routes */}
                 <Route index element={<LandingPage />} />
                 <Route path="login" element={<LoginPage />} />

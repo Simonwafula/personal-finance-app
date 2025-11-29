@@ -5,8 +5,8 @@ import {
   fetchUnreadCount,
   markAllRead,
   markAsRead,
-  NotificationItem,
 } from "../api/notifications";
+import type { NotificationItem } from "../api/notifications";
 import { Link } from "react-router-dom";
 
 export default function NotificationsBell() {

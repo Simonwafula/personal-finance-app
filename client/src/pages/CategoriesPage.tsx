@@ -230,7 +230,7 @@ export default function CategoriesPage() {
         <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
           Categories & Tags
         </h3>
-        <p className="text-sm text-[var(--text-muted)] mt-1">
+        <p className="text-base text-[var(--text-muted)] mt-1 font-medium">
           Organize your transactions with custom categories and tags
         </p>
       </div>
@@ -448,7 +448,7 @@ export default function CategoriesPage() {
                 </label>
                 <input
                   type="text"
-                  className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none transition-colors"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400"
                   value={categoryName}
                   onChange={(e) => setCategoryName(e.target.value)}
                   placeholder="e.g. Food & Dining"
@@ -459,7 +459,7 @@ export default function CategoriesPage() {
               <div>
                 <label className="block text-sm font-medium mb-2">Type *</label>
                 <select
-                  className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none transition-colors"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
                   value={categoryKind}
                   onChange={(e) => setCategoryKind(e.target.value as Category["kind"])}
                 >
@@ -513,7 +513,7 @@ export default function CategoriesPage() {
                 </label>
                 <input
                   type="text"
-                  className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none transition-colors"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400"
                   value={tagName}
                   onChange={(e) => setTagName(e.target.value)}
                   placeholder="e.g. work, personal, vacation"
@@ -526,13 +526,13 @@ export default function CategoriesPage() {
                 <div className="flex gap-3">
                   <input
                     type="color"
-                    className="h-12 w-20 border-2 rounded-lg cursor-pointer"
+                    className="h-14 w-24 border border-gray-300 dark:border-gray-600 rounded-xl cursor-pointer"
                     value={tagColor}
                     onChange={(e) => setTagColor(e.target.value)}
                   />
                   <input
                     type="text"
-                    className="flex-1 border-2 rounded-lg px-3 py-2.5 text-sm font-mono focus:border-blue-500 focus:outline-none transition-colors"
+                    className="flex-1 border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base font-mono bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
                     value={tagColor}
                     onChange={(e) => setTagColor(e.target.value)}
                     placeholder="#3B82F6"

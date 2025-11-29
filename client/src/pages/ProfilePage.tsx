@@ -78,7 +78,7 @@ export default function ProfilePage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Your Profile</h2>
-          <p className="text-sm text-[var(--text-muted)] mt-1">Manage your personal info and account preferences</p>
+          <p className="text-base text-[var(--text-muted)] mt-1 font-medium">Manage your personal info and account preferences</p>
         </div>
       </div>
 
@@ -107,7 +107,7 @@ export default function ProfilePage() {
                 type="url"
                 value={profile.avatar_url}
                 onChange={(e) => handleChange('avatar_url', e.target.value)}
-                className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400"
                 placeholder="https://example.com/avatar.jpg"
               />
             </div>
@@ -124,7 +124,7 @@ export default function ProfilePage() {
                     type="text"
                     value={profile.username || ''}
                     disabled
-                    className="w-full border-2 rounded-lg px-3 py-2.5 bg-gray-50 text-sm"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 bg-gray-50 dark:bg-gray-700 text-base cursor-not-allowed opacity-70"
                   />
                   <p className="text-xs text-[var(--text-muted)] mt-1">Username cannot be changed</p>
                 </div>
@@ -135,7 +135,7 @@ export default function ProfilePage() {
                     type="email"
                     value={profile.email || ''}
                     disabled
-                    className="w-full border-2 rounded-lg px-3 py-2.5 bg-gray-50 text-sm"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 bg-gray-50 dark:bg-gray-700 text-base cursor-not-allowed opacity-70"
                   />
                   <p className="text-xs text-[var(--text-muted)] mt-1">Email cannot be changed</p>
                 </div>
@@ -148,7 +148,7 @@ export default function ProfilePage() {
                     type="tel"
                     value={profile.phone}
                     onChange={(e) => handleChange('phone', e.target.value)}
-                    className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400"
                     placeholder="+1234567890"
                   />
                 </div>
@@ -158,7 +158,7 @@ export default function ProfilePage() {
                     type="date"
                     value={profile.date_of_birth || ''}
                     onChange={(e) => handleChange('date_of_birth', e.target.value)}
-                    className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
                   />
                 </div>
               </div>
@@ -170,7 +170,7 @@ export default function ProfilePage() {
                     type="text"
                     value={profile.country}
                     onChange={(e) => handleChange('country', e.target.value)}
-                    className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400"
                     placeholder="Kenya"
                   />
                 </div>
@@ -180,7 +180,7 @@ export default function ProfilePage() {
                     type="text"
                     value={profile.city}
                     onChange={(e) => handleChange('city', e.target.value)}
-                    className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400"
                     placeholder="Nairobi"
                   />
                 </div>
@@ -191,7 +191,7 @@ export default function ProfilePage() {
                 <textarea
                   value={profile.bio}
                   onChange={(e) => handleChange('bio', e.target.value)}
-                  className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400"
                   rows={4}
                   placeholder="Tell us about yourself..."
                 />

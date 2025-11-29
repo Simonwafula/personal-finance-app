@@ -320,7 +320,7 @@ export default function Layout() {
               </button>
             </div>
             <nav className="flex flex-col gap-2">
-              <NavLink to="/" onClick={() => setOpen(false)} className={({isActive}) => isActive ? 'active' : ''}>
+              <NavLink to="/dashboard" onClick={() => setOpen(false)} className={({isActive}) => isActive ? 'active' : ''}>
                 <HiHome className="nav-icon" />
                 <span>Dashboard</span>
               </NavLink>

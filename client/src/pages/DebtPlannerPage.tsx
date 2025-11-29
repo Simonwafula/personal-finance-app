@@ -149,15 +149,22 @@ export default function DebtPlannerPage() {
   }, [selectedPlan?.strategy, selectedId, schedule.length]);
 
   return (
-    <div className="space-y-6 pb-20 max-w-7xl mx-auto">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="space-y-6 pb-20 max-w-7xl mx-auto animate-fade-in">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Debt Planner
-          </h3>
-          <p className="text-sm text-[var(--text-muted)] mt-1">
-            Build a payoff plan using Avalanche or Snowball strategies
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+            💳 Debt Planner
+          </h1>
+          <p className="text-base text-[var(--text-muted)] mt-2 font-medium">
+            Build payoff strategies using Avalanche or Snowball methods
           </p>
+        </div>
+        {plans.length > 0 && (
+          <div className="inline-flex px-4 py-2 rounded-full bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 text-sm font-semibold">
+            {plans.length} {plans.length === 1 ? 'Plan' : 'Plans'}
+          </div>
+        )}
+      </div>
         </div>
       </div>
 
@@ -188,18 +195,18 @@ export default function DebtPlannerPage() {
           <div className="grid sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium mb-2">Strategy</label>
-              <select value={strategy} onChange={(e) => setStrategy(e.target.value as any)} className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none">
+              <select value={strategy} onChange={(e) => setStrategy(e.target.value as any)} className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200">
                 <option value="AVALANCHE">Avalanche</option>
                 <option value="SNOWBALL">Snowball</option>
               </select>
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Monthly Amount *</label>
-              <input type="number" step="0.01" className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none" value={monthly} onChange={(e) => setMonthly(e.target.value)} placeholder="0.00" />
+              <input type="number" step="0.01" className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400" value={monthly} onChange={(e) => setMonthly(e.target.value)} placeholder="0.00" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Start Date</label>
-              <input type="date" className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+              <input type="date" className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
             </div>
           </div>
           <div className="mt-6 pt-4 border-t border-[var(--border-subtle)]"><button className="btn-primary" disabled={creating}>{creating ? 'Creating…' : 'Create Plan'}</button></div>
@@ -308,18 +315,18 @@ export default function DebtPlannerPage() {
               <div className="grid gap-3">
                 <div>
                   <label className="block text-sm font-medium mb-2">Strategy</label>
-                  <select value={editStrategy} onChange={(e) => setEditStrategy(e.target.value as any)} className="w-full border-2 rounded-lg px-3 py-2.5 text-sm">
+                  <select value={editStrategy} onChange={(e) => setEditStrategy(e.target.value as any)} className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200">
                     <option value="AVALANCHE">Avalanche</option>
                     <option value="SNOWBALL">Snowball</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">Monthly Amount</label>
-                  <input type="number" step="0.01" className="w-full border-2 rounded-lg px-3 py-2.5 text-sm" value={editMonthly} onChange={(e) => setEditMonthly(e.target.value)} />
+                  <input type="number" step="0.01" className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400" value={editMonthly} onChange={(e) => setEditMonthly(e.target.value)} />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">Start Date</label>
-                  <input type="date" className="w-full border-2 rounded-lg px-3 py-2.5 text-sm" value={editStartDate} onChange={(e) => setEditStartDate(e.target.value)} />
+                  <input type="date" className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200" value={editStartDate} onChange={(e) => setEditStartDate(e.target.value)} />
                 </div>
                 <div className="flex justify-end">
                   <button
@@ -404,7 +411,7 @@ export default function DebtPlannerPage() {
                 <div>
                   <label className="block text-sm font-medium mb-2">Liability Filter</label>
                   <select
-                    className="w-full border-2 rounded-lg px-3 py-2.5 text-sm"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
                     value={liabilityFilter ?? ''}
                     onChange={(e) => setLiabilityFilter(e.target.value ? Number(e.target.value) : null)}
                   >
@@ -430,7 +437,7 @@ export default function DebtPlannerPage() {
                 </div>
               </div>
             )}
-          {/* Payoff Timeline Chart */
+          {/* Payoff Timeline Chart */}
           {timeline.length > 0 && (
             <div className="mb-6">
               <div className="text-sm font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-2">Payoff Timeline</div>

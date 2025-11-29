@@ -176,16 +176,21 @@ export default function BudgetsPage() {
   }, [customStart, customEnd, selectedId, lines, categories]);
 
   return (
-    <div className="space-y-6 pb-20 max-w-7xl mx-auto">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="space-y-6 pb-20 max-w-7xl mx-auto animate-fade-in">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Budgets
-          </h3>
-          <p className="text-sm text-[var(--text-muted)] mt-1">
-            Plan and track your spending against budget goals
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+            📊 Budgets
+          </h1>
+          <p className="text-base text-[var(--text-muted)] mt-2 font-medium">
+            Plan and track your spending with custom budgets
           </p>
         </div>
+        {budgets.length > 0 && (
+          <div className="inline-flex px-4 py-2 rounded-full bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 text-sm font-semibold">
+            {budgets.length} {budgets.length === 1 ? 'Budget' : 'Budgets'}
+          </div>
+        )}
       </div>
 
       {error && (
@@ -196,7 +201,6 @@ export default function BudgetsPage() {
 
       {loadingBudgets && <div className="skeleton h-32 rounded" />}
 
-      {/* Create budget form */
       {activeSummary && overThreshold.length > 0 && (
         <div className="card border-yellow-300 bg-yellow-50 text-yellow-900 animate-slide-in">
           <div className="flex items-start gap-3">
@@ -221,12 +225,14 @@ export default function BudgetsPage() {
         </div>
       )}
 
-      {/* Create budget form */}
-      <div className="card animate-slide-in">
-        <div className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <span>📝</span>
-          Create Budget
-        </div>
+      <div className="grid lg:grid-cols-5 gap-6">
+        {/* Create budget form - left column */}
+        <div className="lg:col-span-2">
+          <div className="card animate-slide-in sticky top-6 bg-gradient-to-br from-blue-50/50 to-purple-50/50 dark:from-blue-900/10 dark:to-purple-900/10 border-2">
+            <div className="text-lg font-semibold mb-6 flex items-center gap-2">
+              <span>📝</span>
+              Create Budget
+            </div>
         <form
           onSubmit={async (e) => {
             e.preventDefault();
@@ -261,7 +267,7 @@ export default function BudgetsPage() {
             <div className="sm:col-span-2">
               <label className="block text-sm font-medium mb-2">Budget Name *</label>
               <input
-                className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none transition-colors"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400"
                 value={budgetName}
                 onChange={(e) => setBudgetName(e.target.value)}
                 placeholder="e.g., January 2025, Q1 Budget"
@@ -273,7 +279,7 @@ export default function BudgetsPage() {
               <select
                 value={periodType}
                 onChange={(e) => setPeriodType(e.target.value as any)}
-                className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none transition-colors"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
               >
                 <option value="MONTHLY">Monthly</option>
                 <option value="ANNUAL">Annual</option>
@@ -288,7 +294,7 @@ export default function BudgetsPage() {
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none transition-colors"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
               />
             </div>
             <div>
@@ -297,14 +303,14 @@ export default function BudgetsPage() {
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none transition-colors"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
               />
             </div>
           </div>
           <div className="mt-4">
             <label className="block text-sm font-medium mb-2">Notes (optional)</label>
             <textarea
-              className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none transition-colors"
+              className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Add any additional notes..."
@@ -361,7 +367,7 @@ export default function BudgetsPage() {
                   onChange={(e) =>
                     setCategoryId(e.target.value ? Number(e.target.value) : "")
                   }
-                  className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none transition-colors"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
                   required
                 >
                   <option value="">— select category —</option>
@@ -377,7 +383,7 @@ export default function BudgetsPage() {
                   step="0.01"
                   value={plannedAmount}
                   onChange={(e) => setPlannedAmount(e.target.value)}
-                  className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none transition-colors"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400"
                   required
                 />
               </div>
@@ -414,7 +420,6 @@ export default function BudgetsPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[var(--border-subtle)]">
-                  <tbody className="divide-y divide-[var(--border-subtle)]">
                     {lines.map((line) => {
                       const editing = editingId === line.id;
                       return (
@@ -422,7 +427,7 @@ export default function BudgetsPage() {
                           <td className="px-4 py-3">
                             {editing ? (
                               <select
-                                className="w-full border-2 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+                                className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
                                 value={editCategoryId}
                                 onChange={(e) => setEditCategoryId(e.target.value ? Number(e.target.value) : "")}
                               >
@@ -440,7 +445,7 @@ export default function BudgetsPage() {
                               <input
                                 type="number"
                                 step="0.01"
-                                className="w-full border-2 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+                                className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
                                 value={editPlannedAmount}
                                 onChange={(e) => setEditPlannedAmount(e.target.value)}
                               />
@@ -533,7 +538,9 @@ export default function BudgetsPage() {
           <p className="text-lg mb-2 font-medium">No budgets yet</p>
           <p className="text-sm text-[var(--text-muted)]">Create your first budget above to start tracking</p>
         </div>
-      )}      {budgets.length > 0 && (
+      )}
+      
+      {budgets.length > 0 && (
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Budget list */}
           <div className="lg:col-span-1">
@@ -675,6 +682,8 @@ export default function BudgetsPage() {
           </div>
         </div>
       )}
+      </div>
+    </div>
     </div>
   );
 }

@@ -147,7 +147,7 @@ export default function DashboardPage() {
       <div className="section-header">
         <div>
           <h1 className="section-title">Dashboard</h1>
-          <p className="text-sm text-[var(--text-muted)] mt-1">
+          <p className="text-base text-[var(--text-muted)] mt-1 font-medium">
             {range.startDate} → {range.endDate}
           </p>
         </div>

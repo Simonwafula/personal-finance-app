@@ -23,46 +23,98 @@ export default function SavingsPage() {
   const [goals] = useState<SavingsGoal[]>(mockGoals);
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      <div className="section-header">
+    <div className="space-y-6 pb-20 max-w-7xl mx-auto animate-fade-in">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="section-title">Savings Goals</h1>
-          <p className="text-sm text-[var(--text-muted)] mt-1">Track progress toward targeted financial objectives. Integrates Accounts & Net Worth.</p>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+            🎯 Savings Goals
+          </h1>
+          <p className="text-base text-[var(--text-muted)] mt-2 font-medium">
+            Track progress toward your financial objectives and dreams
+          </p>
         </div>
+        <button className="btn-primary" disabled>
+          ➕ New Goal (Coming Soon)
+        </button>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {goals.map(g => {
           const pct = Math.min(100, Math.round((g.current_amount / g.target_amount) * 100));
           return (
-            <div key={g.id} className="card-elevated p-5 flex flex-col gap-3">
-              <div className="flex items-center justify-between">
-                <h3 className="font-bold text-lg">{g.name}</h3>
-                <span className="text-xs inline-flex px-2 py-1 rounded-full bg-[var(--surface-glass)] border border-[var(--glass-border)]">{pct}%</span>
+            <div key={g.id} className="card hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+              <div className="p-6 space-y-4">
+                <div className="flex items-start justify-between">
+                  <h3 className="font-bold text-xl text-[var(--text-main)]">{g.name}</h3>
+                  <span className="inline-flex px-3 py-1.5 text-sm font-bold rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg">
+                    {pct}%
+                  </span>
+                </div>
+                <div className="text-xs text-[var(--text-muted)] flex items-center gap-1">
+                  <span>🏦</span>
+                  <span>Linked: {g.account_hint || '—'}</span>
+                </div>
+                <div className="space-y-2">
+                  <div className="h-3 w-full rounded-full bg-[var(--surface)] overflow-hidden shadow-inner">
+                    <div 
+                      className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 transition-all duration-500 ease-out rounded-full" 
+                      style={{ width: pct + '%' }}
+                    />
+                  </div>
+                  <div className="flex justify-between items-baseline">
+                    <div>
+                      <div className="text-xs text-[var(--text-muted)] mb-0.5">Current</div>
+                      <div className="text-lg font-bold text-green-600 dark:text-green-400">KES {formatMoney(g.current_amount)}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-xs text-[var(--text-muted)] mb-0.5">Target</div>
+                      <div className="text-sm font-semibold text-[var(--text-muted)]">KES {formatMoney(g.target_amount)}</div>
+                    </div>
+                  </div>
+                </div>
+                <button className="btn-secondary w-full mt-4" disabled>
+                  📈 View Details
+                </button>
               </div>
-              <div className="text-xs text-[var(--text-muted)]">Linked: {g.account_hint || '—'}</div>
-              <div className="h-2 w-full rounded-full bg-[var(--surface-glass)] overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-[var(--primary-400)] to-[var(--accent-500)]" style={{ width: pct + '%' }} />
-              </div>
-              <div className="flex justify-between text-xs mt-1">
-                <span className="font-semibold">KES {formatMoney(g.current_amount)}</span>
-                <span className="text-[var(--text-muted)]">Target: {formatMoney(g.target_amount)}</span>
-              </div>
-              <button className="btn-secondary w-full mt-2 text-sm" disabled>View Details (Coming Soon)</button>
             </div>
           );
         })}
       </div>
 
-      <div className="glass p-6 rounded-xl">
-        <h2 className="text-lg font-bold mb-3">Planned Backend Model</h2>
-        <ul className="list-disc pl-5 space-y-1 text-sm text-[var(--text-muted)]">
-          <li><code>SavingsGoal</code>: name, target_amount, optional target_date.</li>
-          <li><code>GoalContribution</code>: FK to goal, account reference, amount, date.</li>
-          <li>Automatic aggregation from linked accounts + manual contributions.</li>
-          <li>Net Worth integration: mark goal as portion of liquid assets.</li>
-          <li>Progress calculations + forecast (time to target).</li>
-        </ul>
+      <div className="card bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-2 border-blue-200 dark:border-blue-800">
+        <div className="p-6">
+          <div className="flex items-start gap-3 mb-4">
+            <span className="text-2xl">🚧</span>
+            <div>
+              <h2 className="text-xl font-bold mb-2 text-[var(--text-main)]">Feature In Development</h2>
+              <p className="text-sm text-[var(--text-muted)] mb-3">
+                The Savings Goals module is currently using mock data. The full backend implementation is planned with the following features:
+              </p>
+            </div>
+          </div>
+          <ul className="space-y-2 text-sm text-[var(--text-muted)] ml-11">
+            <li className="flex items-start gap-2">
+              <span className="text-blue-600 dark:text-blue-400">•</span>
+              <span><code className="px-1.5 py-0.5 rounded bg-[var(--surface)] text-xs font-mono">SavingsGoal</code> model: name, target_amount, target_date, linked accounts</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-blue-600 dark:text-blue-400">•</span>
+              <span><code className="px-1.5 py-0.5 rounded bg-[var(--surface)] text-xs font-mono">GoalContribution</code> tracking: automatic and manual contributions</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-blue-600 dark:text-blue-400">•</span>
+              <span>Real-time progress calculations and time-to-target forecasting</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-blue-600 dark:text-blue-400">•</span>
+              <span>Integration with Accounts and Net Worth modules</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-blue-600 dark:text-blue-400">•</span>
+              <span>Visual progress tracking and milestone celebrations</span>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   );

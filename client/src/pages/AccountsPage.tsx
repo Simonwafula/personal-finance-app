@@ -118,24 +118,31 @@ export default function AccountsPage() {
   }
 
   return (
-    <div className="space-y-6 pb-20 max-w-7xl mx-auto">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="space-y-6 pb-20 animate-fade-in">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Accounts
-          </h3>
-          <p className="text-sm text-[var(--text-muted)] mt-1">
-            Manage your bank accounts, mobile money, and other financial accounts
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+            💼 Accounts
+          </h1>
+          <p className="text-base text-[var(--text-muted)] mt-2 font-medium">
+            Manage your bank accounts, mobile money, and financial institutions
           </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="inline-flex px-4 py-2 rounded-full bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 text-sm font-semibold">
+            {accounts.length} {accounts.length === 1 ? 'Account' : 'Accounts'}
+          </span>
         </div>
       </div>
 
-      {/* Create/Edit account form */}
-      <form onSubmit={handleSubmit} className="card animate-slide-in">
-        <div className="flex items-center justify-between mb-6">
-          <div className="text-lg font-semibold">
-            {editingId ? "✏️ Edit Account" : "➕ Add New Account"}
-          </div>
+      <div className="grid lg:grid-cols-5 gap-6">
+        {/* Create/Edit account form - takes 2 columns */}
+        <div className="lg:col-span-2">
+          <form onSubmit={handleSubmit} className="card animate-slide-in sticky top-6 bg-gradient-to-br from-blue-50/50 to-purple-50/50 dark:from-blue-900/10 dark:to-purple-900/10 border-2">
+            <div className="flex items-center justify-between mb-6">
+              <div className="text-lg font-semibold flex items-center gap-2">
+                {editingId ? "✏️ Edit Account" : "➕ Add New Account"}
+              </div>
           {editingId && (
             <button
               type="button"
@@ -151,7 +158,7 @@ export default function AccountsPage() {
           <div>
             <label className="block text-sm font-medium mb-2">Account Name *</label>
             <input
-              className="w-full border-2 rounded-lg px-3 py-2 text-sm"
+              className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g., M-Pesa, KCB Savings"
@@ -162,7 +169,7 @@ export default function AccountsPage() {
           <div>
             <label className="block text-sm font-medium mb-2">Account Type *</label>
             <select
-              className="w-full border-2 rounded-lg px-3 py-2 text-sm"
+              className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
               value={accountType}
               onChange={(e) => setAccountType(e.target.value)}
             >
@@ -177,7 +184,7 @@ export default function AccountsPage() {
           <div>
             <label className="block text-sm font-medium mb-2">Currency</label>
             <input
-              className="w-full border-2 rounded-lg px-3 py-2 text-sm"
+              className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400"
               value={currency}
               onChange={(e) => setCurrency(e.target.value)}
               placeholder="KES"
@@ -189,7 +196,7 @@ export default function AccountsPage() {
             <input
               type="number"
               step="0.01"
-              className="w-full border-2 rounded-lg px-3 py-2 text-sm"
+              className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400"
               value={openingBalance}
               onChange={(e) => setOpeningBalance(e.target.value)}
             />
@@ -200,7 +207,7 @@ export default function AccountsPage() {
               Institution (Optional)
             </label>
             <input
-              className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none transition-colors"
+              className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400"
               value={institution}
               onChange={(e) => setInstitution(e.target.value)}
               placeholder="e.g., KCB Bank, Safaricom"
@@ -214,7 +221,6 @@ export default function AccountsPage() {
           </div>
         )}
 
-        <div className="flex gap-3 mt-6 pt-4 border-t border-[var(--border-subtle)]">
         <div className="flex gap-3 mt-6 pt-4 border-t border-[var(--border-subtle)]">
           <button type="submit" disabled={saving} className="btn-primary flex-1 sm:flex-none disabled:opacity-60">
             {saving ? "Saving…" : editingId ? "Update Account" : "Create Account"}

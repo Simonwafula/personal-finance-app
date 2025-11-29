@@ -147,36 +147,42 @@ export default function SubscriptionsPage() {
   }, [items, getOccurrencesForNextDays]);
 
   return (
-    <div className="space-y-6 pb-20 max-w-7xl mx-auto">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="space-y-6 pb-20 max-w-7xl mx-auto animate-fade-in">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Subscriptions
-          </h3>
-          <p className="text-sm text-[var(--text-muted)] mt-1">
-            Manage recurring transactions like bills, rent, and memberships
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+            🔄 Recurring Transactions
+          </h1>
+          <p className="text-base text-[var(--text-muted)] mt-2 font-medium">
+            Manage subscriptions, bills, and recurring income
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          {items.length > 0 && (
+            <div className="inline-flex px-4 py-2 rounded-full bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 text-sm font-semibold">
+              {items.length} {items.length === 1 ? 'Item' : 'Items'}
+            </div>
+          )}
           <button
-            className="px-3 py-2 rounded-lg bg-[var(--surface)] hover:bg-[var(--surface-hover)]"
+            className="btn-secondary"
+            onClick={() => loadAll()}
+          >
+            🔄 Refresh
+          </button>
+          <button
+            className="btn-primary"
             onClick={async () => {
               try {
                 const res = await materializeRecurring(30);
-                alert(`Created ${res.created} upcoming transactions`);
+                alert(`✅ Created ${res.created} upcoming transactions`);
+                await loadAll();
               } catch (e) {
                 console.error(e);
                 setError("Failed to materialize recurring");
               }
             }}
           >
-            Materialize 30 days
-          </button>
-          <button
-            className="btn-primary"
-            onClick={() => loadAll()}
-          >
-            Refresh
+            ⚡ Materialize 30 Days
           </button>
         </div>
       </div>
@@ -269,12 +275,14 @@ export default function SubscriptionsPage() {
         <div className="card bg-red-50 border-red-200 text-red-700 text-sm p-4 animate-slide-in">{error}</div>
       )}
 
-      {/* Create form */}
-      <div className="card">
-        <div className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <span>➕</span>
-          Add Recurring
-        </div>
+      <div className="grid lg:grid-cols-5 gap-6">
+        {/* Create form - left column */}
+        <div className="lg:col-span-2">
+          <div className="card sticky top-6 bg-gradient-to-br from-blue-50/50 to-purple-50/50 dark:from-blue-900/10 dark:to-purple-900/10 border-2">
+            <div className="text-lg font-semibold mb-6 flex items-center gap-2">
+              <span>➕</span>
+              Add Recurring Transaction
+            </div>
         <form
           onSubmit={async (e) => {
             e.preventDefault();
@@ -314,7 +322,7 @@ export default function SubscriptionsPage() {
             <div>
               <label className="block text-sm font-medium mb-2">Account *</label>
               <select
-                className="w-full border-2 rounded-lg px-3 py-2.5 text-sm"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
                 value={account}
                 onChange={(e) => setAccount(e.target.value ? Number(e.target.value) : "")}
                 required
@@ -327,15 +335,15 @@ export default function SubscriptionsPage() {
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Next Date *</label>
-              <input type="date" className="w-full border-2 rounded-lg px-3 py-2.5 text-sm" value={date} onChange={(e) => setDate(e.target.value)} />
+              <input type="date" className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200" value={date} onChange={(e) => setDate(e.target.value)} />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Amount *</label>
-              <input type="number" step="0.01" className="w-full border-2 rounded-lg px-3 py-2.5 text-sm" value={amount} onChange={(e) => setAmount(e.target.value)} />
+              <input type="number" step="0.01" className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400" value={amount} onChange={(e) => setAmount(e.target.value)} />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Kind</label>
-              <select className="w-full border-2 rounded-lg px-3 py-2.5 text-sm" value={kind} onChange={(e) => setKind(e.target.value as "INCOME"|"EXPENSE"|"TRANSFER")}>
+              <select className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200" value={kind} onChange={(e) => setKind(e.target.value as "INCOME"|"EXPENSE"|"TRANSFER")}>
                 <option value="EXPENSE">Expense</option>
                 <option value="INCOME">Income</option>
                 <option value="TRANSFER">Transfer</option>
@@ -343,7 +351,7 @@ export default function SubscriptionsPage() {
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Category</label>
-              <select className="w-full border-2 rounded-lg px-3 py-2.5 text-sm" value={category} onChange={(e) => setCategory(e.target.value ? Number(e.target.value) : "") }>
+              <select className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200" value={category} onChange={(e) => setCategory(e.target.value ? Number(e.target.value) : "") }>
                 <option value="">Uncategorized</option>
                 {expenseCategories.map(c => (
                   <option key={c.id} value={c.id}>{c.name}</option>
@@ -352,7 +360,7 @@ export default function SubscriptionsPage() {
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">Frequency</label>
-              <select className="w-full border-2 rounded-lg px-3 py-2.5 text-sm" value={frequency} onChange={(e) => setFrequency(e.target.value as "DAILY"|"WEEKLY"|"MONTHLY"|"YEARLY")}>
+              <select className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200" value={frequency} onChange={(e) => setFrequency(e.target.value as "DAILY"|"WEEKLY"|"MONTHLY"|"YEARLY")}>
                 <option value="DAILY">Daily</option>
                 <option value="WEEKLY">Weekly</option>
                 <option value="MONTHLY">Monthly</option>
@@ -361,11 +369,11 @@ export default function SubscriptionsPage() {
             </div>
             <div className="lg:col-span-2">
               <label className="block text-sm font-medium mb-2">Description</label>
-              <input className="w-full border-2 rounded-lg px-3 py-2.5 text-sm" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="e.g., Netflix, Rent, Gym" />
+              <input className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="e.g., Netflix, Rent, Gym" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">End Date</label>
-              <input type="date" className="w-full border-2 rounded-lg px-3 py-2.5 text-sm" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+              <input type="date" className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
             </div>
           </div>
           <div className="mt-6 pt-4 border-t border-[var(--border-subtle)]">
@@ -373,8 +381,10 @@ export default function SubscriptionsPage() {
           </div>
         </form>
       </div>
+    </div>
 
-      {/* List */}
+    {/* List - right column */}
+    <div className="lg:col-span-3">
       <div className="card">
         <div className="text-lg font-semibold mb-4 flex items-center gap-2">
           <span>📅</span>
@@ -463,6 +473,8 @@ export default function SubscriptionsPage() {
           </div>
         )}
       </div>
+    </div>
+    </div>
     </div>
   );
 }

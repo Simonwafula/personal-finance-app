@@ -88,7 +88,7 @@ export default function WealthPage() {
           <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             Wealth Tracker
           </h3>
-          <p className="text-sm text-[var(--text-muted)] mt-1">
+          <p className="text-base text-[var(--text-muted)] mt-1 font-medium">
             Monitor your assets, liabilities, and net worth over time
           </p>
         </div>
@@ -210,7 +210,7 @@ export default function WealthPage() {
                     <div>
                       <label className="block text-sm font-medium mb-2">Asset Name *</label>
                       <input 
-                        className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none transition-colors" 
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400" 
                         value={assetName} 
                         onChange={(e) => setAssetName(e.target.value)} 
                         placeholder="e.g., House, Car, Savings"
@@ -222,7 +222,7 @@ export default function WealthPage() {
                       <input 
                         type="number" 
                         step="0.01" 
-                        className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none transition-colors" 
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400" 
                         value={assetValue} 
                         onChange={(e) => setAssetValue(e.target.value)}
                         placeholder="0.00"
@@ -267,11 +267,11 @@ export default function WealthPage() {
               </div>
             </div>
 
-              <div className="card animate-slide-in">
-                <div className="text-lg font-semibold mb-4 flex items-center gap-2">
-                  <span>➕</span>
-                  Add Liability
-                </div>
+          <div className="card animate-slide-in bg-gradient-to-br from-red-50/50 to-orange-50/50 dark:from-red-900/10 dark:to-orange-900/10 border-2">
+            <div className="text-lg font-semibold mb-6 flex items-center gap-2">
+              <span>➕</span>
+              Add Liability
+            </div>
               <form
                 onSubmit={async (e) => {
                   e.preventDefault();
@@ -297,7 +297,7 @@ export default function WealthPage() {
                     <div className="sm:col-span-2">
                       <label className="block text-sm font-medium mb-2">Liability Name *</label>
                       <input 
-                        className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none transition-colors" 
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400" 
                         value={liabilityName} 
                         onChange={(e) => setLiabilityName(e.target.value)} 
                         placeholder="e.g., Mortgage, Car Loan, Credit Card"
@@ -309,7 +309,7 @@ export default function WealthPage() {
                       <input 
                         type="number" 
                         step="0.01" 
-                        className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none transition-colors" 
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400" 
                         value={liabilityBalance} 
                         onChange={(e) => setLiabilityBalance(e.target.value)}
                         placeholder="0.00"
@@ -320,19 +320,19 @@ export default function WealthPage() {
                       <input 
                         type="number" 
                         step="0.01" 
-                        className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none transition-colors" 
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400" 
                         value={liabilityInterest} 
                         onChange={(e) => setLiabilityInterest(e.target.value)} 
                         placeholder="5.5"
                       />
                     </div>
-                </div>
+                  </div>
                   <div className="mt-4">
                     <label className="block text-sm font-medium mb-2">Minimum Payment</label>
                     <input 
                       type="number" 
                       step="0.01" 
-                      className="w-full border-2 rounded-lg px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none transition-colors" 
+                      className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400" 
                       value={liabilityMinimum} 
                       onChange={(e) => setLiabilityMinimum(e.target.value)} 
                       placeholder="0.00"
@@ -340,6 +340,7 @@ export default function WealthPage() {
                   </div>
                   <div className="mt-6 pt-4 border-t border-[var(--border-subtle)]">
                     <button className="btn-primary">Add Liability</button>
+                  </div>
                 </div>
               </form>
 
