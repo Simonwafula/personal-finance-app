@@ -28,6 +28,8 @@ const SavingsPage = React.lazy(() => import("./pages/SavingsPage"));
 const CategoriesPage = React.lazy(() => import("./pages/CategoriesPage"));
 const SubscriptionsPage = React.lazy(() => import("./pages/SubscriptionsPage"));
 const NotificationsPage = React.lazy(() => import("./pages/NotificationsPage"));
+const BlogPage = React.lazy(() => import("./pages/BlogPage"));
+const BlogArticle = React.lazy(() => import("./pages/blog/BlogArticle"));
 const NotFoundPage = React.lazy(() => import("./pages/NotFoundPage"));
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
@@ -38,9 +40,11 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
         <TimeRangeProvider>
           <Suspense fallback={<div className="app-container p-4">Loading…</div>}>
             <Routes>
+              {/* Standalone landing page without layout */}
+              <Route path="/" element={<ErrorBoundary><LandingPage /></ErrorBoundary>} />
+              
+              {/* Auth and app routes with layout */}
               <Route path="/" element={<ErrorBoundary><Layout /></ErrorBoundary>}>
-                {/* Public landing & auth routes */}
-                <Route index element={<LandingPage />} />
                 <Route path="login" element={<LoginPage />} />
                 <Route path="signup" element={<SignupPage />} />
                 <Route path="forgot-password" element={<ForgotPasswordPage />} />
@@ -59,6 +63,8 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
                 <Route path="categories" element={<RequireAuth><CategoriesPage /></RequireAuth>} />
                 <Route path="subscriptions" element={<RequireAuth><SubscriptionsPage /></RequireAuth>} />
                 <Route path="notifications" element={<RequireAuth><NotificationsPage /></RequireAuth>} />
+                <Route path="blog" element={<RequireAuth><BlogPage /></RequireAuth>} />
+                <Route path="blog/:slug" element={<RequireAuth><BlogArticle /></RequireAuth>} />
                 <Route path="*" element={<NotFoundPage />} />
               </Route>
             </Routes>

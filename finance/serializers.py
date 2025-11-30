@@ -38,6 +38,8 @@ class CategorySerializer(serializers.ModelSerializer):
 class TransactionSerializer(serializers.ModelSerializer):
     account_name = serializers.ReadOnlyField(source="account.name")
     category_name = serializers.ReadOnlyField(source="category.name")
+    savings_goal_name = serializers.ReadOnlyField(source="savings_goal.name")
+    savings_goal_emoji = serializers.ReadOnlyField(source="savings_goal.emoji")
 
     class Meta:
         model = Transaction
@@ -54,6 +56,9 @@ class TransactionSerializer(serializers.ModelSerializer):
             "tags",
             "is_recurring",
             "recurring_rule",
+            "savings_goal",
+            "savings_goal_name",
+            "savings_goal_emoji",
             "created_at",
             "updated_at",
         ]

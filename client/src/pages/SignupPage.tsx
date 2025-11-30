@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { register } from "../api/auth";
 import Logo from "../components/Logo";
+import "../styles/neumorphism.css";
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
@@ -10,6 +11,7 @@ export default function SignupPage() {
   const [phone, setPhone] = useState("");
   const [country, setCountry] = useState("");
   const [city, setCity] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -45,132 +47,199 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      {/* Background decoration */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
-        <div className="absolute top-1/2 left-1/2 w-80 h-80 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
-      </div>
-
-      <div className="w-full max-w-md relative z-10">
-        {/* Logo and Brand */}
-        <div className="text-center mb-8 animate-slide-in">
-          <div className="inline-block mb-4">
-            <Logo width={64} height={64} />
+    <div className="neu-page">
+      <div className="neu-container" style={{ maxWidth: '480px' }}>
+        <div className="neu-card">
+          {/* Logo Header */}
+          <div className="neu-header">
+            <div className="neu-icon">
+              <Logo width={40} height={40} />
+            </div>
+            <h2>Get Started</h2>
+            <p>Create your free account in seconds</p>
           </div>
-          <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Get Started
-          </h1>
-          <p className="text-[var(--text-muted)]">Create your Mstatili Finance account</p>
-        </div>
 
-        {/* Signup Card */}
-        <div className="card-elevated backdrop-blur-xl bg-white/80 dark:bg-gray-800/80 animate-scale-in">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Required Fields */}
-            <div>
-              <label className="block text-sm font-semibold text-[var(--text-main)] mb-2">
-                Email Address *
-              </label>
-              <input
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[var(--primary-600)] transition-all"
-                type="email"
-                placeholder="you@example.com"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-[var(--text-main)] mb-2">
-                Username (optional)
-              </label>
-              <input
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[var(--primary-600)] transition-all"
-                type="text"
-                placeholder="Leave empty to use email"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-[var(--text-main)] mb-2">
-                Password *
-              </label>
-              <input
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full border border-[var(--border-subtle)] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[var(--primary-600)] transition-all"
-                type="password"
-                placeholder="Create a strong password"
-                required
-              />
-            </div>
-
-            {/* Optional Profile Fields */}
-            <div className="pt-4 border-t border-[var(--border-subtle)]">
-              <p className="text-xs font-semibold text-[var(--text-muted)] mb-3 uppercase tracking-wide">
-                Profile Information (Optional)
-              </p>
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-sm font-medium text-[var(--text-main)] mb-1">
-                    Phone
-                  </label>
+          {/* Signup Form */}
+          <form onSubmit={handleSubmit} className="neu-form">
+            {/* Email Input */}
+            <div className="neu-form-group">
+              <div className="neu-input-wrapper">
+                <div className="neu-input">
                   <input
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="w-full border border-[var(--border-subtle)] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[var(--primary-600)] transition-all"
-                    type="tel"
-                    placeholder="+1 234 567 8900"
+                    type="email"
+                    id="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder=" "
+                    required
                   />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-sm font-medium text-[var(--text-main)] mb-1">
-                      Country
-                    </label>
-                    <input
-                      value={country}
-                      onChange={(e) => setCountry(e.target.value)}
-                      className="w-full border border-[var(--border-subtle)] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[var(--primary-600)] transition-all"
-                      placeholder="Kenya"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-[var(--text-main)] mb-1">
-                      City
-                    </label>
-                    <input
-                      value={city}
-                      onChange={(e) => setCity(e.target.value)}
-                      className="w-full border border-[var(--border-subtle)] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[var(--primary-600)] transition-all"
-                      placeholder="Nairobi"
-                    />
+                  <label htmlFor="email">Email Address *</label>
+                  <div className="neu-input-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                      <polyline points="22,6 12,13 2,6"/>
+                    </svg>
                   </div>
                 </div>
               </div>
             </div>
 
+            {/* Username Input */}
+            <div className="neu-form-group">
+              <div className="neu-input-wrapper">
+                <div className="neu-input">
+                  <input
+                    type="text"
+                    id="username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder=" "
+                  />
+                  <label htmlFor="username">Username (optional)</label>
+                  <div className="neu-input-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                      <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Password Input */}
+            <div className="neu-form-group">
+              <div className="neu-input-wrapper">
+                <div className="neu-input">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    id="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder=" "
+                    required
+                  />
+                  <label htmlFor="password">Password *</label>
+                  <div className="neu-input-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                      <path d="M7 11V7a5 5 0 0110 0v4"/>
+                    </svg>
+                  </div>
+                  <button
+                    type="button"
+                    className="neu-toggle"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                        <line x1="1" y1="1" x2="23" y2="23"/>
+                      </svg>
+                    ) : (
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                      </svg>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Optional Fields */}
+            <details className="neu-form-group" style={{ marginTop: '24px' }}>
+              <summary style={{ 
+                cursor: 'pointer', 
+                fontWeight: '600', 
+                color: '#6c7293',
+                marginBottom: '16px',
+                listStyle: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <span>👤</span>
+                <span>Profile Information (Optional)</span>
+              </summary>
+              
+              <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                {/* Phone */}
+                <div className="neu-input-wrapper">
+                  <div className="neu-input">
+                    <input
+                      type="tel"
+                      id="phone"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder=" "
+                    />
+                    <label htmlFor="phone">Phone</label>
+                    <div className="neu-input-icon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Country & City */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div className="neu-input-wrapper">
+                    <div className="neu-input">
+                      <input
+                        type="text"
+                        id="country"
+                        value={country}
+                        onChange={(e) => setCountry(e.target.value)}
+                        placeholder=" "
+                      />
+                      <label htmlFor="country">Country</label>
+                      <div className="neu-input-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <circle cx="12" cy="12" r="10"/>
+                          <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="neu-input-wrapper">
+                    <div className="neu-input">
+                      <input
+                        type="text"
+                        id="city"
+                        value={city}
+                        onChange={(e) => setCity(e.target.value)}
+                        placeholder=" "
+                      />
+                      <label htmlFor="city">City</label>
+                      <div className="neu-input-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                          <circle cx="12" cy="10" r="3"/>
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </details>
+
+            {/* Error Message */}
             {error && (
-              <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm animate-slide-in">
-                {error}
+              <div className="neu-error">
+                <span>⚠️</span>
+                <span>{error}</span>
               </div>
             )}
 
-            <button
-              type="submit"
-              className="btn-primary w-full text-base py-3"
-              disabled={loading}
-            >
+            {/* Submit Button */}
+            <button type="submit" className="neu-button" disabled={loading}>
               {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <div className="spinner" style={{ width: 16, height: 16, borderWidth: 2 }} />
-                  Creating account…
-                </span>
+                <>
+                  <span className="neu-spinner"></span>
+                  <span>Creating account...</span>
+                </>
               ) : (
                 'Create Account'
               )}
@@ -178,48 +247,31 @@ export default function SignupPage() {
           </form>
 
           {/* Divider */}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-[var(--border-subtle)]"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-[var(--surface)] text-[var(--text-muted)] font-medium">
-                Or continue with
-              </span>
-            </div>
+          <div className="neu-divider">
+            <span>Or continue with</span>
           </div>
 
           {/* Social Login */}
-          <a
-            href="/accounts/google/login/"
-            className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-[var(--border-subtle)] rounded-xl hover:bg-[var(--surface-hover)] hover:border-[var(--primary-400)] transition-all font-semibold"
-          >
-            <svg width="20" height="20" viewBox="0 0 46 46">
-              <path fill="#EA4335" d="M23 9c3 0 5.3 1 7 2.7l5-5C32.8 4.2 28.6 2 23 2 14.8 2 7.9 6.6 4 13l6.2 4.8C12 13.4 17 9 23 9z" />
-              <path fill="#4285F4" d="M46 23c0-1.6-.1-3.1-.3-4.6H23v8.7h12.9c-.6 3.1-2.7 5.7-5.8 7.4l6 4.7C42.1 36.6 46 30.3 46 23z" />
-              <path fill="#FBBC05" d="M10.2 28.2A13.7 13.7 0 0 1 9 23c0-1.6.3-3.1.9-4.4L4 13c-2.9 4.6-4 10-3 15.6L10.2 28.2z" />
-              <path fill="#34A853" d="M23 46c6.2 0 11.5-2 15.3-5.4l-6-4.7C29.9 36.3 26.7 37.8 23 37.8c-6 0-11.1-4.4-12.8-10.2L4 33C7.9 39.4 14.8 44 23 44z" />
-            </svg>
-            Sign up with Google
-          </a>
+          <div className="neu-social">
+            <a href="/accounts/google/login/" className="neu-social-btn">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+              </svg>
+            </a>
+          </div>
 
           {/* Login link */}
-          <div className="mt-6 text-center">
-            <p className="text-sm text-[var(--text-muted)]">
+          <div className="neu-footer">
+            <p>
               Already have an account?{" "}
-              <Link
-                to="/login"
-                className="font-semibold text-[var(--primary-400)] hover:text-[var(--primary-500)] transition-colors"
-              >
+              <Link to="/login" className="neu-link-bold">
                 Sign in
               </Link>
             </p>
           </div>
-        </div>
-
-        {/* Footer */}
-        <div className="mt-8 text-center text-xs text-[var(--text-muted)] animate-fade-in">
-          <p>© 2025 Mstatili Finance. Secure & Private.</p>
         </div>
       </div>
     </div>

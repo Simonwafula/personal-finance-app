@@ -1,5 +1,6 @@
 // src/pages/SubscriptionsPage.tsx
 import { useEffect, useMemo, useState, useCallback } from "react";
+import { Link } from "react-router-dom";
 import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from "recharts";
 import {
   fetchAccounts,
@@ -277,7 +278,7 @@ export default function SubscriptionsPage() {
 
       <div className="grid lg:grid-cols-5 gap-6">
         {/* Create form - left column */}
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 space-y-6">
           <div className="card sticky top-6 bg-gradient-to-br from-blue-50/50 to-purple-50/50 dark:from-blue-900/10 dark:to-purple-900/10 border-2">
             <div className="text-lg font-semibold mb-6 flex items-center gap-2">
               <span>➕</span>
@@ -380,6 +381,67 @@ export default function SubscriptionsPage() {
             <button className="btn-primary" disabled={submitting}>{submitting ? 'Adding…' : 'Add Recurring'}</button>
           </div>
         </form>
+      </div>
+
+      {/* Subscription Management Tips */}
+      <div className="card bg-gradient-to-br from-pink-50/50 to-rose-50/50 dark:from-pink-900/10 dark:to-rose-900/10 border border-pink-200 dark:border-pink-800">
+        <div className="flex items-start gap-3 mb-4">
+          <span className="text-3xl">🔄</span>
+          <div>
+            <h3 className="font-semibold text-lg mb-1">Recurring Expense Tips</h3>
+            <p className="text-sm text-[var(--text-muted)]">Manage subscriptions effectively</p>
+          </div>
+        </div>
+        <div className="space-y-3 text-sm">
+          <Link 
+            to="/blog/audit-subscriptions" 
+            className="flex gap-2 group hover:bg-white/50 dark:hover:bg-gray-800/50 p-3 rounded-lg transition-all"
+          >
+            <span className="text-green-600 dark:text-green-400 font-bold">•</span>
+            <div className="flex-1">
+              <p><strong>Audit Regularly:</strong> Review all subscriptions quarterly and cancel unused services.</p>
+              <span className="text-xs text-blue-600 dark:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">Read full guide →</span>
+            </div>
+          </Link>
+          <Link 
+            to="/blog/annual-vs-monthly-billing" 
+            className="flex gap-2 group hover:bg-white/50 dark:hover:bg-gray-800/50 p-3 rounded-lg transition-all"
+          >
+            <span className="text-blue-600 dark:text-blue-400 font-bold">•</span>
+            <div className="flex-1">
+              <p><strong>Annual vs Monthly:</strong> Annual payments often save 10-20% compared to monthly billing.</p>
+              <span className="text-xs text-blue-600 dark:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">Read full guide →</span>
+            </div>
+          </Link>
+          <Link 
+            to="/blog/subscription-renewal-reminders" 
+            className="flex gap-2 group hover:bg-white/50 dark:hover:bg-gray-800/50 p-3 rounded-lg transition-all"
+          >
+            <span className="text-purple-600 dark:text-purple-400 font-bold">•</span>
+            <div className="flex-1">
+              <p><strong>Set Reminders:</strong> Mark renewal dates to evaluate value before auto-renewal kicks in.</p>
+              <span className="text-xs text-blue-600 dark:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">Read full guide →</span>
+            </div>
+          </Link>
+          <Link 
+            to="/blog/shared-subscription-plans" 
+            className="flex gap-2 group hover:bg-white/50 dark:hover:bg-gray-800/50 p-3 rounded-lg transition-all"
+          >
+            <span className="text-orange-600 dark:text-orange-400 font-bold">•</span>
+            <div className="flex-1">
+              <p><strong>Share Plans:</strong> Family plans for Netflix, Spotify, or YouTube Premium split costs effectively.</p>
+              <span className="text-xs text-blue-600 dark:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">Read full guide →</span>
+            </div>
+          </Link>
+        </div>
+        <div className="mt-4 pt-4 border-t border-[var(--border-subtle)]">
+          <Link 
+            to="/blog" 
+            className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
+          >
+            View All Financial Tips →
+          </Link>
+        </div>
       </div>
     </div>
 

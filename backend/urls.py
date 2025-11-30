@@ -22,6 +22,7 @@ urlpatterns = [
     path("api/budgeting/", include("budgeting.urls")),
     path("api/wealth/", include("wealth.urls")),
     path("api/debt/", include("debt_planner.urls")),
+    path("api/savings/", include("savings.urls")),
     path("api/", include("notifications.urls")),
     # Dev: redirect backend root to frontend
     path("", RedirectView.as_view(url="http://localhost:5173/")),

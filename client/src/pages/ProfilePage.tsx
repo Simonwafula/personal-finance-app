@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { fetchProfile, updateProfile, type UserProfile } from "../api/auth";
+import "../styles/neumorphism.css";
 
 interface ProfileFormData extends UserProfile {
   username: string;
@@ -83,10 +84,29 @@ export default function ProfilePage() {
       </div>
 
       {error && (
-        <div className="card bg-red-50 border-red-200 text-red-700">{error}</div>
+        <div className="neu-error" style={{ marginBottom: '20px' }}>
+          <span>⚠️</span>
+          <span>{error}</span>
+        </div>
       )}
       {success && (
-        <div className="card bg-green-50 border-green-200 text-green-700">{success}</div>
+        <div className="neu-success" style={{ 
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          padding: '16px',
+          marginBottom: '20px',
+          background: '#e0e5ec',
+          borderRadius: '15px',
+          boxShadow: 'inset 4px 4px 10px #b8f0d4, inset -4px -4px 10px #ffffff',
+          color: '#00c896',
+          fontSize: '14px',
+          fontWeight: '500',
+          animation: 'gentleShake 0.5s ease'
+        }}>
+          <span>✓</span>
+          <span>{success}</span>
+        </div>
       )}
 
       <div className="grid lg:grid-cols-3 gap-6">
@@ -103,13 +123,23 @@ export default function ProfilePage() {
             <div className="text-sm text-[var(--text-muted)]">{profile.email}</div>
             <div className="w-full mt-4">
               <label className="block text-sm font-medium mb-2">Avatar URL</label>
-              <input
-                type="url"
-                value={profile.avatar_url}
-                onChange={(e) => handleChange('avatar_url', e.target.value)}
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400"
-                placeholder="https://example.com/avatar.jpg"
-              />
+              <div className="neu-input">
+                <input
+                  type="url"
+                  id="avatar_url"
+                  value={profile.avatar_url}
+                  onChange={(e) => handleChange('avatar_url', e.target.value)}
+                  placeholder=" "
+                />
+                <label htmlFor="avatar_url">https://example.com/avatar.jpg</label>
+                <div className="neu-input-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                    <polyline points="21 15 16 10 5 21"/>
+                  </svg>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -144,66 +174,128 @@ export default function ProfilePage() {
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">Phone</label>
-                  <input
-                    type="tel"
-                    value={profile.phone}
-                    onChange={(e) => handleChange('phone', e.target.value)}
-                    className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400"
-                    placeholder="+1234567890"
-                  />
+                  <div className="neu-input">
+                    <input
+                      type="tel"
+                      id="phone"
+                      value={profile.phone}
+                      onChange={(e) => handleChange('phone', e.target.value)}
+                      placeholder=" "
+                    />
+                    <label htmlFor="phone">+1234567890</label>
+                    <div className="neu-input-icon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                      </svg>
+                    </div>
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">Date of Birth</label>
-                  <input
-                    type="date"
-                    value={profile.date_of_birth || ''}
-                    onChange={(e) => handleChange('date_of_birth', e.target.value)}
-                    className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
-                  />
+                  <div className="neu-input">
+                    <input
+                      type="date"
+                      id="date_of_birth"
+                      value={profile.date_of_birth || ''}
+                      onChange={(e) => handleChange('date_of_birth', e.target.value)}
+                      placeholder=" "
+                    />
+                    <label htmlFor="date_of_birth">Select date</label>
+                    <div className="neu-input-icon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/>
+                        <line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                      </svg>
+                    </div>
+                  </div>
                 </div>
               </div>
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">Country</label>
-                  <input
-                    type="text"
-                    value={profile.country}
-                    onChange={(e) => handleChange('country', e.target.value)}
-                    className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400"
-                    placeholder="Kenya"
-                  />
+                  <div className="neu-input">
+                    <input
+                      type="text"
+                      id="country"
+                      value={profile.country}
+                      onChange={(e) => handleChange('country', e.target.value)}
+                      placeholder=" "
+                    />
+                    <label htmlFor="country">Kenya</label>
+                    <div className="neu-input-icon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                      </svg>
+                    </div>
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">City</label>
-                  <input
-                    type="text"
-                    value={profile.city}
-                    onChange={(e) => handleChange('city', e.target.value)}
-                    className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400"
-                    placeholder="Nairobi"
-                  />
+                  <div className="neu-input">
+                    <input
+                      type="text"
+                      id="city"
+                      value={profile.city}
+                      onChange={(e) => handleChange('city', e.target.value)}
+                      placeholder=" "
+                    />
+                    <label htmlFor="city">Nairobi</label>
+                    <div className="neu-input-icon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                      </svg>
+                    </div>
+                  </div>
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium mb-2">Bio</label>
-                <textarea
-                  value={profile.bio}
-                  onChange={(e) => handleChange('bio', e.target.value)}
-                  className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400"
-                  rows={4}
-                  placeholder="Tell us about yourself..."
-                />
+                <div className="neu-input" style={{ minHeight: '120px' }}>
+                  <textarea
+                    id="bio"
+                    value={profile.bio}
+                    onChange={(e) => handleChange('bio', e.target.value)}
+                    placeholder=" "
+                    rows={4}
+                    style={{ 
+                      minHeight: '100px',
+                      resize: 'vertical',
+                      paddingTop: '20px'
+                    }}
+                  />
+                  <label htmlFor="bio" style={{ top: '20px' }}>Tell us about yourself...</label>
+                  <div className="neu-input-icon" style={{ top: '20px' }}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                      <polyline points="14 2 14 8 20 8"/>
+                      <line x1="16" y1="13" x2="8" y2="13"/>
+                      <line x1="16" y1="17" x2="8" y2="17"/>
+                      <polyline points="10 9 9 9 8 9"/>
+                    </svg>
+                  </div>
+                </div>
               </div>
 
               <div className="pt-2 border-t border-[var(--border-subtle)]">
                 <button
                   type="submit"
-                  className="btn-primary"
+                  className="neu-button"
                   disabled={saving}
                 >
-                  {saving ? 'Saving...' : 'Save Changes'}
+                  {saving ? (
+                    <>
+                      <span className="neu-spinner"></span>
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    'Save Changes'
+                  )}
                 </button>
               </div>
             </form>

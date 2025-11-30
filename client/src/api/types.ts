@@ -49,6 +49,9 @@ export interface Transaction {
   tags: string;
   is_recurring: boolean;
   recurring_rule: any;
+  savings_goal: number | null;
+  savings_goal_name: string | null;
+  savings_goal_emoji: string | null;
   created_at: string;
   updated_at: string;
 }

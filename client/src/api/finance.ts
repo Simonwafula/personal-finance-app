@@ -7,6 +7,9 @@ export async function fetchAccounts(): Promise<Account[]> {
   return res.data;
 }
 
+// Alias for compatibility
+export const getAccounts = fetchAccounts;
+
 export interface CreateAccountPayload {
   name: string;
   account_type: string;
@@ -96,6 +99,7 @@ export interface CreateTransactionPayload {
   category?: number | null;
   description?: string;
   tags?: string;
+  savings_goal?: number | null;
 }
 
 export async function createTransaction(

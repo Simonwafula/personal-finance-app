@@ -1,6 +1,7 @@
 // src/pages/AccountsPage.tsx
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
+import { Link } from "react-router-dom";
 import { fetchAccounts, createAccount, updateAccount, deleteAccount } from "../api/finance";
 import type { Account } from "../api/types";
 import { HiPencil, HiTrash, HiX } from "react-icons/hi";
@@ -137,22 +138,22 @@ export default function AccountsPage() {
 
       <div className="grid lg:grid-cols-5 gap-6">
         {/* Create/Edit account form - takes 2 columns */}
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 space-y-6">
           <form onSubmit={handleSubmit} className="card animate-slide-in sticky top-6 bg-gradient-to-br from-blue-50/50 to-purple-50/50 dark:from-blue-900/10 dark:to-purple-900/10 border-2">
             <div className="flex items-center justify-between mb-6">
               <div className="text-lg font-semibold flex items-center gap-2">
                 {editingId ? "✏️ Edit Account" : "➕ Add New Account"}
               </div>
-          {editingId && (
-            <button
-              type="button"
-              onClick={resetForm}
-              className="text-gray-500 hover:text-gray-700 transition-colors"
-            >
-              <HiX size={20} />
-            </button>
-          )}
-        </div>
+              {editingId && (
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="text-gray-500 hover:text-gray-700 transition-colors"
+                >
+                  <HiX size={20} />
+                </button>
+              )}
+            </div>
 
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
@@ -237,11 +238,59 @@ export default function AccountsPage() {
         </div>
       </form>
 
-      {/* Accounts list */}
-      <div className="card">
-        <div className="text-lg font-semibold mb-6 flex items-center gap-2">
-          <span>💼</span>
-          Your Accounts
+      {/* Account Management Tips */}
+      <div className="card bg-gradient-to-br from-cyan-50/50 to-teal-50/50 dark:from-cyan-900/10 dark:to-teal-900/10 border border-cyan-200 dark:border-cyan-800">
+        <div className="flex items-start gap-3 mb-4">
+          <span className="text-3xl">🏦</span>
+          <div>
+            <h3 className="font-semibold text-lg mb-1">Account Management Tips</h3>
+            <p className="text-sm text-[var(--text-muted)]">Optimize your banking setup</p>
+          </div>
+        </div>
+        <div className="space-y-3 text-sm">
+          <Link to="/blog/separate-accounts" className="flex gap-2 p-3 rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50 transition-all duration-200 group">
+            <span className="text-green-600 dark:text-green-400 font-bold">•</span>
+            <div>
+              <p><strong>Separate Accounts:</strong> Keep different accounts for savings, spending, and bills to stay organized.</p>
+              <span className="text-xs text-blue-600 dark:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">Read full guide →</span>
+            </div>
+          </Link>
+          <Link to="/blog/track-opening-balance" className="flex gap-2 p-3 rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50 transition-all duration-200 group">
+            <span className="text-blue-600 dark:text-blue-400 font-bold">•</span>
+            <div>
+              <p><strong>Track Opening Balance:</strong> Record accurate starting balances for precise financial tracking.</p>
+              <span className="text-xs text-blue-600 dark:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">Read full guide →</span>
+            </div>
+          </Link>
+          <Link to="/blog/monitor-accounts-regularly" className="flex gap-2 p-3 rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50 transition-all duration-200 group">
+            <span className="text-purple-600 dark:text-purple-400 font-bold">•</span>
+            <div>
+              <p><strong>Monitor Regularly:</strong> Check your accounts weekly to catch unauthorized transactions early.</p>
+              <span className="text-xs text-blue-600 dark:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">Read full guide →</span>
+            </div>
+          </Link>
+          <Link to="/blog/mobile-money-security" className="flex gap-2 p-3 rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50 transition-all duration-200 group">
+            <span className="text-orange-600 dark:text-orange-400 font-bold">•</span>
+            <div>
+              <p><strong>Mobile Money Security:</strong> Use strong PINs and enable transaction notifications for M-Pesa/Airtel Money.</p>
+              <span className="text-xs text-blue-600 dark:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">Read full guide →</span>
+            </div>
+          </Link>
+        </div>
+        <div className="mt-6 pt-4 border-t border-[var(--border-subtle)]">
+          <Link to="/blog" className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+            View All Financial Tips →
+          </Link>
+        </div>
+      </div>
+        </div>
+
+        {/* Accounts list - takes 3 columns */}
+        <div className="lg:col-span-3">
+          <div className="card">
+            <div className="text-lg font-semibold mb-6 flex items-center gap-2">
+              <span>💼</span>
+              Your Accounts
           {!loading && accounts.length > 0 && (
             <span className="text-sm text-[var(--text-muted)] font-normal">
               ({accounts.length})
@@ -362,6 +411,8 @@ export default function AccountsPage() {
             </table>
           </div>
         )}
+          </div>
+        </div>
       </div>
     </div>
   );

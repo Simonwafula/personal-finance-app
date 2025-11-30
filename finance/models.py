@@ -92,6 +92,14 @@ class Transaction(TimeStampedModel):
     tags = models.CharField(max_length=255, blank=True)
     is_recurring = models.BooleanField(default=False)
     recurring_rule = models.JSONField(null=True, blank=True)
+    # Link to savings goal if this transaction is for savings
+    savings_goal = models.ForeignKey(
+        'savings.SavingsGoal',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="transactions"
+    )
 
     class Meta:
         ordering = ["-date", "-created_at"]

@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'debt_planner',
     'profiles',
     'notifications',
+    'savings',
 ]
 
 MIDDLEWARE = [
@@ -77,7 +78,7 @@ ROOT_URLCONF = 'backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -198,9 +199,11 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 LOGIN_REDIRECT_URL = "/"
-LOGOUT_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/login"
 ACCOUNT_EMAIL_VERIFICATION = "none"
 ACCOUNT_LOGIN_METHOD = "username"
+ACCOUNT_LOGOUT_ON_GET = True
+ACCOUNT_LOGOUT_REDIRECT_URL = "/login"
 SOCIALACCOUNT_LOGIN_REDIRECT_URL = "http://localhost:5174/oauth-callback"
 
 if not DEBUG:

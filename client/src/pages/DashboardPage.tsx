@@ -5,6 +5,7 @@ import { fetchAggregatedTransactions, fetchTopCategories } from "../api/finance"
 import { fetchTransactions } from "../api/finance";
 import { fetchCurrentNetWorth, fetchNetWorthSnapshots } from "../api/wealth";
 import { useTimeRange } from "../contexts/TimeRangeContext";
+import "../styles/neumorphism.css";
 // TimeRangeSelector comes from global context (rendered in Layout)
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, CartesianGrid } from "recharts";
 import type { NetWorthCurrent } from "../api/types";
@@ -178,7 +179,7 @@ export default function DashboardPage() {
           {/* Enhanced KPI Cards */}
           <div className="kpi-grid">
             {/* Income Card */}
-            <div className="kpi-card">
+            <div className="kpi-card neu-stat-card">
               <div className="kpi-label">Total Income</div>
               <div className="kpi-value" style={{ color: 'var(--success-400)' }}>
                 {formatMoney(totals.income)}
@@ -205,7 +206,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Expenses Card */}
-            <div className="kpi-card">
+            <div className="kpi-card neu-stat-card">
               <div className="kpi-label">Total Expenses</div>
               <div className="kpi-value" style={{ color: 'var(--danger-400)' }}>
                 {formatMoney(totals.expenses)}
@@ -232,7 +233,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Savings Card */}
-            <div className="kpi-card">
+            <div className="kpi-card neu-stat-card">
               <div className="kpi-label">Net Savings</div>
               <div className="kpi-value" style={{ color: totals.savings >= 0 ? 'var(--primary-400)' : 'var(--danger-400)' }}>
                 {formatMoney(totals.savings)}
@@ -260,7 +261,7 @@ export default function DashboardPage() {
 
             {/* Net Worth Card */}
             {netWorth && (
-              <div className="kpi-card cursor-pointer" onClick={() => navigate('/wealth')}>
+              <div className="kpi-card neu-stat-card cursor-pointer" onClick={() => navigate('/wealth')}>
                 <div className="kpi-label">Net Worth</div>
                 <div className="kpi-value" style={{ color: 'var(--accent-400)' }}>
                   {formatMoney(netWorth.net_worth)}

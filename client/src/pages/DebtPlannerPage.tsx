@@ -165,8 +165,6 @@ export default function DebtPlannerPage() {
           </div>
         )}
       </div>
-        </div>
-      </div>
 
       {loading && <div className="skeleton h-32 rounded" />}
       {error && (

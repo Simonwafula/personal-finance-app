@@ -1,9 +1,11 @@
 // src/pages/BudgetsPage.tsx
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { fetchBudgets, fetchBudgetSummary, createBudget, createBudgetLine, fetchBudgetLines, updateBudgetLine, deleteBudgetLine } from "../api/budgeting";
 import { fetchCategories, fetchTransactions } from "../api/finance";
 import TimeRangeSelector from "../components/TimeRangeSelector";
 import type { Category, Budget, BudgetSummary, BudgetLine } from "../api/types";
+import "../styles/neumorphism.css";
 
 function formatMoney(value: string | number) {
   const num = typeof value === "string" ? Number(value) : value;
@@ -227,11 +229,10 @@ export default function BudgetsPage() {
 
       <div className="grid lg:grid-cols-5 gap-6">
         {/* Create budget form - left column */}
-        <div className="lg:col-span-2">
-          <div className="card animate-slide-in sticky top-6 bg-gradient-to-br from-blue-50/50 to-purple-50/50 dark:from-blue-900/10 dark:to-purple-900/10 border-2">
-            <div className="text-lg font-semibold mb-6 flex items-center gap-2">
-              <span>📝</span>
-              Create Budget
+        <div className="lg:col-span-2 space-y-6">
+          <div className="neu-card animate-slide-in sticky top-6">
+            <div className="neu-header">
+              <h2 className="neu-title">📝 Create Budget</h2>
             </div>
         <form
           onSubmit={async (e) => {
@@ -262,19 +263,28 @@ export default function BudgetsPage() {
               setCreating(false);
             }
           }}
+          className="neu-form"
         >
           <div className="grid sm:grid-cols-3 gap-4">
-            <div className="sm:col-span-2">
-              <label className="block text-sm font-medium mb-2">Budget Name *</label>
-              <input
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400"
-                value={budgetName}
-                onChange={(e) => setBudgetName(e.target.value)}
-                placeholder="e.g., January 2025, Q1 Budget"
-                required
-              />
+            <div className="sm:col-span-2 neu-form-group">
+              <div className="neu-input">
+                <input
+                  id="budget_name"
+                  value={budgetName}
+                  onChange={(e) => setBudgetName(e.target.value)}
+                  placeholder=" "
+                  required
+                />
+                <label htmlFor="budget_name">e.g., January 2025, Q1 Budget</label>
+                <div className="neu-input-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                  </svg>
+                </div>
+              </div>
             </div>
-            <div>
+            <div className="neu-form-group">
               <label className="block text-sm font-medium mb-2">Period Type</label>
               <select
                 value={periodType}
@@ -288,26 +298,48 @@ export default function BudgetsPage() {
             </div>
           </div>
           <div className="grid sm:grid-cols-2 gap-4 mt-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Start Date</label>
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
-              />
+            <div className="neu-form-group">
+              <div className="neu-input">
+                <input
+                  type="date"
+                  id="budget_start"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  placeholder=" "
+                />
+                <label htmlFor="budget_start">Start Date</label>
+                <div className="neu-input-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                  </svg>
+                </div>
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">End Date</label>
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
-              />
+            <div className="neu-form-group">
+              <div className="neu-input">
+                <input
+                  type="date"
+                  id="budget_end"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  placeholder=" "
+                />
+                <label htmlFor="budget_end">End Date</label>
+                <div className="neu-input-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                  </svg>
+                </div>
+              </div>
             </div>
           </div>
-          <div className="mt-4">
+          <div className="mt-4 neu-form-group">
             <label className="block text-sm font-medium mb-2">Notes (optional)</label>
             <textarea
               className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400"
@@ -321,16 +353,66 @@ export default function BudgetsPage() {
             <button
               type="submit"
               disabled={creating}
-              className="btn-primary disabled:opacity-60"
+              className="neu-button disabled:opacity-60"
             >
-              {creating ? "Creating…" : "Create Budget"}
+              {creating ? (
+                <>
+                  <span className="neu-spinner"></span>
+                  <span>Creating…</span>
+                </>
+              ) : (
+                "Create Budget"
+              )}
+            </button>
             </button>
           </div>
         </form>
       </div>
 
-      {/* Budget line creation */}
-      {selectedId && (
+      {/* Budgeting Tips Card */}
+      <div className="card bg-gradient-to-br from-amber-50/50 to-yellow-50/50 dark:from-amber-900/10 dark:to-yellow-900/10 border border-amber-200 dark:border-amber-800">
+        <div className="flex items-start gap-3 mb-4">
+          <span className="text-3xl">💡</span>
+          <div>
+            <h3 className="font-semibold text-lg mb-1">Smart Budgeting Tips</h3>
+            <p className="text-sm text-[var(--text-muted)]">Expert advice for better financial planning</p>
+          </div>
+        </div>
+        <div className="space-y-3 text-sm">
+          <Link to="/blog/budgeting-50-30-20-rule" className="flex gap-2 hover:bg-white/50 dark:hover:bg-gray-800/50 p-2 rounded-lg transition-colors group">
+            <span className="text-green-600 dark:text-green-400 font-bold">•</span>
+            <div>
+              <p><strong>50/30/20 Rule:</strong> Allocate 50% to needs, 30% to wants, and 20% to savings.</p>
+              <span className="text-xs text-blue-600 dark:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">Read full guide →</span>
+            </div>
+          </Link>
+          <Link to="/blog/zero-based-budgeting" className="flex gap-2 hover:bg-white/50 dark:hover:bg-gray-800/50 p-2 rounded-lg transition-colors group">
+            <span className="text-blue-600 dark:text-blue-400 font-bold">•</span>
+            <div>
+              <p><strong>Zero-Based Budgeting:</strong> Give every shilling a purpose by planning where each one goes.</p>
+              <span className="text-xs text-blue-600 dark:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">Read full guide →</span>
+            </div>
+          </Link>
+          <div className="flex gap-2">
+            <span className="text-purple-600 dark:text-purple-400 font-bold">•</span>
+            <p><strong>Review Monthly:</strong> Check your budgets regularly and adjust based on actual spending patterns.</p>
+          </div>
+          <div className="flex gap-2">
+            <span className="text-orange-600 dark:text-orange-400 font-bold">•</span>
+            <p><strong>Emergency Fund First:</strong> Build a buffer of 3-6 months of expenses before aggressive investing.</p>
+          </div>
+        </div>
+        <Link to="/blog" className="mt-4 pt-4 border-t border-amber-200 dark:border-amber-800 block text-center text-sm font-semibold text-blue-600 hover:text-blue-700">
+          View All Financial Tips →
+        </Link>
+      </div>
+      </div>
+      {/* End of left column */}
+
+      {/* Right column */}
+      <div className="lg:col-span-3 space-y-6">
+        {/* Budget line creation */}
+        {selectedId && (
         <div className="card animate-slide-in">
           <div className="text-lg font-semibold mb-4 flex items-center gap-2">
             <span>➕</span>
@@ -683,7 +765,9 @@ export default function BudgetsPage() {
         </div>
       )}
       </div>
-    </div>
+      {/* End of right column */}
+      </div>
+      {/* End of first grid */}
     </div>
   );
 }

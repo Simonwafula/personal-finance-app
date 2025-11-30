@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { useTimeRange } from "../contexts/TimeRangeContext";
 import type { FormEvent } from "react";
+import "../styles/neumorphism.css";
 import {
   fetchTransactionsPaged,
   fetchAccounts,
@@ -12,6 +13,7 @@ import {
   importTransactionsCsv,
   exportTransactionsCsv,
 } from "../api/finance";
+import { getSavingsGoals, type SavingsGoal } from "../api/savings";
 import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { HiPlus, HiUpload, HiDownload, HiX, HiCog } from "react-icons/hi";
 import type {
@@ -37,6 +39,7 @@ export default function TransactionsPage() {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [allTags, setAllTags] = useState<Tag[]>([]);
+  const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>([]);
 
   const [loading, setLoading] = useState(false);
   const [pageLimit] = useState(20);
@@ -52,6 +55,7 @@ export default function TransactionsPage() {
   const [amount, setAmount] = useState<string>("");
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState("");
+  const [savingsGoalId, setSavingsGoalId] = useState<number | "">("");
   const [saving, setSaving] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [importResult, setImportResult] = useState<any | null>(null);
@@ -66,14 +70,16 @@ export default function TransactionsPage() {
   async function loadRefs() {
     try {
       setLoadingRefs(true);
-      const [accs, cats, existingTags] = await Promise.all([
+      const [accs, cats, existingTags, goals] = await Promise.all([
         fetchAccounts(),
         fetchCategories(),
         fetchTags(),
+        getSavingsGoals(),
       ]);
       setAccounts(accs);
       setAllTags(existingTags);
       setCategories(cats);
+      setSavingsGoals(goals);
       
       if (accs.length > 0 && accountId === "") {
         setAccountId(accs[0].id);
@@ -185,11 +191,13 @@ export default function TransactionsPage() {
         category: categoryId ? (categoryId as number) : null,
         description,
         tags,
+        savings_goal: savingsGoalId ? (savingsGoalId as number) : null,
       });
 
       setAmount("");
       setDescription("");
       setTags("");
+      setSavingsGoalId("");
       setShowAddForm(false);
 
       await loadTransactions();
@@ -354,13 +362,21 @@ export default function TransactionsPage() {
 
       {/* Add Transaction Form */}
       {showAddForm && (
-        <form onSubmit={handleSubmit} className="card space-y-4 animate-slide-in">
-          <div className="flex items-center justify-between">
-            <h4 className="text-lg font-semibold">Add New Transaction</h4>
+        <form onSubmit={handleSubmit} className="neu-card space-y-4 animate-slide-in">
+          <div className="neu-header">
+            <h4 className="neu-title">Add New Transaction</h4>
             <button
               type="button"
               onClick={() => setShowAddForm(false)}
-              className="text-gray-500 hover:text-gray-700"
+              style={{
+                position: 'absolute',
+                right: '20px',
+                top: '20px',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: 'var(--text-muted)'
+              }}
             >
               <HiX size={20} />
             </button>
@@ -371,18 +387,29 @@ export default function TransactionsPage() {
           )}
 
           <div className="grid sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Date *</label>
-              <input
-                type="date"
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                required
-              />
+            <div className="neu-form-group">
+              <div className="neu-input">
+                <input
+                  type="date"
+                  id="tx_date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  placeholder=" "
+                  required
+                />
+                <label htmlFor="tx_date">Date</label>
+                <div className="neu-input-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                  </svg>
+                </div>
+              </div>
             </div>
 
-            <div>
+            <div className="neu-form-group">
               <label className="block text-sm font-medium mb-2">Account *</label>
               <select
                 className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
@@ -401,7 +428,7 @@ export default function TransactionsPage() {
               </select>
             </div>
 
-            <div>
+            <div className="neu-form-group">
               <label className="block text-sm font-medium mb-2">Type *</label>
               <select
                 className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
@@ -414,20 +441,28 @@ export default function TransactionsPage() {
               </select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-2">Amount *</label>
-              <input
-                type="number"
-                step="0.01"
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                placeholder="0.00"
-                required
-              />
+            <div className="neu-form-group">
+              <div className="neu-input">
+                <input
+                  type="number"
+                  step="0.01"
+                  id="tx_amount"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  placeholder=" "
+                  required
+                />
+                <label htmlFor="tx_amount">Amount</label>
+                <div className="neu-input-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <line x1="12" y1="1" x2="12" y2="23"/>
+                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                  </svg>
+                </div>
+              </div>
             </div>
 
-            <div className="sm:col-span-2">
+            <div className="sm:col-span-2 neu-form-group">
               <label className="block text-sm font-medium mb-2">Category</label>
               <select
                 className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
@@ -445,17 +480,51 @@ export default function TransactionsPage() {
               </select>
             </div>
 
-            <div className="sm:col-span-2">
-              <label className="block text-sm font-medium mb-2">Description</label>
-              <input
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="e.g. Lunch at Java, rent, salary..."
-              />
+            <div className="sm:col-span-2 neu-form-group">
+              <label className="block text-sm font-medium mb-2">
+                💰 Savings Goal (Optional)
+              </label>
+              <select
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
+                value={savingsGoalId}
+                onChange={(e) =>
+                  setSavingsGoalId(e.target.value ? Number(e.target.value) : "")
+                }
+              >
+                <option value="">— No savings goal —</option>
+                {savingsGoals.map((goal) => (
+                  <option key={goal.id} value={goal.id}>
+                    {goal.emoji} {goal.name} ({goal.progress_percentage.toFixed(0)}% complete)
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-[var(--text-muted)] mt-1">
+                Link this expense to a savings goal to track contributions
+              </p>
             </div>
 
-            <div className="sm:col-span-2">
+            <div className="sm:col-span-2 neu-form-group">
+              <div className="neu-input">
+                <input
+                  id="tx_description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder=" "
+                />
+                <label htmlFor="tx_description">e.g. Lunch at Java, rent, salary...</label>
+                <div className="neu-input-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                    <polyline points="10 9 9 9 8 9"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div className="sm:col-span-2 neu-form-group">
               <label className="block text-sm font-medium mb-2">Tags (optional)</label>
               {allTags.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-3">
@@ -500,9 +569,16 @@ export default function TransactionsPage() {
             <button
               type="submit"
               disabled={saving || accounts.length === 0}
-              className="btn-primary flex-1 disabled:opacity-60"
+              className="neu-button flex-1 disabled:opacity-60"
             >
-              {saving ? "Saving…" : "Save Transaction"}
+              {saving ? (
+                <>
+                  <span className="neu-spinner"></span>
+                  <span>Saving…</span>
+                </>
+              ) : (
+                "Save Transaction"
+              )}
             </button>
             <button
               type="button"
@@ -571,6 +647,15 @@ export default function TransactionsPage() {
                   </div>
                 )}
                 
+                {tx.savings_goal_name && (
+                  <div className="text-sm">
+                    <span className="text-[var(--text-muted)]">Savings Goal:</span>{" "}
+                    <span className="font-medium">
+                      {tx.savings_goal_emoji} {tx.savings_goal_name}
+                    </span>
+                  </div>
+                )}
+                
                 {txTags.length > 0 && (
                   <div className="flex flex-wrap gap-1">
                     {txTags.map((tag, idx) => (
@@ -601,6 +686,7 @@ export default function TransactionsPage() {
                   <th className="px-4 py-3 text-left font-semibold">Date</th>
                   <th className="px-4 py-3 text-left font-semibold">Account</th>
                   <th className="px-4 py-3 text-left font-semibold">Category</th>
+                  <th className="px-4 py-3 text-left font-semibold">Savings Goal</th>
                   <th className="px-4 py-3 text-right font-semibold">Amount</th>
                   <th className="px-4 py-3 text-left font-semibold">Type</th>
                   <th className="px-4 py-3 text-left font-semibold">Description</th>
@@ -618,6 +704,16 @@ export default function TransactionsPage() {
                       <td className="px-4 py-3">{tx.account_name}</td>
                       <td className="px-4 py-3">
                         {tx.category_name ?? (
+                          <span className="text-[var(--text-muted)]">–</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        {tx.savings_goal_name ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-blue-600 dark:text-blue-400">
+                            <span>{tx.savings_goal_emoji}</span>
+                            <span>{tx.savings_goal_name}</span>
+                          </span>
+                        ) : (
                           <span className="text-[var(--text-muted)]">–</span>
                         )}
                       </td>

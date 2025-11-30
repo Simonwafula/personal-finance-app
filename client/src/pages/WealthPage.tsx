@@ -1,5 +1,6 @@
 // src/pages/WealthPage.tsx
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   fetchCurrentNetWorth,
   fetchAssets,
@@ -27,6 +28,7 @@ export default function WealthPage() {
   const [snapshots, setSnapshots] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'all' | 'assets' | 'liabilities'>('all');
 
   // asset form
   const [assetName, setAssetName] = useState("");
@@ -91,6 +93,42 @@ export default function WealthPage() {
           <p className="text-base text-[var(--text-muted)] mt-1 font-medium">
             Monitor your assets, liabilities, and net worth over time
           </p>
+        </div>
+      </div>
+
+      {/* Tab Filter */}
+      <div className="card p-2">
+        <div className="flex gap-2">
+          <button
+            onClick={() => setActiveTab('all')}
+            className={`flex-1 px-4 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 ${
+              activeTab === 'all'
+                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md'
+                : 'text-[var(--text-muted)] hover:bg-[var(--surface)] hover:text-[var(--text-main)]'
+            }`}
+          >
+            All
+          </button>
+          <button
+            onClick={() => setActiveTab('assets')}
+            className={`flex-1 px-4 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 ${
+              activeTab === 'assets'
+                ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-md'
+                : 'text-[var(--text-muted)] hover:bg-[var(--surface)] hover:text-[var(--text-main)]'
+            }`}
+          >
+            💰 Assets
+          </button>
+          <button
+            onClick={() => setActiveTab('liabilities')}
+            className={`flex-1 px-4 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 ${
+              activeTab === 'liabilities'
+                ? 'bg-gradient-to-r from-red-600 to-orange-600 text-white shadow-md'
+                : 'text-[var(--text-muted)] hover:bg-[var(--surface)] hover:text-[var(--text-main)]'
+            }`}
+          >
+            📉 Liabilities
+          </button>
         </div>
       </div>
 
@@ -187,8 +225,10 @@ export default function WealthPage() {
           </div>
 
           <div className="grid gap-6 lg:grid-cols-2">
-            <div className="card animate-slide-in">
-              <div className="text-lg font-semibold mb-4 flex items-center gap-2">
+            {(activeTab === 'all' || activeTab === 'assets') && (
+            <div className="space-y-6">
+            <div className="card animate-slide-in bg-gradient-to-br from-green-50/50 to-emerald-50/50 dark:from-green-900/10 dark:to-emerald-900/10 border-2">
+              <div className="text-lg font-semibold mb-6 flex items-center gap-2">
                 <span>➕</span>
                 Add Asset
               </div>
@@ -267,6 +307,56 @@ export default function WealthPage() {
               </div>
             </div>
 
+            {/* Wealth Building Tips */}
+            <div className="card bg-gradient-to-br from-indigo-50/50 to-blue-50/50 dark:from-indigo-900/10 dark:to-blue-900/10 border border-indigo-200 dark:border-indigo-800">
+              <div className="flex items-start gap-3 mb-4">
+                <span className="text-3xl">🎯</span>
+                <div>
+                  <h3 className="font-semibold text-lg mb-1">Wealth Building Insights</h3>
+                  <p className="text-sm text-[var(--text-muted)]">Grow your net worth strategically</p>
+                </div>
+              </div>
+              <div className="space-y-3 text-sm">
+                <Link to="/blog/diversify-assets" className="flex gap-2 p-3 rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50 transition-all duration-200 group">
+                  <span className="text-green-600 dark:text-green-400 font-bold">•</span>
+                  <div>
+                    <p><strong>Diversify Assets:</strong> Spread investments across different asset classes to reduce risk.</p>
+                    <span className="text-xs text-blue-600 dark:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">Read full guide →</span>
+                  </div>
+                </Link>
+                <Link to="/blog/track-net-worth" className="flex gap-2 p-3 rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50 transition-all duration-200 group">
+                  <span className="text-blue-600 dark:text-blue-400 font-bold">•</span>
+                  <div>
+                    <p><strong>Track Net Worth:</strong> Take regular snapshots to monitor your financial progress over time.</p>
+                    <span className="text-xs text-blue-600 dark:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">Read full guide →</span>
+                  </div>
+                </Link>
+                <Link to="/blog/reduce-liabilities" className="flex gap-2 p-3 rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50 transition-all duration-200 group">
+                  <span className="text-purple-600 dark:text-purple-400 font-bold">•</span>
+                  <div>
+                    <p><strong>Reduce Liabilities:</strong> Focus on paying off high-interest debt to accelerate wealth building.</p>
+                    <span className="text-xs text-blue-600 dark:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">Read full guide →</span>
+                  </div>
+                </Link>
+                <Link to="/blog/appreciating-assets" className="flex gap-2 p-3 rounded-lg hover:bg-white/50 dark:hover:bg-gray-800/50 transition-all duration-200 group">
+                  <span className="text-orange-600 dark:text-orange-400 font-bold">•</span>
+                  <div>
+                    <p><strong>Appreciate vs Depreciate:</strong> Invest in assets that gain value over time, not just things that lose value.</p>
+                    <span className="text-xs text-blue-600 dark:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">Read full guide →</span>
+                  </div>
+                </Link>
+              </div>
+              <div className="mt-6 pt-4 border-t border-[var(--border-subtle)]">
+                <Link to="/blog" className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+                  View All Financial Tips →
+                </Link>
+              </div>
+            </div>
+            </div>
+            )}
+
+            {(activeTab === 'all' || activeTab === 'liabilities') && (
+            <div className="space-y-6">
           <div className="card animate-slide-in bg-gradient-to-br from-red-50/50 to-orange-50/50 dark:from-red-900/10 dark:to-orange-900/10 border-2">
             <div className="text-lg font-semibold mb-6 flex items-center gap-2">
               <span>➕</span>
@@ -341,7 +431,6 @@ export default function WealthPage() {
                   <div className="mt-6 pt-4 border-t border-[var(--border-subtle)]">
                     <button className="btn-primary">Add Liability</button>
                   </div>
-                </div>
               </form>
 
                 <div className="mt-6 pt-6 border-t border-[var(--border-subtle)]">
@@ -376,6 +465,9 @@ export default function WealthPage() {
                 )}
               </div>
             </div>
+            </div>
+            )}
+          </div>
           </div>
         </>
       )}

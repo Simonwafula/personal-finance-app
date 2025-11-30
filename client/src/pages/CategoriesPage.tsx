@@ -1,6 +1,7 @@
 // src/pages/CategoriesPage.tsx - Complete category and tag management
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
+import { Link } from "react-router-dom";
 import {
   fetchCategories,
   createCategory,
@@ -50,6 +51,7 @@ export default function CategoriesPage() {
   // UI state
   const [showTagAnalysis, setShowTagAnalysis] = useState(false);
   const [activeTab, setActiveTab] = useState<"categories" | "tags">("categories");
+  const [categoryTypeFilter, setCategoryTypeFilter] = useState<"ALL" | "EXPENSE" | "INCOME" | "TRANSFER">("ALL");
 
   async function loadCategories() {
     try {
@@ -242,27 +244,27 @@ export default function CategoriesPage() {
       )}
 
       {/* Tabs */}
-      <div className="flex gap-2 border-b">
+      <div className="card p-1 flex gap-1 bg-[var(--surface)]">
         <button
           onClick={() => setActiveTab("categories")}
-          className={`px-4 py-2 font-medium transition-colors ${
+          className={`flex-1 px-6 py-3 font-semibold rounded-lg transition-all ${
             activeTab === "categories"
-              ? "border-b-2 border-blue-600 text-blue-600"
-              : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
+              ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
+              : "text-[var(--text-muted)] hover:bg-[var(--glass-bg)]"
           }`}
         >
-          <HiFolder className="inline mr-2" size={18} />
+          <HiFolder className="inline mr-2" size={20} />
           Categories
         </button>
         <button
           onClick={() => setActiveTab("tags")}
-          className={`px-4 py-2 font-medium transition-colors ${
+          className={`flex-1 px-6 py-3 font-semibold rounded-lg transition-all ${
             activeTab === "tags"
-              ? "border-b-2 border-blue-600 text-blue-600"
-              : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
+              ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
+              : "text-[var(--text-muted)] hover:bg-[var(--glass-bg)]"
           }`}
         >
-          <HiTag className="inline mr-2" size={18} />
+          <HiTag className="inline mr-2" size={20} />
           Tags
         </button>
       </div>
@@ -275,6 +277,50 @@ export default function CategoriesPage() {
             <button onClick={openAddCategory} className="btn-primary inline-flex items-center gap-2">
               <HiPlus size={18} />
               Add Category
+            </button>
+          </div>
+
+          {/* Category Type Filter */}
+          <div className="card p-1 flex gap-1 bg-[var(--surface)]">
+            <button
+              onClick={() => setCategoryTypeFilter("ALL")}
+              className={`flex-1 px-4 py-2.5 font-medium rounded-lg transition-all text-sm ${
+                categoryTypeFilter === "ALL"
+                  ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
+                  : "text-[var(--text-muted)] hover:bg-[var(--glass-bg)]"
+              }`}
+            >
+              All Types
+            </button>
+            <button
+              onClick={() => setCategoryTypeFilter("EXPENSE")}
+              className={`flex-1 px-4 py-2.5 font-medium rounded-lg transition-all text-sm ${
+                categoryTypeFilter === "EXPENSE"
+                  ? "bg-gradient-to-r from-red-600 to-orange-600 text-white shadow-lg"
+                  : "text-[var(--text-muted)] hover:bg-[var(--glass-bg)]"
+              }`}
+            >
+              Expenses
+            </button>
+            <button
+              onClick={() => setCategoryTypeFilter("INCOME")}
+              className={`flex-1 px-4 py-2.5 font-medium rounded-lg transition-all text-sm ${
+                categoryTypeFilter === "INCOME"
+                  ? "bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg"
+                  : "text-[var(--text-muted)] hover:bg-[var(--glass-bg)]"
+              }`}
+            >
+              Income
+            </button>
+            <button
+              onClick={() => setCategoryTypeFilter("TRANSFER")}
+              className={`flex-1 px-4 py-2.5 font-medium rounded-lg transition-all text-sm ${
+                categoryTypeFilter === "TRANSFER"
+                  ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg"
+                  : "text-[var(--text-muted)] hover:bg-[var(--glass-bg)]"
+              }`}
+            >
+              Transfers
             </button>
           </div>
 
@@ -291,7 +337,7 @@ export default function CategoriesPage() {
 
           {!loading && categories.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {["EXPENSE", "INCOME", "TRANSFER"].map((type) => {
+              {(categoryTypeFilter === "ALL" ? ["EXPENSE", "INCOME", "TRANSFER"] : [categoryTypeFilter]).map((type) => {
                 const typeCats = categories.filter((c) => c.kind === type);
                 if (typeCats.length === 0) return null;
                 
@@ -330,6 +376,40 @@ export default function CategoriesPage() {
               })}
             </div>
           )}
+
+          {/* Categorization Tips Card - Now at the bottom */}
+          <div className="card bg-gradient-to-br from-indigo-50/50 to-purple-50/50 dark:from-indigo-900/10 dark:to-purple-900/10 border border-indigo-200 dark:border-indigo-800">
+            <div className="flex items-start gap-3 mb-4">
+              <span className="text-3xl">🏷️</span>
+              <div>
+                <h3 className="font-semibold text-lg mb-1">Why Categorization Matters</h3>
+                <p className="text-sm text-[var(--text-muted)]">Transform financial chaos into clarity</p>
+              </div>
+            </div>
+            <div className="space-y-3 text-sm mb-4">
+              <p className="leading-relaxed">
+                <strong>Without categories:</strong> "Where did my money go?" Mystery spending, budget failures, hidden leaks.
+              </p>
+              <p className="leading-relaxed">
+                <strong>With categories:</strong> Crystal-clear spending patterns, smart budgets based on reality, KES 50K+ annual savings from visibility alone.
+              </p>
+              <div className="bg-white/50 dark:bg-gray-800/50 rounded-lg p-4 mt-4">
+                <p className="font-bold mb-2">Categories reveal:</p>
+                <ul className="space-y-1 text-xs list-disc list-inside">
+                  <li>Exactly where every shilling goes (Food: KES 18K, Transport: KES 12K, etc.)</li>
+                  <li>Overspending alerts mid-month before you're broke</li>
+                  <li>Hidden money leaks (unused gym: KES 3.5K/month, forgotten subscriptions)</li>
+                  <li>Tax-deductible expenses for freelancers (save KES 80K+ yearly)</li>
+                </ul>
+              </div>
+            </div>
+            <Link 
+              to="/blog/categorization-importance" 
+              className="inline-block px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all font-medium text-sm"
+            >
+              Read Full Guide: Why Categorization Changes Everything →
+            </Link>
+          </div>
         </div>
       )}
 
