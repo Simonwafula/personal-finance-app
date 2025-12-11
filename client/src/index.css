@@ -120,6 +120,17 @@
   to { opacity: 1; }
 }
 
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes scale-in {
   from {
     opacity: 0;
@@ -141,7 +152,11 @@
 }
 
 .animate-fade-in {
-  animation: fade-in 0.4s ease-out;
+  animation: fade-in 0.6s ease-out;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.8s ease-out;
 }
 
 .animate-scale-in {
@@ -1495,8 +1510,21 @@ input:focus, textarea:focus, select:focus {
   }
 }
 
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
 .animate-blob {
   animation: blob 7s infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
 }
 
 .animation-delay-2000 {
