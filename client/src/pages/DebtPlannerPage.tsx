@@ -38,7 +38,7 @@ export default function DebtPlannerPage() {
 
   const selectedPlan = useMemo(() => plans.find(p => p.id === selectedId) || null, [plans, selectedId]);
 
-  const { monthsCount, totalInterest, totalPrincipal, totalPayments, initialDebt, timeline } = useMemo(() => {
+  const { monthsCount, totalInterest, initialDebt, timeline } = useMemo(() => {
     if (!schedule || schedule.length === 0) {
       return { monthsCount: 0, totalInterest: 0, totalPrincipal: 0, totalPayments: 0, initialDebt: 0, timeline: [] as { month: string; remaining: number }[] };
     }

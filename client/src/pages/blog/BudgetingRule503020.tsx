@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import BlogArticleLayout from './BlogArticleLayout';
 
 export default function BudgetingRule503020() {
@@ -143,8 +144,6 @@ export default function BudgetingRule503020() {
               </Link>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
+    </BlogArticleLayout>
   );
 }

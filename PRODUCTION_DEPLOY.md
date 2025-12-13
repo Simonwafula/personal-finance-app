@@ -102,17 +102,29 @@ Description=Finance App Gunicorn
 After=network.target
 
 [Service]
-User=finance
-Group=finance
+User=finance.mstatilitechnologies.com
+Group=finance.mstatilitechnologies.com
 WorkingDirectory=/home/finance.mstatilitechnologies.com/personal-finance-app
 EnvironmentFile=/home/finance.mstatilitechnologies.com/.env
 ExecStart=/home/finance.mstatilitechnologies.com/.venv/bin/gunicorn \
     --workers 3 \
-    --bind unix:/home/finance.mstatilitechnologies.com/finance.sock \
+    --bind 127.0.0.1:8000 \
+    --timeout 120 \
+    --access-logfile /home/finance.mstatilitechnologies.com/logs/gunicorn-access.log \
+    --error-logfile /home/finance.mstatilitechnologies.com/logs/gunicorn-error.log \
     backend.wsgi:application
+
+Restart=always
+RestartSec=3
 
 [Install]
 WantedBy=multi-user.target
+```
+
+Create log directory:
+```bash
+mkdir -p /home/finance.mstatilitechnologies.com/logs
+chown -R finance.mstatilitechnologies.com:finance.mstatilitechnologies.com /home/finance.mstatilitechnologies.com/logs
 ```
 
 Enable and start:
@@ -123,36 +135,68 @@ sudo systemctl start finance-app
 sudo systemctl status finance-app
 ```
 
-### 6. Configure Nginx in CyberPanel
-Add to your site's Nginx config (CyberPanel → Websites → Manage → Rewrite Rules):
-```nginx
-location /api/ {
-    proxy_pass http://unix:/home/finance.mstatilitechnologies.com/finance.sock;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
+### 6. Configure OpenLiteSpeed Proxy (CyberPanel)
+
+**Option A: Using CyberPanel GUI (Recommended)**
+1. Go to CyberPanel → Websites → List Websites
+2. Select finance.mstatilitechnologies.com → Manage
+3. Go to "vHost Conf" tab
+4. Add this configuration in the `<VirtualHost *:443>` section:
+
+```apache
+<IfModule mod_proxy.c>
+    ProxyPreserveHost On
+    ProxyPass /api http://127.0.0.1:8000/api
+    ProxyPassReverse /api http://127.0.0.1:8000/api
+    
+    ProxyPass /admin http://127.0.0.1:8000/admin
+    ProxyPassReverse /admin http://127.0.0.1:8000/admin
+    
+    ProxyPass /accounts http://127.0.0.1:8000/accounts
+    ProxyPassReverse /accounts http://127.0.0.1:8000/accounts
+</IfModule>
+```
+
+5. Save and gracefully restart OpenLiteSpeed
+
+**Option B: Manual Configuration**
+Edit `/usr/local/lsws/conf/vhosts/finance.mstatilitechnologies.com/vhost.conf`:
+
+Add inside the `<VirtualHost>` block:
+```apache
+context /api/ {
+  type                    proxy
+  handler                 lsapi:django
+  addDefaultCharset       off
+  proxyConfig             http://127.0.0.1:8000/api/
 }
 
-location /admin/ {
-    proxy_pass http://unix:/home/finance.mstatilitechnologies.com/finance.sock;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
+context /admin/ {
+  type                    proxy
+  handler                 lsapi:django
+  addDefaultCharset       off
+  proxyConfig             http://127.0.0.1:8000/admin/
 }
 
-location /accounts/ {
-    proxy_pass http://unix:/home/finance.mstatilitechnologies.com/finance.sock;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
+context /accounts/ {
+  type                    proxy
+  handler                 lsapi:django
+  addDefaultCharset       off
+  proxyConfig             http://127.0.0.1:8000/accounts/
 }
 
-location /static/ {
-    alias /home/finance.mstatilitechnologies.com/personal-finance-app/staticfiles/;
+context /static/ {
+  location                /home/finance.mstatilitechnologies.com/personal-finance-app/staticfiles/
+  allowBrowse             1
+  addDefaultCharset       off
 }
+```
+
+Restart OpenLiteSpeed:
+```bash
+sudo systemctl restart lsws
+# or
+/usr/local/lsws/bin/lswsctrl restart
 ```
 
 ### 7. Build and Deploy Frontend

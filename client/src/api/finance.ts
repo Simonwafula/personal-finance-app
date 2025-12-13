@@ -2,6 +2,8 @@
 import { api } from "./client";
 import type { Account, Transaction, Category, Tag, TagAnalysis } from "./types";
 
+export type { Account };
+
 export async function fetchAccounts(): Promise<Account[]> {
   const res = await api.get("/api/finance/accounts/");
   return res.data;
