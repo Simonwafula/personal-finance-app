@@ -14,11 +14,15 @@ Your current credentials are publicly exposed. Generate new ones:
 **Google OAuth:**
 - Go to Google Cloud Console → APIs & Services → Credentials
 - Create a NEW OAuth 2.0 Client ID for production:
-  - Authorized JavaScript origins: `https://finance.mstatilitechnologies.com`
-  - Authorized redirect URIs: 
+  - Application type: Web application
+  - Name: Finance App Production
+  - Authorized JavaScript origins: 
+    - `https://finance.mstatilitechnologies.com`
+  - Authorized redirect URIs (MUST include both):
     - `https://finance.mstatilitechnologies.com/accounts/google/login/callback/`
     - `https://finance.mstatilitechnologies.com/oauth-callback`
 - Copy new client ID + secret
+- **IMPORTANT**: Remove any localhost URIs from production credentials
 
 **Django Secret Key:**
 ```bash
@@ -137,66 +141,79 @@ sudo systemctl status finance-app
 
 ### 6. Configure OpenLiteSpeed Proxy (CyberPanel)
 
+**IMPORTANT**: The `/accounts/` path must proxy to Django backend for Google OAuth to work!
+
 **Option A: Using CyberPanel GUI (Recommended)**
 1. Go to CyberPanel → Websites → List Websites
 2. Select finance.mstatilitechnologies.com → Manage
-3. Go to "vHost Conf" tab
-4. Add this configuration in the `<VirtualHost *:443>` section:
+3. Go to "Rewrite Rules" or "vHost Conf" tab
+4. Add these proxy rules (ORDER MATTERS - put these BEFORE any other rules):
 
 ```apache
-<IfModule mod_proxy.c>
-    ProxyPreserveHost On
-    ProxyPass /api http://127.0.0.1:8000/api
-    ProxyPassReverse /api http://127.0.0.1:8000/api
-    
-    ProxyPass /admin http://127.0.0.1:8000/admin
-    ProxyPassReverse /admin http://127.0.0.1:8000/admin
-    
-    ProxyPass /accounts http://127.0.0.1:8000/accounts
-    ProxyPassReverse /accounts http://127.0.0.1:8000/accounts
-</IfModule>
+RewriteEngine On
+
+# Proxy all /accounts/ requests to Django (for Google OAuth callback)
+RewriteRule ^/accounts/(.*)$ http://127.0.0.1:8000/accounts/$1 [P,L]
+
+# Proxy API requests to Django
+RewriteRule ^/api/(.*)$ http://127.0.0.1:8000/api/$1 [P,L]
+
+# Proxy admin to Django
+RewriteRule ^/admin/(.*)$ http://127.0.0.1:8000/admin/$1 [P,L]
+
+# Everything else serves the React frontend
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ /index.html [L]
 ```
 
-5. Save and gracefully restart OpenLiteSpeed
+5. Save and gracefully restart OpenLiteSpeed:
+```bash
+sudo systemctl restart lsws
+```
 
-**Option B: Manual Configuration**
+**Option B: Edit OpenLiteSpeed Config Directly**
 Edit `/usr/local/lsws/conf/vhosts/finance.mstatilitechnologies.com/vhost.conf`:
 
-Add inside the `<VirtualHost>` block:
+Find the `<VirtualHost>` section and add these context blocks:
+
 ```apache
+context /accounts/ {
+  type                    proxy
+  handler                 1
+  addDefaultCharset       off
+  proxyConfig             http://127.0.0.1:8000/accounts/
+}
+
 context /api/ {
   type                    proxy
-  handler                 lsapi:django
+  handler                 1
   addDefaultCharset       off
   proxyConfig             http://127.0.0.1:8000/api/
 }
 
 context /admin/ {
   type                    proxy
-  handler                 lsapi:django
+  handler                 1
   addDefaultCharset       off
   proxyConfig             http://127.0.0.1:8000/admin/
-}
-
-context /accounts/ {
-  type                    proxy
-  handler                 lsapi:django
-  addDefaultCharset       off
-  proxyConfig             http://127.0.0.1:8000/accounts/
-}
-
-context /static/ {
-  location                /home/finance.mstatilitechnologies.com/personal-finance-app/staticfiles/
-  allowBrowse             1
-  addDefaultCharset       off
 }
 ```
 
 Restart OpenLiteSpeed:
 ```bash
-sudo systemctl restart lsws
-# or
 /usr/local/lsws/bin/lswsctrl restart
+```
+
+**Verify Proxy is Working:**
+```bash
+# Test accounts endpoint (should reach Django)
+curl -I https://finance.mstatilitechnologies.com/accounts/login/
+
+# Test API endpoint (should reach Django)
+curl https://finance.mstatilitechnologies.com/api/auth/me/
+
+# Both should show Django responses, not LiteSpeed error pages
 ```
 
 ### 7. Build and Deploy Frontend
