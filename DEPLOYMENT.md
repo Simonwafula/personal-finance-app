@@ -25,9 +25,34 @@ This document collects recommended steps and environment settings to deploy the 
 - For popup flow, ensure that `SOCIALACCOUNT_LOGIN_REDIRECT_URL` points to the frontend `https://app.example.com/oauth-callback`.
 
 4) Static files and frontend build
-- Build frontend assets with `npm run build --prefix client`.
-- Serve built assets either via a CDN or via Django's `collectstatic` + WhiteNoise/Gunicorn or via a separate static webserver (recommended for performance).
-- If serving frontend from the same backend domain, configure Django `STATICFILES_DIRS` and run `python manage.py collectstatic`.
+- **Backend static files (Django admin, DRF browsable API):**
+  ```bash
+  python manage.py collectstatic --noinput
+  ```
+  This collects all Django static files into `staticfiles/` directory.
+  
+- **WhiteNoise configuration (already set up):**
+  - WhiteNoise middleware is configured in `settings.py` to serve static files efficiently in production
+  - Compressed and cached static files using `CompressedManifestStaticFilesStorage`
+  - No need for separate web server (nginx) to serve static files
+  
+- **Frontend build and deployment options:**
+  
+  **Option A: Separate frontend deployment (Recommended)**
+  - Build frontend: `cd client && npm run build`
+  - Deploy `client/dist/` to a CDN or static hosting (Vercel, Netlify, AWS S3+CloudFront)
+  - Frontend makes API calls to backend domain
+  - Configure CORS properly in backend settings
+  
+  **Option B: Serve frontend from Django**
+  - Build frontend: `cd client && npm run build`
+  - Uncomment this line in `backend/settings.py`:
+    ```python
+    STATICFILES_DIRS = [BASE_DIR / 'client' / 'dist']
+    ```
+  - Run: `python manage.py collectstatic --noinput`
+  - Django will serve the frontend from the same domain
+  - Add a catch-all URL pattern in `backend/urls.py` to serve `index.html` for React Router
 
 5) Database migrations and startup
 - Run migrations: `python manage.py migrate`.
