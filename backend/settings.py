@@ -32,7 +32,7 @@ DEBUG = os.getenv('DJANGO_DEBUG', 'True').lower() in ('1', 'true', 'yes')
 
 # Configure ALLOWED_HOSTS via environment in production: comma-separated list
 _ah = os.getenv('DJANGO_ALLOWED_HOSTS', '')
-ALLOWED_HOSTS = [h.strip() for h in _ah.split(',') if h.strip()] if _ah else []
+ALLOWED_HOSTS = [h.strip() for h in _ah.split(',') if h.strip()] if _ah else ['localhost', '127.0.0.1']
 
 
 # Application definition
@@ -97,12 +97,25 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# Use PostgreSQL in production, SQLite in dev
+if os.getenv('DATABASE_ENGINE'):
+    DATABASES = {
+        'default': {
+            'ENGINE': os.getenv('DATABASE_ENGINE', 'django.db.backends.postgresql'),
+            'NAME': os.getenv('DATABASE_NAME', 'finance_db'),
+            'USER': os.getenv('DATABASE_USER', 'finance_user'),
+            'PASSWORD': os.getenv('DATABASE_PASSWORD', ''),
+            'HOST': os.getenv('DATABASE_HOST', 'localhost'),
+            'PORT': os.getenv('DATABASE_PORT', '5432'),
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
@@ -158,12 +171,17 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://localhost:5174",
-    "http://127.0.0.1:5174",
-]
+# CORS: Read from env in production, default to localhost in dev
+_cors_origins = os.getenv('CORS_ALLOWED_ORIGINS', '')
+if _cors_origins:
+    CORS_ALLOWED_ORIGINS = [origin.strip() for origin in _cors_origins.split(',') if origin.strip()]
+else:
+    CORS_ALLOWED_ORIGINS = [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174",
+    ]
 
 CORS_ALLOW_CREDENTIALS = True
 
@@ -185,12 +203,17 @@ REST_FRAMEWORK = {
     ],
 }
 
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://localhost:5174",
-    "http://127.0.0.1:5174",
-]
+# CSRF: Read from env in production, default to localhost in dev
+_csrf_origins = os.getenv('CSRF_TRUSTED_ORIGINS', '')
+if _csrf_origins:
+    CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in _csrf_origins.split(',') if origin.strip()]
+else:
+    CSRF_TRUSTED_ORIGINS = [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174",
+    ]
 
 SITE_ID = 1
 AUTHENTICATION_BACKENDS = [
@@ -198,13 +221,31 @@ AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',  # for allauth
 ]
 
+# Google OAuth Configuration
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': ['profile', 'email'],
+        'AUTH_PARAMS': {'access_type': 'online'},
+        'VERIFIED_EMAIL': True,
+        'APP': {
+            'client_id': os.getenv('GOOGLE_CLIENT_ID', ''),
+            'secret': os.getenv('GOOGLE_CLIENT_SECRET', ''),
+            'key': '',
+        }
+    }
+}
+
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/login"
 ACCOUNT_EMAIL_VERIFICATION = "none"
 ACCOUNT_LOGIN_METHOD = "username"
 ACCOUNT_LOGOUT_ON_GET = True
 ACCOUNT_LOGOUT_REDIRECT_URL = "/login"
-SOCIALACCOUNT_LOGIN_REDIRECT_URL = "http://localhost:5174/oauth-callback"
+# OAuth callback: use env var in production
+SOCIALACCOUNT_LOGIN_REDIRECT_URL = os.getenv(
+    'SOCIALACCOUNT_LOGIN_REDIRECT_URL',
+    'http://localhost:5174/oauth-callback'
+)
 
 if not DEBUG:
     # Require HTTPS for cookies in production

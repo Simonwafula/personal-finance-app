@@ -364,7 +364,6 @@ export default function BudgetsPage() {
                 "Create Budget"
               )}
             </button>
-            </button>
           </div>
         </form>
       </div>
