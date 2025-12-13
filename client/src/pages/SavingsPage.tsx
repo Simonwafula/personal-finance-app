@@ -407,7 +407,7 @@ export default function SavingsPage() {
                     <option value="">No linked account</option>
                     {accounts.map(account => (
                       <option key={account.id} value={account.id}>
-                        {account.name} ({formatMoney(account.balance)})
+                        {account.name} ({formatMoney(account.opening_balance)})
                       </option>
                     ))}
                   </select>

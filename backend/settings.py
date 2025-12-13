@@ -32,7 +32,11 @@ DEBUG = os.getenv('DJANGO_DEBUG', 'True').lower() in ('1', 'true', 'yes')
 
 # Configure ALLOWED_HOSTS via environment in production: comma-separated list
 _ah = os.getenv('DJANGO_ALLOWED_HOSTS', '')
-ALLOWED_HOSTS = [h.strip() for h in _ah.split(',') if h.strip()] if _ah else ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = (
+    [h.strip() for h in _ah.split(',') if h.strip()]
+    if _ah
+    else ['localhost', '127.0.0.1']
+)
 
 
 # Application definition
@@ -64,7 +68,8 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # Serve static files in production
+    # Serve static files in production
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -102,7 +107,9 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 if os.getenv('DATABASE_ENGINE'):
     DATABASES = {
         'default': {
-            'ENGINE': os.getenv('DATABASE_ENGINE', 'django.db.backends.postgresql'),
+            'ENGINE': os.getenv(
+                'DATABASE_ENGINE', 'django.db.backends.postgresql'
+            ),
             'NAME': os.getenv('DATABASE_NAME', 'finance_db'),
             'USER': os.getenv('DATABASE_USER', 'finance_user'),
             'PASSWORD': os.getenv('DATABASE_PASSWORD', ''),
@@ -178,7 +185,9 @@ STATICFILES_DIRS = []
 # Add 'whitenoise.middleware.WhiteNoiseMiddleware' after SecurityMiddleware
 # pip install whitenoise
 if not DEBUG:
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+    STATICFILES_STORAGE = (
+        'whitenoise.storage.CompressedManifestStaticFilesStorage'
+    )
 
 # Media files (user uploads)
 MEDIA_URL = '/media/'
@@ -192,7 +201,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # CORS: Read from env in production, default to localhost in dev
 _cors_origins = os.getenv('CORS_ALLOWED_ORIGINS', '')
 if _cors_origins:
-    CORS_ALLOWED_ORIGINS = [origin.strip() for origin in _cors_origins.split(',') if origin.strip()]
+    CORS_ALLOWED_ORIGINS = [
+        origin.strip()
+        for origin in _cors_origins.split(',')
+        if origin.strip()
+    ]
 else:
     CORS_ALLOWED_ORIGINS = [
         "http://localhost:5173",
@@ -224,7 +237,11 @@ REST_FRAMEWORK = {
 # CSRF: Read from env in production, default to localhost in dev
 _csrf_origins = os.getenv('CSRF_TRUSTED_ORIGINS', '')
 if _csrf_origins:
-    CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in _csrf_origins.split(',') if origin.strip()]
+    CSRF_TRUSTED_ORIGINS = [
+        origin.strip()
+        for origin in _csrf_origins.split(',')
+        if origin.strip()
+    ]
 else:
     CSRF_TRUSTED_ORIGINS = [
         "http://localhost:5173",
