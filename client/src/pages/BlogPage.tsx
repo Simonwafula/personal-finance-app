@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
-import PublicHeader from '../components/PublicHeader';
-import PublicFooter from '../components/PublicFooter';
+import { HiBookOpen } from 'react-icons/hi';
 import BlogSidebar from '../components/BlogSidebar';
 
 interface BlogPost {
@@ -179,93 +178,86 @@ export default function BlogPage() {
     : blogPosts;
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-100">
-      <PublicHeader />
-      
-      <main className="flex-1">
-        <div className="max-w-6xl mx-auto px-4 py-6 grid gap-6 lg:grid-cols-[2fr,1fr]">
-          {/* Main content column */}
-          <section className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-              <div>
-                <h1 className="text-2xl font-semibold text-gray-900">
-                  📚 Financial Wisdom
-                </h1>
-                <p className="text-sm text-gray-500 mt-1">
-                  Expert tips, guides, and insights to help you master your money
-                </p>
-              </div>
-              <div className="inline-flex px-4 py-2 rounded-full bg-blue-50 text-sm font-semibold text-blue-600">
-                {filteredPosts.length} Articles
-              </div>
-            </div>
+    <div className="max-w-7xl mx-auto p-4 space-y-6 pb-20">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent flex items-center gap-2">
+            <HiBookOpen className="text-emerald-600" size={24} />
+            Financial Wisdom
+          </h1>
+          <p className="text-sm text-[var(--text-muted)] mt-1">Expert tips, guides, and insights to help you master your money</p>
+        </div>
+        <div className="inline-flex px-4 py-2 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+          {filteredPosts.length} Articles
+        </div>
+      </div>
 
-            {/* Category Filter */}
-            <div className="flex flex-wrap gap-2 mb-6">
+      <div className="grid gap-6 xl:grid-cols-[3fr,1fr]">
+        {/* Main content column */}
+        <section className="space-y-4">
+          {/* Category Filter */}
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setSelectedCategory(null)}
+              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                selectedCategory === null 
+                  ? 'bg-emerald-600 text-white shadow-sm' 
+                  : 'bg-[var(--surface)] text-[var(--text-muted)] border border-[var(--border-subtle)] hover:bg-[var(--surface-hover)]'
+              }`}
+            >
+              All Articles
+            </button>
+            {categories.map((category) => (
               <button
-                onClick={() => setSelectedCategory(null)}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                  selectedCategory === null 
-                    ? 'bg-blue-600 text-white shadow-sm' 
-                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                key={category}
+                onClick={() => setSelectedCategory(category)}
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                  selectedCategory === category 
+                    ? 'bg-emerald-600 text-white shadow-sm' 
+                    : 'bg-[var(--surface)] text-[var(--text-muted)] border border-[var(--border-subtle)] hover:bg-[var(--surface-hover)]'
                 }`}
               >
-                All Articles
+                {category}
               </button>
-              {categories.map((category) => (
-                <button
-                  key={category}
-                  onClick={() => setSelectedCategory(category)}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                    selectedCategory === category 
-                      ? 'bg-blue-600 text-white shadow-sm' 
-                      : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                  }`}
-                >
-                  {category}
-                </button>
-              ))}
-            </div>
+            ))}
+          </div>
 
-            {/* Blog Grid */}
-            <div className="grid md:grid-cols-2 gap-4">
-              {filteredPosts.map((post) => (
-                <Link
-                  key={post.id}
-                  to={`/blog/${post.id}`}
-                  className="bg-white rounded-2xl shadow-sm p-4 md:p-5 hover:shadow-md transition-all group"
-                >
-                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${post.gradient} flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform`}>
-                    {post.emoji}
-                  </div>
-                  <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
-                    {post.category}
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
-                    {post.title}
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                    {post.excerpt}
-                  </p>
-                  <div className="flex items-center justify-between text-xs text-gray-500">
-                    <span>{post.readTime}</span>
-                    <span className="group-hover:translate-x-1 transition-transform">→</span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </section>
+          {/* Blog Grid */}
+          <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
+            {filteredPosts.map((post) => (
+              <Link
+                key={post.id}
+                to={`/blog/${post.id}`}
+                className="card p-4 md:p-5 hover:shadow-lg transition-all group"
+              >
+                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${post.gradient} flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform`}>
+                  {post.emoji}
+                </div>
+                <div className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wide mb-2">
+                  {post.category}
+                </div>
+                <h3 className="text-lg font-semibold text-[var(--text-main)] mb-2 group-hover:text-emerald-600 transition-colors">
+                  {post.title}
+                </h3>
+                <p className="text-sm text-[var(--text-muted)] mb-4 line-clamp-2">
+                  {post.excerpt}
+                </p>
+                <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
+                  <span>{post.readTime}</span>
+                  <span className="group-hover:translate-x-1 transition-transform">→</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
 
-          {/* Right sidebar */}
-          <aside className="hidden lg:block">
-            <div className="sticky top-6">
-              <BlogSidebar />
-            </div>
-          </aside>
-        </div>
-      </main>
-
-      <PublicFooter />
+        {/* Right sidebar */}
+        <aside className="hidden lg:block">
+          <div className="sticky top-6">
+            <BlogSidebar />
+          </div>
+        </aside>
+      </div>
     </div>
   );
 }

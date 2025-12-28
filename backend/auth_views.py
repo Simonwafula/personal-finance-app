@@ -55,6 +55,8 @@ class CurrentUserView(APIView):
 @permission_classes([AllowAny])
 def register_view(request: Request):
     """Registration endpoint: accepts email, password, optional username."""
+    from profiles.views import create_or_update_session
+    
     User = get_user_model()
     data = request.data or {}
     email = data.get("email")
@@ -94,6 +96,12 @@ def register_view(request: Request):
     # Ensure session is saved
     django_req.session.save()
     
+    # Track the session
+    try:
+        create_or_update_session(django_req, user)
+    except Exception as e:
+        print(f"Session tracking error: {e}")
+    
     return Response(
         get_user_data_with_profile(user),
         status=status.HTTP_201_CREATED
@@ -104,6 +112,8 @@ def register_view(request: Request):
 @permission_classes([AllowAny])
 def login_view(request: Request):
     """Login endpoint: accepts email/username + password and sets session."""
+    from profiles.views import create_or_update_session, log_failed_login
+    
     User = get_user_model()
     data = request.data or {}
     identifier = data.get("email") or data.get("username")
@@ -116,10 +126,11 @@ def login_view(request: Request):
 
     # If identifier looks like email, try to find username
     username = identifier
+    lookup_user = None
     if "@" in identifier:
-        u = User.objects.filter(email__iexact=identifier).first()
-        if u:
-            username = u.get_username()
+        lookup_user = User.objects.filter(email__iexact=identifier).first()
+        if lookup_user:
+            username = lookup_user.get_username()
 
     # Get the underlying Django request
     django_req = getattr(request, "_request", request)
@@ -127,6 +138,8 @@ def login_view(request: Request):
     # Authenticate with the Django request
     user = authenticate(django_req, username=username, password=password)
     if user is None:
+        # Log failed login attempt
+        log_failed_login(django_req, user=lookup_user, reason='Invalid credentials')
         return Response(
             {"detail": "Invalid credentials"},
             status=status.HTTP_400_BAD_REQUEST
@@ -138,6 +151,13 @@ def login_view(request: Request):
     
     # Ensure session is saved
     django_req.session.save()
+    
+    # Track the session
+    try:
+        create_or_update_session(django_req, user)
+    except Exception as e:
+        # Don't fail login if session tracking fails
+        print(f"Session tracking error: {e}")
 
     return Response(
         get_user_data_with_profile(user),
@@ -282,5 +302,55 @@ def reset_password_view(request: Request):
 
     return Response(
         {"message": "Password reset successful. You can now log in."},
+        status=status.HTTP_200_OK,
+    )
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def change_password_view(request: Request):
+    """
+    Change password for authenticated user.
+    Accepts: { current_password, new_password }
+    Returns: { message } or error detail
+    """
+    data = request.data or {}
+    current_password = data.get("current_password")
+    new_password = data.get("new_password")
+
+    if not current_password or not new_password:
+        return Response(
+            {"detail": "current_password and new_password are required"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    user = request.user
+
+    # Verify current password
+    if not user.check_password(current_password):
+        return Response(
+            {"detail": "Current password is incorrect"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Validate new password length
+    if len(new_password) < 8:
+        return Response(
+            {"detail": "Password must be at least 8 characters"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Set new password
+    user.set_password(new_password)
+    user.save()
+
+    # Re-authenticate to keep session valid
+    django_req = getattr(request, "_request", request)
+    backend = "django.contrib.auth.backends.ModelBackend"
+    login(django_req, user, backend=backend)
+    django_req.session.save()
+
+    return Response(
+        {"message": "Password changed successfully"},
         status=status.HTTP_200_OK,
     )

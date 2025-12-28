@@ -154,7 +154,8 @@ svg {
     inset -4px -4px 8px #4a5568;
 }
 
-.neu-input input {
+.neu-input input,
+.neu-input textarea {
   width: 100%;
   background: transparent;
   border: none;
@@ -168,11 +169,42 @@ svg {
   box-sizing: border-box;
 }
 
-.dark .neu-input input {
+/* Textarea specific styles */
+.neu-input-textarea {
+  min-height: 120px;
+}
+
+.neu-input-textarea textarea {
+  min-height: 100px;
+  resize: vertical;
+  padding-top: 28px;
+  line-height: 1.5;
+}
+
+.neu-input-textarea label {
+  top: 20px !important;
+  transform: translateY(0) !important;
+}
+
+.neu-input-textarea .neu-input-icon {
+  top: 20px !important;
+  transform: translateY(0) !important;
+}
+
+.neu-input textarea:focus + label,
+.neu-input textarea:not(:placeholder-shown) + label {
+  top: 8px !important;
+  font-size: 12px;
+  color: #6c7293;
+}
+
+.dark .neu-input input,
+.dark .neu-input textarea {
   color: #e2e8f0;
 }
 
-.neu-input input::placeholder {
+.neu-input input::placeholder,
+.neu-input textarea::placeholder {
   color: transparent;
 }
 

@@ -294,11 +294,14 @@ export default function InvestmentsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">📈 Investments</h1>
-          <p className="text-sm text-[var(--text-muted)]">Track and manage your investment portfolio</p>
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent flex items-center gap-2">
+            <HiTrendingUp className="text-amber-600" />
+            Investments
+          </h1>
+          <p className="text-sm text-[var(--text-muted)] mt-1">Track and manage your investment portfolio</p>
         </div>
         <div className="flex gap-2">
-          <Link to="/wealth" className="btn btn-secondary text-sm">
+          <Link to="/wealth" className="btn-secondary text-sm">
             ← Back to Wealth
           </Link>
           <button
@@ -306,7 +309,7 @@ export default function InvestmentsPage() {
               resetForm();
               setShowForm(!showForm);
             }}
-            className="btn btn-primary flex items-center gap-2"
+            className="btn-primary flex items-center gap-2"
           >
             {showForm ? <HiX className="w-4 h-4" /> : <HiPlus className="w-4 h-4" />}
             {showForm ? "Cancel" : "Add Investment"}

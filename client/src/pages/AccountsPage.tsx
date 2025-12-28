@@ -2,9 +2,9 @@
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { Link } from "react-router-dom";
-import { fetchAccounts, createAccount, updateAccount, deleteAccount } from "../api/finance";
+import { fetchAccounts, createAccount, updateAccount, deleteAccount, exportAccountsCsv } from "../api/finance";
 import type { Account } from "../api/types";
-import { HiPencil, HiTrash, HiX, HiPlus, HiChevronDown, HiExternalLink } from "react-icons/hi";
+import { HiPencil, HiTrash, HiX, HiPlus, HiCreditCard, HiDownload } from "react-icons/hi";
 
 const ACCOUNT_TYPES = [
   { value: "BANK", label: "Bank Account", icon: "🏦" },
@@ -44,6 +44,7 @@ export default function AccountsPage() {
   const [saving, setSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [exporting, setExporting] = useState(false);
 
   async function loadAccounts() {
     try {
@@ -140,20 +141,47 @@ export default function AccountsPage() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent flex items-center gap-2">
+            <HiCreditCard className="text-cyan-600" />
             Accounts
           </h1>
-          <p className="text-sm text-[var(--text-muted)] mt-0.5">
+          <p className="text-sm text-[var(--text-muted)] mt-1">
             Manage your bank accounts, mobile money, and wallets
           </p>
         </div>
-        <button
-          onClick={() => { setEditingId(null); setShowForm(!showForm); }}
-          className="btn-primary inline-flex items-center gap-2"
-        >
-          <HiPlus size={18} />
-          <span>Add Account</span>
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={async () => {
+              try {
+                setExporting(true);
+                const blob = await exportAccountsCsv();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "accounts.csv";
+                a.click();
+                URL.revokeObjectURL(url);
+              } catch (err) {
+                console.error(err);
+                setError("Failed to export accounts");
+              } finally {
+                setExporting(false);
+              }
+            }}
+            disabled={exporting || accounts.length === 0}
+            className="btn-secondary inline-flex items-center gap-2"
+          >
+            <HiDownload size={18} />
+            <span>{exporting ? "Exporting..." : "Export"}</span>
+          </button>
+          <button
+            onClick={() => { setEditingId(null); setShowForm(!showForm); }}
+            className="btn-primary inline-flex items-center gap-2"
+          >
+            <HiPlus size={18} />
+            <span>Add Account</span>
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -170,7 +198,7 @@ export default function AccountsPage() {
               <span className="text-lg">💵</span>
               <span className="text-xs text-[var(--text-muted)] uppercase tracking-wide">Available Cash</span>
             </div>
-            <div className="text-xl font-bold text-emerald-600">{currency} {formatMoney(totalLiquidity)}</div>
+            <div className="text-xl font-bold text-emerald-600">KES {formatMoney(totalLiquidity)}</div>
             <div className="text-xs text-[var(--text-muted)]">{liquidAccounts.length} liquid account{liquidAccounts.length !== 1 ? 's' : ''}</div>
           </div>
           
@@ -179,7 +207,7 @@ export default function AccountsPage() {
               <span className="text-lg">🏦</span>
               <span className="text-xs text-[var(--text-muted)] uppercase tracking-wide">Total Balance</span>
             </div>
-            <div className="text-xl font-bold text-blue-600">{currency} {formatMoney(totalAllAccounts)}</div>
+            <div className="text-xl font-bold text-blue-600">KES {formatMoney(totalAllAccounts)}</div>
             <div className="text-xs text-[var(--text-muted)]">{accounts.length} total account{accounts.length !== 1 ? 's' : ''}</div>
           </div>
 

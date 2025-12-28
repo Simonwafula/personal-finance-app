@@ -1,6 +1,5 @@
 // src/pages/SubscriptionsPage.tsx
 import { useEffect, useMemo, useState, useCallback } from "react";
-import { Link } from "react-router-dom";
 import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import {
   HiPlus,
@@ -298,7 +297,10 @@ export default function SubscriptionsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold">🔄 Subscriptions & Bills</h1>
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent flex items-center gap-2">
+            <HiRefresh className="text-rose-600" />
+            Subscriptions & Bills
+          </h1>
           <p className="text-sm text-[var(--text-muted)] mt-1">
             Track recurring expenses and income
           </p>
@@ -306,7 +308,8 @@ export default function SubscriptionsPage() {
         <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => loadAll()}
-            className="btn btn-secondary text-sm"
+            className="btn-secondary text-sm p-2"
+            title="Refresh"
           >
             <HiRefresh className="w-4 h-4" />
           </button>
@@ -321,13 +324,13 @@ export default function SubscriptionsPage() {
                 setError("Failed to materialize recurring");
               }
             }}
-            className="btn btn-secondary text-sm"
+            className="btn-secondary text-sm"
           >
             ⚡ Generate 30 Days
           </button>
           <button
             onClick={() => setShowForm(true)}
-            className="btn btn-primary text-sm"
+            className="btn-primary text-sm"
           >
             <HiPlus className="w-4 h-4 mr-1" />
             Add Recurring

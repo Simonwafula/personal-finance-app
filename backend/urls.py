@@ -10,6 +10,7 @@ from backend.auth_views import (
     login_view,
     forgot_password_view,
     reset_password_view,
+    change_password_view,
 )
 
 
@@ -36,6 +37,7 @@ urlpatterns = [
     path("api/auth/login/", login_view),
     path("api/auth/forgot-password/", forgot_password_view),
     path("api/auth/reset-password/", reset_password_view),
+    path("api/auth/change-password/", change_password_view),
     path("api/auth/profile/", include("profiles.urls")),
     path("api/finance/", include("finance.urls")),
     path("api/budgeting/", include("budgeting.urls")),

@@ -149,10 +149,11 @@ export default function WealthPage() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent flex items-center gap-2">
+            <span className="text-purple-600">💎</span>
             Wealth Tracker
           </h1>
-          <p className="text-sm text-[var(--text-muted)] mt-0.5">
+          <p className="text-sm text-[var(--text-muted)] mt-1">
             Monitor your assets, liabilities, and net worth
           </p>
         </div>

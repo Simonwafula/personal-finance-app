@@ -13,10 +13,12 @@ import {
   deleteTransaction,
   importTransactionsCsv,
   exportTransactionsCsv,
+  importMpesaStatement,
+  importBankStatement,
 } from "../api/finance";
 import { getSavingsGoals, type SavingsGoal } from "../api/savings";
 import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { HiPlus, HiUpload, HiDownload, HiX, HiPencil, HiTrash, HiFilter, HiChevronDown, HiChevronUp } from "react-icons/hi";
+import { HiPlus, HiUpload, HiDownload, HiX, HiPencil, HiTrash, HiFilter, HiChevronDown, HiCash } from "react-icons/hi";
 import type {
   Transaction,
   Account,
@@ -60,6 +62,16 @@ export default function TransactionsPage() {
   const [saving, setSaving] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [importResult, setImportResult] = useState<any | null>(null);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importType, setImportType] = useState<"mpesa" | "bank" | "simple">("mpesa");
+  const [importAccountId, setImportAccountId] = useState<number | "">(""  );
+  const [importing, setImporting] = useState(false);
+  const [bankDateColumn, setBankDateColumn] = useState("date");
+  const [bankAmountColumn, setBankAmountColumn] = useState("");
+  const [bankDebitColumn, setBankDebitColumn] = useState("");
+  const [bankCreditColumn, setBankCreditColumn] = useState("");
+  const [bankDescColumn, setBankDescColumn] = useState("description");
+  const [bankDateFormat, setBankDateFormat] = useState("%Y-%m-%d");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [searchParams] = useSearchParams();
   const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([]);
@@ -330,16 +342,33 @@ export default function TransactionsPage() {
 
   const hasActiveFilters = filterCategory || filterKind || filterAccount;
 
+  // Helper to format date range nicely
+  const formatDateRange = (start: string, end: string) => {
+    const startD = new Date(start);
+    const endD = new Date(end);
+    const sameYear = startD.getFullYear() === endD.getFullYear();
+    const sameMonth = sameYear && startD.getMonth() === endD.getMonth();
+    
+    if (sameMonth) {
+      return `${startD.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} - ${endD.getDate()}, ${endD.getFullYear()}`;
+    }
+    if (sameYear) {
+      return `${startD.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${endD.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${endD.getFullYear()}`;
+    }
+    return `${startD.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - ${endD.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+  };
+
   return (
     <div className="space-y-4 pb-20 max-w-7xl mx-auto">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent flex items-center gap-2">
+            <HiCash className="text-blue-600" />
             Transactions
-          </h3>
-          <p className="text-sm text-[var(--text-muted)] mt-0.5">
-            {range.startDate} → {range.endDate}
+          </h1>
+          <p className="text-sm text-[var(--text-muted)] mt-1">
+            {formatDateRange(range.startDate, range.endDate)}
           </p>
         </div>
         <div className="flex gap-2">
@@ -478,11 +507,14 @@ export default function TransactionsPage() {
       {/* Quick Actions - More compact */}
       <div className="flex gap-2 flex-wrap">
         <button
-          onClick={() => fileInputRef.current?.click()}
+          onClick={() => {
+            setShowImportModal(true);
+            setImportResult(null);
+          }}
           className="inline-flex items-center gap-2 px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
         >
           <HiUpload size={16} className="text-green-600" />
-          <span>Import CSV</span>
+          <span>Import Statement</span>
         </button>
         <button
           onClick={async () => {
@@ -520,29 +552,271 @@ export default function TransactionsPage() {
       <input
         ref={fileInputRef}
         type="file"
-        accept="text/csv"
+        accept=".csv,.xlsx,.xls"
         className="hidden"
-        onChange={async () => {
-          const f = fileInputRef.current?.files?.[0];
-          if (!f) {
-            setImportResult({ error: "Please select a CSV file first." });
-            return;
-          }
-          try {
-            setImportResult(null);
-            const res = await importTransactionsCsv(f);
-            setImportResult({ success: res });
-            await loadTransactions();
-          } catch (err: any) {
-            setImportResult({ error: err?.message || String(err) });
-          }
-        }}
       />
 
-      {importResult && (
-        <div className={`card text-sm p-4 ${importResult.error ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}>
-          {importResult.error && `Error: ${String(importResult.error)}`}
-          {importResult.success && `Successfully imported ${importResult.success.created ?? 'transactions'}`}
+      {/* Import Modal */}
+      {showImportModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="card w-full max-w-lg p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-bold">Import Statement</h3>
+              <button onClick={() => setShowImportModal(false)} className="text-[var(--text-muted)] hover:text-[var(--text-main)]">
+                <HiX size={24} />
+              </button>
+            </div>
+
+            {/* Import Type Selection */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => setImportType("mpesa")}
+                className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                  importType === "mpesa" 
+                    ? "bg-green-600 text-white" 
+                    : "bg-gray-100 dark:bg-gray-700 text-[var(--text-muted)]"
+                }`}
+              >
+                📱 M-Pesa
+              </button>
+              <button
+                onClick={() => setImportType("bank")}
+                className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                  importType === "bank" 
+                    ? "bg-blue-600 text-white" 
+                    : "bg-gray-100 dark:bg-gray-700 text-[var(--text-muted)]"
+                }`}
+              >
+                🏦 Bank CSV
+              </button>
+              <button
+                onClick={() => setImportType("simple")}
+                className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                  importType === "simple" 
+                    ? "bg-purple-600 text-white" 
+                    : "bg-gray-100 dark:bg-gray-700 text-[var(--text-muted)]"
+                }`}
+              >
+                📄 Simple CSV
+              </button>
+            </div>
+
+            {/* Account Selection */}
+            <div>
+              <label className="block text-sm font-medium mb-2">Target Account *</label>
+              <select
+                value={importAccountId}
+                onChange={(e) => setImportAccountId(e.target.value ? Number(e.target.value) : "")}
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800"
+                required
+              >
+                <option value="">Select account...</option>
+                {accounts.map((acc) => (
+                  <option key={acc.id} value={acc.id}>{acc.name} ({acc.account_type})</option>
+                ))}
+              </select>
+            </div>
+
+            {/* M-Pesa Info */}
+            {importType === "mpesa" && (
+              <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg text-sm">
+                <p className="font-medium text-green-800 dark:text-green-300 mb-2">📱 M-Pesa Statement Import</p>
+                <ul className="text-green-700 dark:text-green-400 text-xs space-y-1">
+                  <li>• Download your M-Pesa statement from Safaricom app</li>
+                  <li>• Supports standard M-Pesa CSV format</li>
+                  <li>• Auto-detects: Receipt No., Date, Paid In, Withdrawn</li>
+                  <li>• Duplicate transactions are automatically skipped</li>
+                </ul>
+              </div>
+            )}
+
+            {/* Bank CSV Options */}
+            {importType === "bank" && (
+              <div className="space-y-3">
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg text-sm">
+                  <p className="font-medium text-blue-800 dark:text-blue-300 mb-1">🏦 Bank Statement Import</p>
+                  <p className="text-blue-700 dark:text-blue-400 text-xs">Configure column names to match your bank's CSV format</p>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium mb-1">Date Column *</label>
+                    <input
+                      type="text"
+                      value={bankDateColumn}
+                      onChange={(e) => setBankDateColumn(e.target.value)}
+                      placeholder="e.g., Date, Transaction Date"
+                      className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 bg-white dark:bg-gray-800"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium mb-1">Date Format</label>
+                    <select
+                      value={bankDateFormat}
+                      onChange={(e) => setBankDateFormat(e.target.value)}
+                      className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 bg-white dark:bg-gray-800"
+                    >
+                      <option value="%Y-%m-%d">YYYY-MM-DD</option>
+                      <option value="%d/%m/%Y">DD/MM/YYYY</option>
+                      <option value="%m/%d/%Y">MM/DD/YYYY</option>
+                      <option value="%d-%m-%Y">DD-MM-YYYY</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium mb-1">Amount Column (if single column)</label>
+                  <input
+                    type="text"
+                    value={bankAmountColumn}
+                    onChange={(e) => setBankAmountColumn(e.target.value)}
+                    placeholder="e.g., Amount (negative = expense)"
+                    className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 bg-white dark:bg-gray-800"
+                  />
+                </div>
+                <p className="text-xs text-[var(--text-muted)]">OR use separate debit/credit columns:</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium mb-1">Debit Column</label>
+                    <input
+                      type="text"
+                      value={bankDebitColumn}
+                      onChange={(e) => setBankDebitColumn(e.target.value)}
+                      placeholder="e.g., Debit, Withdrawal"
+                      className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 bg-white dark:bg-gray-800"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium mb-1">Credit Column</label>
+                    <input
+                      type="text"
+                      value={bankCreditColumn}
+                      onChange={(e) => setBankCreditColumn(e.target.value)}
+                      placeholder="e.g., Credit, Deposit"
+                      className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 bg-white dark:bg-gray-800"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium mb-1">Description Column</label>
+                  <input
+                    type="text"
+                    value={bankDescColumn}
+                    onChange={(e) => setBankDescColumn(e.target.value)}
+                    placeholder="e.g., Description, Narrative"
+                    className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 bg-white dark:bg-gray-800"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Simple CSV Info */}
+            {importType === "simple" && (
+              <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg text-sm">
+                <p className="font-medium text-purple-800 dark:text-purple-300 mb-2">📄 Simple CSV Format</p>
+                <p className="text-purple-700 dark:text-purple-400 text-xs mb-2">
+                  Your CSV should have these columns:
+                </p>
+                <code className="block bg-purple-100 dark:bg-purple-800/30 px-2 py-1 rounded text-xs">
+                  account,date,amount,kind,description
+                </code>
+                <p className="text-purple-600 dark:text-purple-400 text-xs mt-2">
+                  • account = account ID number<br/>
+                  • kind = INCOME, EXPENSE, or TRANSFER
+                </p>
+              </div>
+            )}
+
+            {/* File Input */}
+            <div>
+              <label className="block text-sm font-medium mb-2">Select File *</label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".csv"
+                className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800"
+              />
+            </div>
+
+            {/* Import Result */}
+            {importResult && (
+              <div className={`p-3 rounded-lg text-sm ${
+                importResult.error 
+                  ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300' 
+                  : 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300'
+              }`}>
+                {importResult.error && <p>❌ Error: {String(importResult.error)}</p>}
+                {importResult.success && (
+                  <div>
+                    <p>✅ Import Complete!</p>
+                    <ul className="text-xs mt-1 space-y-0.5">
+                      <li>• {importResult.success.created} transactions created</li>
+                      {importResult.success.skipped > 0 && <li>• {importResult.success.skipped} rows skipped</li>}
+                      {importResult.success.total_errors > 0 && (
+                        <li className="text-amber-600 dark:text-amber-400">
+                          • {importResult.success.total_errors} errors
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => setShowImportModal(false)}
+                className="flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  const file = fileInputRef.current?.files?.[0];
+                  if (!file) {
+                    setImportResult({ error: "Please select a file" });
+                    return;
+                  }
+                  if (!importAccountId && importType !== "simple") {
+                    setImportResult({ error: "Please select an account" });
+                    return;
+                  }
+                  
+                  try {
+                    setImporting(true);
+                    setImportResult(null);
+                    let res;
+                    
+                    if (importType === "mpesa") {
+                      res = await importMpesaStatement(file, importAccountId as number);
+                    } else if (importType === "bank") {
+                      res = await importBankStatement(file, {
+                        accountId: importAccountId as number,
+                        dateColumn: bankDateColumn,
+                        amountColumn: bankAmountColumn || undefined,
+                        debitColumn: bankDebitColumn || undefined,
+                        creditColumn: bankCreditColumn || undefined,
+                        descriptionColumn: bankDescColumn || undefined,
+                        dateFormat: bankDateFormat,
+                      });
+                    } else {
+                      res = await importTransactionsCsv(file);
+                    }
+                    
+                    setImportResult({ success: res });
+                    await loadTransactions();
+                  } catch (err: any) {
+                    setImportResult({ error: err?.response?.data?.detail || err?.message || String(err) });
+                  } finally {
+                    setImporting(false);
+                  }
+                }}
+                disabled={importing}
+                className="flex-1 btn-primary"
+              >
+                {importing ? "Importing..." : "Import"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
