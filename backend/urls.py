@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import RedirectView
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.conf import settings
 from django.conf.urls.static import static
 from backend.auth_views import (
@@ -12,6 +12,7 @@ from backend.auth_views import (
     reset_password_view,
     change_password_view,
 )
+import os
 
 
 def favicon_view(request):
@@ -29,8 +30,25 @@ def robots_txt_view(request):
     return HttpResponse("\n".join(lines), content_type="text/plain")
 
 
+def google_login_check(request):
+    """Check if Google OAuth is configured before redirecting."""
+    google_client_id = os.getenv('GOOGLE_CLIENT_ID', '')
+    if not google_client_id:
+        return JsonResponse({
+            'error': 'Google OAuth not configured',
+            'message': 'GOOGLE_CLIENT_ID is not set in environment variables. '
+                      'Please add your Google OAuth credentials to the .env file.',
+            'help': 'Get credentials from: https://console.cloud.google.com/apis/credentials'
+        }, status=503)
+    # If configured, let allauth handle it
+    from allauth.socialaccount.providers.google.views import oauth2_login
+    return oauth2_login(request)
+
+
 urlpatterns = [
     path("admin/", admin.site.urls),
+    # Custom Google login check before allauth handles it
+    path("accounts/google/login/", google_login_check, name="google_login_check"),
     path("accounts/", include("allauth.urls")),  # <-- allauth
     path("api/auth/me/", CurrentUserView.as_view()),
     path("api/auth/register/", register_view),
