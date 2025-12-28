@@ -44,8 +44,7 @@ class SavingsGoalSerializer(serializers.ModelSerializer):
             'days_remaining', 'monthly_target', 'total_from_transactions'
         ]
         read_only_fields = [
-            'id', 'created_at', 'updated_at',
-            'current_amount'
+            'id', 'created_at', 'updated_at'
         ]
 
     def get_days_remaining(self, obj):

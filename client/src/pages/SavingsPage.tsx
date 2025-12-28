@@ -41,6 +41,7 @@ export default function SavingsPage() {
   const [formData, setFormData] = useState<CreateGoalData>({
     name: '',
     target_amount: '',
+    current_amount: '0',
     target_date: '',
     description: '',
     emoji: '🎯',
@@ -80,6 +81,7 @@ export default function SavingsPage() {
       setFormData({
         name: '',
         target_amount: '',
+        current_amount: '0',
         target_date: '',
         description: '',
         emoji: '🎯',
@@ -374,6 +376,27 @@ export default function SavingsPage() {
                       </svg>
                     </div>
                   </div>
+                </div>
+
+                <div className="neu-form-group">
+                  <div className="neu-input">
+                    <input
+                      type="number"
+                      id="current_amount"
+                      value={formData.current_amount}
+                      onChange={(e) => setFormData({...formData, current_amount: e.target.value})}
+                      placeholder=" "
+                    />
+                    <label htmlFor="current_amount">Already Saved (KES) - Optional</label>
+                    <div className="neu-input-icon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+                      </svg>
+                    </div>
+                  </div>
+                  <p className="text-xs text-[var(--text-muted)] mt-1">
+                    💡 If you already have savings toward this goal, enter the amount here
+                  </p>
                 </div>
 
                 <div className="neu-form-group">

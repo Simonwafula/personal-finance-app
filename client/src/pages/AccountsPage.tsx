@@ -327,11 +327,21 @@ export default function AccountsPage() {
                 
                 <div className="flex items-baseline gap-2">
                   <div className="text-2xl font-bold">
-                    {formatMoney(a.opening_balance)}
+                    {formatMoney(a.current_balance)}
                   </div>
-                  <div className="text-sm text-[var(--text-muted)]">
+                  <div className="text-xs text-[var(--text-muted)]">
                     {a.currency}
                   </div>
+                </div>
+                
+                <div className="text-xs text-[var(--text-muted)] flex items-center gap-2">
+                  <span>Opening: {formatMoney(a.opening_balance)}</span>
+                  {parseFloat(a.current_balance) !== parseFloat(a.opening_balance) && (
+                    <span className={parseFloat(a.current_balance) > parseFloat(a.opening_balance) ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}>
+                      {parseFloat(a.current_balance) > parseFloat(a.opening_balance) ? "↑" : "↓"}
+                      {formatMoney(Math.abs(parseFloat(a.current_balance) - parseFloat(a.opening_balance)))}
+                    </span>
+                  )}
                 </div>
                 
                 <div className="flex gap-2 pt-2 border-t border-[var(--border-subtle)]">
@@ -365,7 +375,8 @@ export default function AccountsPage() {
                 <tr>
                   <th className="px-4 py-3 text-left font-semibold">Name</th>
                   <th className="px-4 py-3 text-left font-semibold">Type</th>
-                  <th className="px-4 py-3 text-right font-semibold">Balance</th>
+                  <th className="px-4 py-3 text-right font-semibold">Opening Balance</th>
+                  <th className="px-4 py-3 text-right font-semibold">Current Balance</th>
                   <th className="px-4 py-3 text-left font-semibold">Currency</th>
                   <th className="px-4 py-3 text-left font-semibold">Institution</th>
                   <th className="px-4 py-3 text-right font-semibold">Actions</th>
@@ -380,8 +391,11 @@ export default function AccountsPage() {
                         {a.account_type.replace("_", " ")}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right font-semibold">
+                    <td className="px-4 py-3 text-right text-gray-500 dark:text-gray-400">
                       {formatMoney(a.opening_balance)}
+                    </td>
+                    <td className="px-4 py-3 text-right font-semibold text-lg">
+                      {formatMoney(a.current_balance)}
                     </td>
                     <td className="px-4 py-3">{a.currency}</td>
                     <td className="px-4 py-3">{a.institution || "—"}</td>

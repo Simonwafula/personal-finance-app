@@ -42,6 +42,29 @@ class Account(TimeStampedModel):
 
     def __str__(self):
         return f"{self.name} ({self.account_type})"
+    
+    def calculate_current_balance(self):
+        """Calculate current balance: opening_balance + sum of all transactions"""
+        from django.db.models import Sum, Q
+        
+        # Sum income transactions (positive)
+        income = self.transactions.filter(kind='INCOME').aggregate(
+            total=Sum('amount')
+        )['total'] or 0
+        
+        # Sum expense transactions (negative)
+        expenses = self.transactions.filter(kind='EXPENSE').aggregate(
+            total=Sum('amount')
+        )['total'] or 0
+        
+        # For transfers, we need to check if this account is the source or destination
+        # Transfers out reduce balance (negative), transfers in increase balance (positive)
+        # Assuming transfer amounts are stored as positive and we need to subtract them
+        transfers_out = self.transactions.filter(kind='TRANSFER').aggregate(
+            total=Sum('amount')
+        )['total'] or 0
+        
+        return self.opening_balance + income - expenses - transfers_out
 
 
 class Category(TimeStampedModel):

@@ -26,6 +26,11 @@ export async function deleteAsset(id: number): Promise<void> {
   await api.delete(`/api/wealth/assets/${id}/`);
 }
 
+export async function syncAssetsFromAccounts(): Promise<{ message: string; created: number; updated: number; asset_ids: number[] }> {
+  const res = await api.post("/api/wealth/assets/sync_from_accounts/");
+  return res.data;
+}
+
 export async function fetchLiabilities(): Promise<Liability[]> {
   const res = await api.get("/api/wealth/liabilities/");
   return res.data;

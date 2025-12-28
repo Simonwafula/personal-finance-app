@@ -5,15 +5,21 @@ import {
   fetchCurrentNetWorth,
   fetchAssets,
   createAsset,
+  updateAsset,
+  deleteAsset,
   fetchLiabilities,
   createLiability,
+  updateLiability,
+  deleteLiability,
   createNetWorthSnapshot,
   fetchNetWorthSnapshots,
+  syncAssetsFromAccounts,
 } from "../api/wealth";
 // TimeRangeSelector provided globally via Layout
 import { useTimeRange } from "../contexts/TimeRangeContext";
 import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from "recharts";
 import type { Asset, Liability, NetWorthCurrent } from "../api/types";
+import { HiPencil, HiTrash, HiX } from "react-icons/hi";
 
 function formatMoney(value: string | number) {
   const num = typeof value === "string" ? Number(value) : value;
@@ -29,10 +35,13 @@ export default function WealthPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'all' | 'assets' | 'liabilities'>('all');
+  const [editingAssetId, setEditingAssetId] = useState<number | null>(null);
+  const [editingLiabilityId, setEditingLiabilityId] = useState<number | null>(null);
 
   // asset form
   const [assetName, setAssetName] = useState("");
   const [assetValue, setAssetValue] = useState("0");
+  const [assetType, setAssetType] = useState("OTHER");
 
   // liability form
   const [liabilityName, setLiabilityName] = useState("");
@@ -93,6 +102,28 @@ export default function WealthPage() {
           <p className="text-base text-[var(--text-muted)] mt-1 font-medium">
             Monitor your assets, liabilities, and net worth over time
           </p>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={async () => {
+              try {
+                setLoading(true);
+                const result = await syncAssetsFromAccounts();
+                await loadAll();
+                alert(`✅ Synced ${result.created + result.updated} accounts as assets!\n\nCreated: ${result.created}\nUpdated: ${result.updated}`);
+              } catch (err) {
+                console.error(err);
+                setError("Failed to sync accounts");
+              } finally {
+                setLoading(false);
+              }
+            }}
+            className="btn-secondary inline-flex items-center gap-2"
+            disabled={loading}
+          >
+            <span>🔄</span>
+            Sync Accounts as Assets
+          </button>
         </div>
       </div>
 
@@ -228,34 +259,75 @@ export default function WealthPage() {
             {(activeTab === 'all' || activeTab === 'assets') && (
             <div className="space-y-6">
             <div className="card animate-slide-in bg-gradient-to-br from-green-50/50 to-emerald-50/50 dark:from-green-900/10 dark:to-emerald-900/10 border-2">
-              <div className="text-lg font-semibold mb-6 flex items-center gap-2">
-                <span>➕</span>
-                Add Asset
+              <div className="text-lg font-semibold mb-6 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span>{editingAssetId ? '✏️' : '➕'}</span>
+                  {editingAssetId ? 'Edit Asset' : 'Add Asset'}
+                </div>
+                {editingAssetId && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingAssetId(null);
+                      setAssetName("");
+                      setAssetValue("0");
+                      setAssetType("OTHER");
+                    }}
+                    className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                    title="Cancel editing"
+                  >
+                    <HiX size={20} />
+                  </button>
+                )}
               </div>
               <form
                 onSubmit={async (e) => {
                   e.preventDefault();
                   try {
-                    await createAsset({ name: assetName, current_value: assetValue } as Partial<Asset>);
+                    if (editingAssetId) {
+                      await updateAsset(editingAssetId, { name: assetName, current_value: assetValue, asset_type: assetType } as Partial<Asset>);
+                    } else {
+                      await createAsset({ name: assetName, current_value: assetValue, asset_type: assetType } as Partial<Asset>);
+                    }
                     setAssetName("");
                     setAssetValue("0");
+                    setAssetType("OTHER");
+                    setEditingAssetId(null);
                     await loadAll();
                   } catch (err) {
                     console.error(err);
-                    setError("Failed to create asset");
+                    setError(editingAssetId ? "Failed to update asset" : "Failed to create asset");
                   }
                 }}
               >
                   <div className="grid sm:grid-cols-2 gap-4">
-                    <div>
+                    <div className="sm:col-span-2">
                       <label className="block text-sm font-medium mb-2">Asset Name *</label>
                       <input 
                         className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400" 
                         value={assetName} 
                         onChange={(e) => setAssetName(e.target.value)} 
-                        placeholder="e.g., House, Car, Savings"
+                        placeholder="e.g., NSE Safaricom Shares, KCB Bond, CIC MMF"
                         required 
                       />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Asset Type *</label>
+                      <select
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
+                        value={assetType}
+                        onChange={(e) => setAssetType(e.target.value)}
+                        required
+                      >
+                        <option value="OTHER">💼 Other</option>
+                        <option value="STOCK">📈 Stock/Shares</option>
+                        <option value="BOND">📊 Bond</option>
+                        <option value="MMF">💰 Money Market Fund</option>
+                        <option value="LAND">🏞️ Land/Property</option>
+                        <option value="VEHICLE">🚗 Vehicle</option>
+                        <option value="BUSINESS">🏪 Business</option>
+                        <option value="PENSION">👴 Pension/Retirement</option>
+                      </select>
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-2">Current Value *</label>
@@ -266,12 +338,13 @@ export default function WealthPage() {
                         value={assetValue} 
                         onChange={(e) => setAssetValue(e.target.value)}
                         placeholder="0.00"
+                        required
                       />
                     </div>
                 </div>
                   <div className="mt-6 pt-4 border-t border-[var(--border-subtle)]">
-                    <button className="btn-primary">Add Asset</button>
-                </div>
+                    <button className="btn-primary">{editingAssetId ? 'Update Asset' : 'Add Asset'}</button>
+                  </div>
               </form>
 
                 <div className="mt-6 pt-6 border-t border-[var(--border-subtle)]">
@@ -290,14 +363,69 @@ export default function WealthPage() {
                       <thead className="bg-[var(--surface)] sticky top-0">
                       <tr>
                           <th className="px-4 py-3 text-left font-semibold">Name</th>
+                          <th className="px-4 py-3 text-left font-semibold">Type</th>
                           <th className="px-4 py-3 text-right font-semibold">Value</th>
+                          <th className="px-4 py-3 text-right font-semibold">Actions</th>
                       </tr>
                     </thead>
                       <tbody className="divide-y divide-[var(--border-subtle)]">
-                      {assets.map((a) => (
+                      {assets.map((a) => {
+                        const typeEmoji: Record<string, string> = {
+                          STOCK: '📈',
+                          BOND: '📊',
+                          MMF: '💰',
+                          LAND: '🏞️',
+                          VEHICLE: '🚗',
+                          BUSINESS: '🏪',
+                          PENSION: '👴',
+                          OTHER: '💼'
+                        };
+                        const typeName = a.asset_type?.replace('_', ' ') || 'Other';
+                        return (
                           <tr key={a.id} className="hover:bg-[var(--surface)] transition-colors">
                             <td className="px-4 py-3 font-medium">{a.name}</td>
+                            <td className="px-4 py-3">
+                              <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                                <span>{typeEmoji[a.asset_type || 'OTHER']}</span>
+                                <span>{typeName}</span>
+                              </span>
+                            </td>
                             <td className="px-4 py-3 text-right font-semibold">{formatMoney(a.current_value)}</td>
+                            <td className="px-4 py-3 text-right">
+                              <div className="flex gap-2 justify-end">
+                                <button
+                                  onClick={() => {
+                                    setEditingAssetId(a.id);
+                                    setAssetName(a.name);
+                                    setAssetValue(String(a.current_value));
+                                    setAssetType(a.asset_type || "OTHER");
+                                  }}
+                                  className="btn-edit inline-flex items-center gap-1"
+                                  title="Edit asset"
+                                >
+                                  <HiPencil size={14} />
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={async () => {
+                                    if (confirm(`Delete asset "${a.name}"?`)) {
+                                      try {
+                                        await deleteAsset(a.id);
+                                        await loadAll();
+                                      } catch (err) {
+                                        console.error(err);
+                                        setError("Failed to delete asset");
+                                      }
+                                    }
+                                  }}
+                                  className="btn-delete inline-flex items-center gap-1"
+                                  title="Delete asset"
+                                >
+                                  <HiTrash size={14} />
+                                  Delete
+                                </button>
+                              </div>
+                            </td>
                         </tr>
                       ))}
                     </tbody>
@@ -358,28 +486,56 @@ export default function WealthPage() {
             {(activeTab === 'all' || activeTab === 'liabilities') && (
             <div className="space-y-6">
           <div className="card animate-slide-in bg-gradient-to-br from-red-50/50 to-orange-50/50 dark:from-red-900/10 dark:to-orange-900/10 border-2">
-            <div className="text-lg font-semibold mb-6 flex items-center gap-2">
-              <span>➕</span>
-              Add Liability
+            <div className="text-lg font-semibold mb-6 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span>{editingLiabilityId ? '✏️' : '➕'}</span>
+                {editingLiabilityId ? 'Edit Liability' : 'Add Liability'}
+              </div>
+              {editingLiabilityId && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingLiabilityId(null);
+                    setLiabilityName("");
+                    setLiabilityBalance("0");
+                    setLiabilityInterest("0");
+                    setLiabilityMinimum("0");
+                  }}
+                  className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                  title="Cancel editing"
+                >
+                  <HiX size={20} />
+                </button>
+              )}
             </div>
               <form
                 onSubmit={async (e) => {
                   e.preventDefault();
                   try {
-                    await createLiability({
-                      name: liabilityName,
-                      principal_balance: liabilityBalance,
-                      interest_rate: liabilityInterest,
-                      minimum_payment: liabilityMinimum,
-                    } as Partial<Liability>);
+                    if (editingLiabilityId) {
+                      await updateLiability(editingLiabilityId, {
+                        name: liabilityName,
+                        principal_balance: liabilityBalance,
+                        interest_rate: liabilityInterest,
+                        minimum_payment: liabilityMinimum,
+                      } as Partial<Liability>);
+                    } else {
+                      await createLiability({
+                        name: liabilityName,
+                        principal_balance: liabilityBalance,
+                        interest_rate: liabilityInterest,
+                        minimum_payment: liabilityMinimum,
+                      } as Partial<Liability>);
+                    }
                     setLiabilityName("");
                     setLiabilityBalance("0");
                     setLiabilityInterest("0");
                     setLiabilityMinimum("0");
+                    setEditingLiabilityId(null);
                     await loadAll();
                   } catch (err) {
                     console.error(err);
-                    setError("Failed to create liability");
+                    setError(editingLiabilityId ? "Failed to update liability" : "Failed to create liability");
                   }
                 }}
               >
@@ -429,7 +585,7 @@ export default function WealthPage() {
                     />
                   </div>
                   <div className="mt-6 pt-4 border-t border-[var(--border-subtle)]">
-                    <button className="btn-primary">Add Liability</button>
+                    <button className="btn-primary">{editingLiabilityId ? 'Update Liability' : 'Add Liability'}</button>
                   </div>
               </form>
 
@@ -450,6 +606,7 @@ export default function WealthPage() {
                       <tr>
                           <th className="px-4 py-3 text-left font-semibold">Name</th>
                           <th className="px-4 py-3 text-right font-semibold">Balance</th>
+                          <th className="px-4 py-3 text-right font-semibold">Actions</th>
                       </tr>
                     </thead>
                       <tbody className="divide-y divide-[var(--border-subtle)]">
@@ -457,6 +614,42 @@ export default function WealthPage() {
                           <tr key={l.id} className="hover:bg-[var(--surface)] transition-colors">
                             <td className="px-4 py-3 font-medium">{l.name}</td>
                             <td className="px-4 py-3 text-right font-semibold text-red-600 dark:text-red-400">{formatMoney(l.principal_balance)}</td>
+                            <td className="px-4 py-3 text-right">
+                              <div className="flex gap-2 justify-end">
+                                <button
+                                  onClick={() => {
+                                    setEditingLiabilityId(l.id);
+                                    setLiabilityName(l.name);
+                                    setLiabilityBalance(String(l.principal_balance));
+                                    setLiabilityInterest(String(l.interest_rate || 0));
+                                    setLiabilityMinimum(String(l.minimum_payment || 0));
+                                  }}
+                                  className="btn-edit inline-flex items-center gap-1"
+                                  title="Edit liability"
+                                >
+                                  <HiPencil size={14} />
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={async () => {
+                                    if (confirm(`Delete liability "${l.name}"?`)) {
+                                      try {
+                                        await deleteLiability(l.id);
+                                        await loadAll();
+                                      } catch (err) {
+                                        console.error(err);
+                                        setError("Failed to delete liability");
+                                      }
+                                    }
+                                  }}
+                                  className="btn-delete inline-flex items-center gap-1"
+                                  title="Delete liability"
+                                >
+                                  <HiTrash size={14} />
+                                  Delete
+                                </button>
+                              </div>
+                            </td>
                         </tr>
                       ))}
                     </tbody>

@@ -26,6 +26,64 @@ class AssetViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+    
+    @action(detail=False, methods=['post'])
+    def sync_from_accounts(self, request):
+        """Sync bank accounts as assets - creates or updates assets based on account current balances"""
+        from finance.models import Account
+        
+        accounts = Account.objects.filter(
+            user=request.user,
+            status='ACTIVE',
+            account_type__in=['BANK', 'MOBILE_MONEY', 'SACCO', 'INVESTMENT']
+        )
+        
+        created = []
+        updated = []
+        
+        for account in accounts:
+            current_balance = account.calculate_current_balance()
+            
+            # Map account types to asset types
+            asset_type_map = {
+                'BANK': 'OTHER',
+                'MOBILE_MONEY': 'OTHER',
+                'SACCO': 'OTHER',
+                'INVESTMENT': 'OTHER',
+            }
+            
+            asset_type = asset_type_map.get(account.account_type, 'OTHER')
+            
+            # Try to find existing asset linked to this account
+            asset = Asset.objects.filter(
+                user=request.user,
+                linked_account=account
+            ).first()
+            
+            if asset:
+                # Update existing asset
+                asset.current_value = current_balance
+                asset.name = f"{account.name} ({account.institution or account.account_type})"
+                asset.save()
+                updated.append(asset.id)
+            else:
+                # Create new asset
+                asset = Asset.objects.create(
+                    user=request.user,
+                    name=f"{account.name} ({account.institution or account.account_type})",
+                    asset_type=asset_type,
+                    current_value=current_balance,
+                    currency=account.currency,
+                    linked_account=account
+                )
+                created.append(asset.id)
+        
+        return Response({
+            'message': f'Synced {len(accounts)} accounts',
+            'created': len(created),
+            'updated': len(updated),
+            'asset_ids': created + updated
+        })
 
 
 class LiabilityViewSet(viewsets.ModelViewSet):

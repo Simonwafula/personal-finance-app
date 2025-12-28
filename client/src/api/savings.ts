@@ -42,6 +42,7 @@ export interface SavingsSummary {
 export interface CreateGoalData {
   name: string;
   target_amount: number | string;
+  current_amount?: number | string;
   target_date?: string;
   linked_account?: number;
   description?: string;

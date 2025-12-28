@@ -16,6 +16,7 @@ export interface Account {
   account_type: AccountType;
   currency: string;
   opening_balance: string;
+  current_balance: string;
   status: "ACTIVE" | "CLOSED";
   institution: string;
   notes: string;

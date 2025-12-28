@@ -4,6 +4,8 @@ from .models import RecurringTransaction
 
 
 class AccountSerializer(serializers.ModelSerializer):
+    current_balance = serializers.SerializerMethodField()
+    
     class Meta:
         model = Account
         fields = [
@@ -12,13 +14,17 @@ class AccountSerializer(serializers.ModelSerializer):
             "account_type",
             "currency",
             "opening_balance",
+            "current_balance",
             "status",
             "institution",
             "notes",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "created_at", "updated_at"]
+        read_only_fields = ["id", "current_balance", "created_at", "updated_at"]
+    
+    def get_current_balance(self, obj):
+        return obj.calculate_current_balance()
 
 
 class CategorySerializer(serializers.ModelSerializer):
