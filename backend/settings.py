@@ -12,10 +12,13 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Load .env file from parent directory: Specify full path directly
+load_dotenv('/home/finance.mstatilitechnologies.com/.env')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -104,14 +107,15 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 # Use PostgreSQL in production, SQLite in dev
-if os.getenv('DATABASE_ENGINE'):
+# Now DATABASE_ENGINE is definitely loaded
+USE_POSTGRES = os.getenv('DATABASE_ENGINE') == 'django.db.backends.postgresql'
+
+if USE_POSTGRES:
     DATABASES = {
         'default': {
-            'ENGINE': os.getenv(
-                'DATABASE_ENGINE', 'django.db.backends.postgresql'
-            ),
-            'NAME': os.getenv('DATABASE_NAME', 'finance_db'),
-            'USER': os.getenv('DATABASE_USER', 'finance_user'),
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('DATABASE_NAME', 'postgres'),
+            'USER': os.getenv('DATABASE_USER', 'postgres'),
             'PASSWORD': os.getenv('DATABASE_PASSWORD', ''),
             'HOST': os.getenv('DATABASE_HOST', 'localhost'),
             'PORT': os.getenv('DATABASE_PORT', '5432'),
@@ -300,6 +304,8 @@ if not DEBUG:
     SECURE_HSTS_PRELOAD = os.getenv('SECURE_HSTS_PRELOAD', 'True') == 'True'
     SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'True') == 'True'
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    USE_X_FORWARDED_HOST = True
+    USE_X_FORWARDED_PORT = True
 
     # Optional: set a cookie domain for cross-subdomain cookies
     SESSION_COOKIE_DOMAIN = os.getenv('SESSION_COOKIE_DOMAIN', None)
