@@ -145,6 +145,10 @@ export default function Layout() {
                 <HiTrendingUp className="nav-icon" />
                 <span>Savings</span>
               </NavLink>
+              <NavLink to="/investments" className={({isActive}) => isActive ? 'active' : ''} aria-label="Investments">
+                <HiTrendingUp className="nav-icon" />
+                <span>Investments</span>
+              </NavLink>
               <NavLink to="/categories" className={({isActive}) => isActive ? 'active' : ''}>
                 <HiTag className="nav-icon" />
                 <span>Categories</span>

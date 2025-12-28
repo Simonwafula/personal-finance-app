@@ -3,19 +3,20 @@ import { useEffect, useState, useRef } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { useTimeRange } from "../contexts/TimeRangeContext";
 import type { FormEvent } from "react";
-import "../styles/neumorphism.css";
 import {
   fetchTransactionsPaged,
   fetchAccounts,
   fetchCategories,
   fetchTags,
   createTransaction,
+  updateTransaction,
+  deleteTransaction,
   importTransactionsCsv,
   exportTransactionsCsv,
 } from "../api/finance";
 import { getSavingsGoals, type SavingsGoal } from "../api/savings";
 import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { HiPlus, HiUpload, HiDownload, HiX, HiCog } from "react-icons/hi";
+import { HiPlus, HiUpload, HiDownload, HiX, HiPencil, HiTrash, HiFilter, HiChevronDown, HiChevronUp } from "react-icons/hi";
 import type {
   Transaction,
   Account,
@@ -65,7 +66,11 @@ export default function TransactionsPage() {
   const { range } = useTimeRange();
   const [filterCategory, setFilterCategory] = useState<number | "">(searchParams.get("category") ? Number(searchParams.get("category")) : "");
   const [filterKind, setFilterKind] = useState<TransactionKind | "">((searchParams.get("kind") as TransactionKind) || "");
+  const [filterAccount, setFilterAccount] = useState<number | "">(searchParams.get("account") ? Number(searchParams.get("account")) : "");
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showFilters, setShowFilters] = useState(!!searchParams.get("account") || !!searchParams.get("category") || !!searchParams.get("kind"));
+  const [editingTx, setEditingTx] = useState<Transaction | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   async function loadRefs() {
     try {
@@ -137,7 +142,8 @@ export default function TransactionsPage() {
     start?: string | null,
     end?: string | null,
     category?: number | "",
-    kindF?: TransactionKind | ""
+    kindF?: TransactionKind | "",
+    account?: number | ""
   ) {
     let filtered = txs.slice();
     if (start) {
@@ -154,6 +160,9 @@ export default function TransactionsPage() {
     if (kindF) {
       filtered = filtered.filter((t) => t.kind === kindF);
     }
+    if (account) {
+      filtered = filtered.filter((t) => t.account === account);
+    }
     setFilteredTransactions(filtered);
   }
 
@@ -166,9 +175,25 @@ export default function TransactionsPage() {
   useEffect(() => {
     setFilterCategory(searchParams.get("category") ? Number(searchParams.get("category")) : "");
     setFilterKind((searchParams.get("kind") as TransactionKind) || "");
-    applyFilters(transactions, range.startDate, range.endDate, searchParams.get("category") ? Number(searchParams.get("category")) : "", (searchParams.get("kind") as TransactionKind) || "");
+    setFilterAccount(searchParams.get("account") ? Number(searchParams.get("account")) : "");
+    const hasFilters = !!searchParams.get("account") || !!searchParams.get("category") || !!searchParams.get("kind");
+    if (hasFilters) setShowFilters(true);
+    applyFilters(
+      transactions, 
+      range.startDate, 
+      range.endDate, 
+      searchParams.get("category") ? Number(searchParams.get("category")) : "", 
+      (searchParams.get("kind") as TransactionKind) || "", 
+      searchParams.get("account") ? Number(searchParams.get("account")) : ""
+    );
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
+
+  // Re-apply filters when filter state changes
+  useEffect(() => {
+    applyFilters(transactions, range.startDate, range.endDate, filterCategory, filterKind, filterAccount);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterCategory, filterKind, filterAccount]);
 
   useEffect(() => {
     loadTransactions();
@@ -219,29 +244,123 @@ export default function TransactionsPage() {
     (c) => c.kind === kind || c.kind === "EXPENSE" || c.kind === "INCOME"
   );
 
+  // Calculate totals from filtered transactions
+  const totalIncome = filteredTransactions
+    .filter(tx => tx.kind === 'INCOME')
+    .reduce((sum, tx) => sum + Number(tx.amount), 0);
+  const totalExpenses = filteredTransactions
+    .filter(tx => tx.kind === 'EXPENSE')
+    .reduce((sum, tx) => sum + Number(tx.amount), 0);
+  const netCashflow = totalIncome - totalExpenses;
+
+  async function handleDelete(id: number) {
+    if (!window.confirm('Are you sure you want to delete this transaction?')) return;
+    try {
+      setDeletingId(id);
+      await deleteTransaction(id);
+      await loadTransactions();
+      window.dispatchEvent(new Event('transactionsUpdated'));
+    } catch (err) {
+      console.error(err);
+      setError('Failed to delete transaction');
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
+  function startEdit(tx: Transaction) {
+    setEditingTx(tx);
+    setAccountId(tx.account);
+    setKind(tx.kind);
+    setCategoryId(tx.category || "");
+    setDate(tx.date);
+    setAmount(tx.amount);
+    setDescription(tx.description);
+    setTags(tx.tags || "");
+    setSavingsGoalId(tx.savings_goal || "");
+    setShowAddForm(true);
+  }
+
+  async function handleUpdate(e: FormEvent) {
+    e.preventDefault();
+    if (!editingTx || !accountId || !amount) return;
+    
+    try {
+      setSaving(true);
+      setError(null);
+      
+      await updateTransaction(editingTx.id, {
+        account: accountId as number,
+        date,
+        amount: Number(amount),
+        kind,
+        category: categoryId ? (categoryId as number) : null,
+        description,
+        tags,
+        savings_goal: savingsGoalId ? (savingsGoalId as number) : null,
+      });
+      
+      // Reset form
+      setAmount("");
+      setDescription("");
+      setTags("");
+      setSavingsGoalId("");
+      setEditingTx(null);
+      setShowAddForm(false);
+      
+      await loadTransactions();
+      window.dispatchEvent(new Event('transactionsUpdated'));
+    } catch (err) {
+      console.error(err);
+      setError("Failed to update transaction");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function cancelEdit() {
+    setEditingTx(null);
+    setAmount("");
+    setDescription("");
+    setTags("");
+    setSavingsGoalId("");
+    setCategoryId("");
+    setShowAddForm(false);
+  }
+
+  const hasActiveFilters = filterCategory || filterKind || filterAccount;
+
   return (
-    <div className="space-y-6 pb-20 max-w-7xl mx-auto">
+    <div className="space-y-4 pb-20 max-w-7xl mx-auto">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             Transactions
           </h3>
-          <p className="text-base text-[var(--text-muted)] mt-1 font-medium">
-            Track your income and expenses
+          <p className="text-sm text-[var(--text-muted)] mt-0.5">
+            {range.startDate} → {range.endDate}
           </p>
         </div>
         <div className="flex gap-2">
-          <Link
-            to="/categories"
-            className="btn-secondary inline-flex items-center gap-2"
-          >
-            <HiCog size={18} />
-            <span className="hidden sm:inline">Manage Categories</span>
-            <span className="sm:hidden">Categories</span>
-          </Link>
           <button
-            onClick={() => setShowAddForm(!showAddForm)}
+            onClick={() => setShowFilters(!showFilters)}
+            className={`btn-secondary inline-flex items-center gap-2 ${hasActiveFilters ? 'ring-2 ring-blue-500' : ''}`}
+          >
+            <HiFilter size={18} />
+            <span className="hidden sm:inline">Filter</span>
+            {hasActiveFilters && <span className="w-2 h-2 rounded-full bg-blue-500" />}
+          </button>
+          <button
+            onClick={() => {
+              setEditingTx(null);
+              setAmount("");
+              setDescription("");
+              setTags("");
+              setSavingsGoalId("");
+              setCategoryId("");
+              setShowAddForm(!showAddForm);
+            }}
             className="btn-primary inline-flex items-center gap-2"
           >
             <HiPlus size={18} />
@@ -251,23 +370,101 @@ export default function TransactionsPage() {
       </div>
 
       {error && (
-        <div className="card bg-red-50 border-red-200 text-red-700 text-sm p-4">
+        <div className="card bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-sm p-3">
           {error}
         </div>
       )}
 
-      {/* Cashflow Chart */}
-      <div className="card">
-        <div className="flex items-center justify-between mb-3">
-          <h4 className="text-sm font-semibold text-[var(--text-muted)] uppercase tracking-wide">
-            Cashflow Overview
-          </h4>
-          <div className="text-xs text-[var(--text-muted)]">
-            {range.startDate} → {range.endDate}
+      {/* Quick Stats */}
+      <div className="grid grid-cols-3 gap-3">
+        <div className="card p-3 text-center">
+          <div className="text-xs text-[var(--text-muted)] uppercase tracking-wide">Income</div>
+          <div className="text-lg font-bold text-green-600">{formatMoney(totalIncome)}</div>
+        </div>
+        <div className="card p-3 text-center">
+          <div className="text-xs text-[var(--text-muted)] uppercase tracking-wide">Expenses</div>
+          <div className="text-lg font-bold text-red-600">{formatMoney(totalExpenses)}</div>
+        </div>
+        <div className="card p-3 text-center">
+          <div className="text-xs text-[var(--text-muted)] uppercase tracking-wide">Net</div>
+          <div className={`text-lg font-bold ${netCashflow >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            {netCashflow >= 0 ? '+' : ''}{formatMoney(netCashflow)}
           </div>
         </div>
-        <div style={{ width: '100%', height: 120 }}>
-          <ResponsiveContainer width='100%' height={120}>
+      </div>
+
+      {/* Filters Panel */}
+      {showFilters && (
+        <div className="card p-4 animate-slide-in">
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="font-semibold text-sm">Filters</h4>
+            {hasActiveFilters && (
+              <button 
+                onClick={() => {
+                  setFilterCategory("");
+                  setFilterKind("");
+                  setFilterAccount("");
+                }}
+                className="text-xs text-blue-600 hover:underline"
+              >
+                Clear all
+              </button>
+            )}
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label className="block text-xs font-medium mb-1 text-[var(--text-muted)]">Account</label>
+              <select
+                className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800"
+                value={filterAccount}
+                onChange={(e) => setFilterAccount(e.target.value ? Number(e.target.value) : "")}
+              >
+                <option value="">All accounts</option>
+                {accounts.map((acc) => (
+                  <option key={acc.id} value={acc.id}>{acc.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1 text-[var(--text-muted)]">Type</label>
+              <select
+                className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800"
+                value={filterKind}
+                onChange={(e) => setFilterKind(e.target.value as TransactionKind | "")}
+              >
+                <option value="">All types</option>
+                <option value="INCOME">Income</option>
+                <option value="EXPENSE">Expense</option>
+                <option value="TRANSFER">Transfer</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1 text-[var(--text-muted)]">Category</label>
+              <select
+                className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800"
+                value={filterCategory}
+                onChange={(e) => setFilterCategory(e.target.value ? Number(e.target.value) : "")}
+              >
+                <option value="">All categories</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cashflow Chart - Collapsible on mobile */}
+      <details className="card group" open>
+        <summary className="flex items-center justify-between cursor-pointer list-none">
+          <h4 className="text-sm font-semibold text-[var(--text-muted)] uppercase tracking-wide">
+            Cashflow Chart
+          </h4>
+          <HiChevronDown size={20} className="text-[var(--text-muted)] group-open:rotate-180 transition-transform" />
+        </summary>
+        <div className="mt-3" style={{ width: '100%', height: 100 }}>
+          <ResponsiveContainer width='100%' height={100}>
             <AreaChart data={aggregatedSeries}>
               <XAxis dataKey='date' hide />
               <Tooltip formatter={(v:any) => formatMoney(v)} />
@@ -276,22 +473,17 @@ export default function TransactionsPage() {
             </AreaChart>
           </ResponsiveContainer>
         </div>
-      </div>
+      </details>
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      {/* Quick Actions - More compact */}
+      <div className="flex gap-2 flex-wrap">
         <button
-          onClick={() => {
-            const input = fileInputRef.current;
-            if (input) input.click();
-          }}
-          className="card p-4 hover:shadow-lg transition-shadow text-left"
+          onClick={() => fileInputRef.current?.click()}
+          className="inline-flex items-center gap-2 px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
         >
-          <HiUpload size={24} className="text-green-600 mb-2" />
-          <div className="text-sm font-semibold">Import CSV</div>
-          <div className="text-xs text-[var(--text-muted)]">Upload file</div>
+          <HiUpload size={16} className="text-green-600" />
+          <span>Import CSV</span>
         </button>
-
         <button
           onClick={async () => {
             try {
@@ -312,22 +504,16 @@ export default function TransactionsPage() {
             }
           }}
           disabled={exporting}
-          className="card p-4 hover:shadow-lg transition-shadow text-left disabled:opacity-50"
+          className="inline-flex items-center gap-2 px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
         >
-          <HiDownload size={24} className="text-orange-600 mb-2" />
-          <div className="text-sm font-semibold">Export CSV</div>
-          <div className="text-xs text-[var(--text-muted)]">
-            {exporting ? "Preparing..." : "Download"}
-          </div>
+          <HiDownload size={16} className="text-orange-600" />
+          <span>{exporting ? "Exporting..." : "Export CSV"}</span>
         </button>
-
         <Link
           to="/categories"
-          className="card p-4 hover:shadow-lg transition-shadow text-left col-span-2 sm:col-span-1"
+          className="inline-flex items-center gap-2 px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
         >
-          <HiCog size={24} className="text-purple-600 mb-2" />
-          <div className="text-sm font-semibold">Settings</div>
-          <div className="text-xs text-[var(--text-muted)]">Categories & Tags</div>
+          <span>Manage Categories</span>
         </Link>
       </div>
 
@@ -360,78 +546,58 @@ export default function TransactionsPage() {
         </div>
       )}
 
-      {/* Add Transaction Form */}
+      {/* Add/Edit Transaction Form */}
       {showAddForm && (
-        <form onSubmit={handleSubmit} className="neu-card space-y-4 animate-slide-in">
-          <div className="neu-header">
-            <h4 className="neu-title">Add New Transaction</h4>
-            <button
-              type="button"
-              onClick={() => setShowAddForm(false)}
-              style={{
-                position: 'absolute',
-                right: '20px',
-                top: '20px',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                color: 'var(--text-muted)'
-              }}
-            >
+        <form onSubmit={editingTx ? handleUpdate : handleSubmit} className="card p-4 space-y-4 animate-slide-in">
+          <div className="flex items-center justify-between">
+            <h4 className="font-semibold">{editingTx ? 'Edit Transaction' : 'Add Transaction'}</h4>
+            <button type="button" onClick={cancelEdit} className="text-[var(--text-muted)] hover:text-[var(--text)]">
               <HiX size={20} />
             </button>
           </div>
 
           {loadingRefs && (
-            <div className="text-sm text-[var(--text-muted)]">Loading accounts…</div>
+            <div className="text-sm text-[var(--text-muted)]">Loading...</div>
           )}
 
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div className="neu-form-group">
-              <div className="neu-input">
-                <input
-                  type="date"
-                  id="tx_date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  placeholder=" "
-                  required
-                />
-                <label htmlFor="tx_date">Date</label>
-                <div className="neu-input-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                    <line x1="16" y1="2" x2="16" y2="6"/>
-                    <line x1="8" y1="2" x2="8" y2="6"/>
-                    <line x1="3" y1="10" x2="21" y2="10"/>
-                  </svg>
-                </div>
-              </div>
+          {!loadingRefs && accounts.length === 0 && (
+            <div className="text-center py-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+              <p className="text-sm text-amber-700 dark:text-amber-400 mb-2">You need to create an account first</p>
+              <Link to="/accounts" className="btn-primary text-sm">
+                Go to Accounts
+              </Link>
             </div>
+          )}
 
-            <div className="neu-form-group">
-              <label className="block text-sm font-medium mb-2">Account *</label>
-              <select
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
-                value={accountId}
-                onChange={(e) =>
-                  setAccountId(e.target.value ? Number(e.target.value) : "")
-                }
+          {accounts.length > 0 && (
+            <>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div>
+                  <label className="block text-xs font-medium mb-1 text-[var(--text-muted)]">Date *</label>
+                  <input
+                    type="date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
                 required
-              >
-                <option value="">Select account</option>
-                {accounts.map((acc) => (
-                  <option key={acc.id} value={acc.id}>
-                    {acc.name}
-                  </option>
-                ))}
-              </select>
+                className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800"
+              />
             </div>
-
-            <div className="neu-form-group">
-              <label className="block text-sm font-medium mb-2">Type *</label>
+            <div>
+              <label className="block text-xs font-medium mb-1 text-[var(--text-muted)]">Amount *</label>
+              <input
+                type="number"
+                step="0.01"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="0.00"
+                required
+                className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1 text-[var(--text-muted)]">Type *</label>
               <select
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
+                className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800"
                 value={kind}
                 onChange={(e) => setKind(e.target.value as TransactionKind)}
               >
@@ -440,111 +606,80 @@ export default function TransactionsPage() {
                 <option value="TRANSFER">Transfer</option>
               </select>
             </div>
-
-            <div className="neu-form-group">
-              <div className="neu-input">
-                <input
-                  type="number"
-                  step="0.01"
-                  id="tx_amount"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  placeholder=" "
-                  required
-                />
-                <label htmlFor="tx_amount">Amount</label>
-                <div className="neu-input-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <line x1="12" y1="1" x2="12" y2="23"/>
-                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            <div className="sm:col-span-2 neu-form-group">
-              <label className="block text-sm font-medium mb-2">Category</label>
+            <div>
+              <label className="block text-xs font-medium mb-1 text-[var(--text-muted)]">Account *</label>
               <select
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
+                className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800"
+                value={accountId}
+                onChange={(e) => setAccountId(e.target.value ? Number(e.target.value) : "")}
+                required
+              >
+                <option value="">Select...</option>
+                {accounts.map((acc) => (
+                  <option key={acc.id} value={acc.id}>{acc.name}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium mb-1 text-[var(--text-muted)]">Category</label>
+              <select
+                className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800"
                 value={categoryId}
-                onChange={(e) =>
-                  setCategoryId(e.target.value ? Number(e.target.value) : "")
-                }
+                onChange={(e) => setCategoryId(e.target.value ? Number(e.target.value) : "")}
               >
-                <option value="">— None —</option>
+                <option value="">None</option>
                 {filteredCategories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.name} ({cat.kind})
-                  </option>
+                  <option key={cat.id} value={cat.id}>{cat.name}</option>
                 ))}
               </select>
             </div>
-
-            <div className="sm:col-span-2 neu-form-group">
-              <label className="block text-sm font-medium mb-2">
-                💰 Savings Goal (Optional)
-              </label>
+            <div>
+              <label className="block text-xs font-medium mb-1 text-[var(--text-muted)]">Savings Goal</label>
               <select
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
+                className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800"
                 value={savingsGoalId}
-                onChange={(e) =>
-                  setSavingsGoalId(e.target.value ? Number(e.target.value) : "")
-                }
+                onChange={(e) => setSavingsGoalId(e.target.value ? Number(e.target.value) : "")}
               >
-                <option value="">— No savings goal —</option>
+                <option value="">None</option>
                 {savingsGoals.map((goal) => (
-                  <option key={goal.id} value={goal.id}>
-                    {goal.emoji} {goal.name} ({goal.progress_percentage.toFixed(0)}% complete)
-                  </option>
+                  <option key={goal.id} value={goal.id}>{goal.emoji} {goal.name}</option>
                 ))}
               </select>
-              <p className="text-xs text-[var(--text-muted)] mt-1">
-                Link this expense to a savings goal to track contributions
-              </p>
             </div>
+          </div>
 
-            <div className="sm:col-span-2 neu-form-group">
-              <div className="neu-input">
-                <input
-                  id="tx_description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder=" "
-                />
-                <label htmlFor="tx_description">e.g. Lunch at Java, rent, salary...</label>
-                <div className="neu-input-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <line x1="16" y1="13" x2="8" y2="13"/>
-                    <line x1="16" y1="17" x2="8" y2="17"/>
-                    <polyline points="10 9 9 9 8 9"/>
-                  </svg>
-                </div>
-              </div>
-            </div>
+          <div>
+            <label className="block text-xs font-medium mb-1 text-[var(--text-muted)]">Description</label>
+            <input
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="e.g. Lunch, rent, salary..."
+              className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800"
+            />
+          </div>
 
-            <div className="sm:col-span-2 neu-form-group">
-              <label className="block text-sm font-medium mb-2">Tags (optional)</label>
-              {allTags.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {allTags.map((tag) => (
+          <div>
+            <label className="block text-xs font-medium mb-1 text-[var(--text-muted)]">Tags</label>
+            {allTags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {allTags.map((tag) => {
+                  const isSelected = tags.split(",").map(t => t.trim()).includes(tag.name);
+                  return (
                     <button
                       key={tag.id}
                       type="button"
                       onClick={() => {
                         const currentTags = tags ? tags.split(",").map(t => t.trim()).filter(Boolean) : [];
-                        if (currentTags.includes(tag.name)) {
+                        if (isSelected) {
                           setTags(currentTags.filter(t => t !== tag.name).join(", "));
                         } else {
                           setTags([...currentTags, tag.name].join(", "));
                         }
                       }}
-                      className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-                        tags.split(",").map(t => t.trim()).includes(tag.name)
-                          ? "ring-2 ring-offset-2 opacity-100"
-                          : "opacity-60 hover:opacity-100"
-                      }`}
+                      className={`px-2 py-1 rounded-full text-xs font-medium transition-all ${isSelected ? 'ring-2 ring-offset-1' : 'opacity-60 hover:opacity-100'}`}
                       style={{
                         backgroundColor: tag.color + "20",
                         color: tag.color,
@@ -553,115 +688,100 @@ export default function TransactionsPage() {
                     >
                       {tag.name}
                     </button>
-                  ))}
-                </div>
-              )}
-              <input
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400"
-                value={tags}
-                onChange={(e) => setTags(e.target.value)}
-                placeholder="comma,separated,tags"
-              />
-            </div>
+                  );
+                })}
+              </div>
+            )}
+            <input
+              className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800"
+              value={tags}
+              onChange={(e) => setTags(e.target.value)}
+              placeholder="Or type comma,separated,tags"
+            />
           </div>
 
-          <div className="flex gap-3 pt-2">
+          <div className="flex gap-2 pt-2">
             <button
               type="submit"
               disabled={saving || accounts.length === 0}
-              className="neu-button flex-1 disabled:opacity-60"
+              className="btn-primary flex-1 disabled:opacity-60"
             >
-              {saving ? (
-                <>
-                  <span className="neu-spinner"></span>
-                  <span>Saving…</span>
-                </>
-              ) : (
-                "Save Transaction"
-              )}
+              {saving ? "Saving..." : editingTx ? "Update" : "Save"}
             </button>
-            <button
-              type="button"
-              onClick={() => setShowAddForm(false)}
-              className="btn-secondary"
-            >
+            <button type="button" onClick={cancelEdit} className="btn-secondary">
               Cancel
             </button>
           </div>
+            </>
+          )}
         </form>
       )}
 
       {/* Transactions List */}
       <div className="card">
         <div className="flex items-center justify-between mb-4">
-          <h4 className="text-lg font-semibold">Recent Transactions</h4>
-          {totalCount !== null && (
-            <div className="text-sm text-[var(--text-muted)]">
-              {offset + 1}-{Math.min(offset + pageLimit, totalCount)} of {totalCount}
-            </div>
-          )}
+          <h4 className="font-semibold">
+            Transactions
+            {hasActiveFilters && <span className="text-sm font-normal text-[var(--text-muted)] ml-2">(filtered)</span>}
+          </h4>
+          <div className="text-sm text-[var(--text-muted)]">
+            {filteredTransactions.length} {filteredTransactions.length === 1 ? 'item' : 'items'}
+            {totalCount !== null && totalCount > pageLimit && (
+              <span className="ml-1">of {totalCount}</span>
+            )}
+          </div>
         </div>
 
         {loading && <div className="skeleton h-32 rounded" />}
 
         {!loading && filteredTransactions.length === 0 && (
-          <div className="text-center py-12 text-[var(--text-muted)]">
-            <p className="text-lg mb-2">No transactions yet</p>
-            <p className="text-sm">Click "Add" to create your first transaction</p>
+          <div className="text-center py-8 text-[var(--text-muted)]">
+            <p className="mb-1">No transactions found</p>
+            <p className="text-sm">{hasActiveFilters ? 'Try adjusting your filters' : 'Click "Add" to create one'}</p>
           </div>
         )}
 
         {/* Mobile cards */}
-        <div className="block md:hidden space-y-3">
+        <div className="block md:hidden space-y-2">
           {filteredTransactions.map((tx) => {
             const txTags = tx.tags ? tx.tags.split(",").map(t => t.trim()).filter(Boolean) : [];
             const tagColors = Object.fromEntries(allTags.map(t => [t.name, t.color]));
             
             return (
-              <div key={tx.id} className="p-4 bg-[var(--surface)] rounded-lg space-y-2">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <div className="font-medium">{tx.description || "—"}</div>
-                    <div className="text-xs text-[var(--text-muted)] mt-1">
+              <div key={tx.id} className="p-3 bg-[var(--surface)] rounded-lg">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium truncate">{tx.description || tx.category_name || "Transaction"}</div>
+                    <div className="text-xs text-[var(--text-muted)] mt-0.5">
                       {tx.date} • {tx.account_name}
+                      {tx.savings_goal_name && <span> • {tx.savings_goal_emoji} {tx.savings_goal_name}</span>}
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="font-semibold text-lg">
-                      {formatMoney(tx.amount)}
+                  <div className="text-right flex-shrink-0">
+                    <div className={`font-semibold ${tx.kind === 'INCOME' ? 'text-green-600' : tx.kind === 'EXPENSE' ? 'text-red-600' : 'text-gray-600'}`}>
+                      {tx.kind === 'INCOME' ? '+' : tx.kind === 'EXPENSE' ? '-' : ''}{formatMoney(tx.amount)}
                     </div>
-                    <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
-                      tx.kind === 'INCOME' ? 'bg-green-100 text-green-800' : 
-                      tx.kind === 'EXPENSE' ? 'bg-red-100 text-red-800' : 
-                      'bg-gray-100 text-gray-800'
-                    }`}>
-                      {tx.kind}
-                    </span>
                   </div>
                 </div>
                 
-                {tx.category_name && (
-                  <div className="text-sm">
-                    <span className="text-[var(--text-muted)]">Category:</span>{" "}
-                    <span className="font-medium">{tx.category_name}</span>
-                  </div>
-                )}
-                
-                {tx.savings_goal_name && (
-                  <div className="text-sm">
-                    <span className="text-[var(--text-muted)]">Savings Goal:</span>{" "}
-                    <span className="font-medium">
-                      {tx.savings_goal_emoji} {tx.savings_goal_name}
-                    </span>
-                  </div>
-                )}
-                
-                {txTags.length > 0 && (
+                <div className="flex items-center justify-between mt-2">
                   <div className="flex flex-wrap gap-1">
+                    <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
+                      tx.kind === 'INCOME' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 
+                      tx.kind === 'EXPENSE' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : 
+                      'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
+                    }`}>
+                      {tx.kind}
+                    </span>
+                    {tx.category_name && (
+                      <span className="inline-block px-2 py-0.5 rounded text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                        {tx.category_name}
+                      </span>
+                    )}
                     {txTags.map((tag, idx) => (
                       <span
                         key={idx}
-                        className="inline-block px-2 py-0.5 rounded-full text-xs font-medium"
+                        className="inline-block px-2 py-0.5 rounded text-xs font-medium"
                         style={{
                           backgroundColor: (tagColors[tag] || "#3B82F6") + "20",
                           color: tagColors[tag] || "#3B82F6",
@@ -671,7 +791,22 @@ export default function TransactionsPage() {
                       </span>
                     ))}
                   </div>
-                )}
+                  <div className="flex gap-1">
+                    <button
+                      onClick={() => startEdit(tx)}
+                      className="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-[var(--text-muted)]"
+                    >
+                      <HiPencil size={16} />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(tx.id)}
+                      disabled={deletingId === tx.id}
+                      className="p-1.5 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 disabled:opacity-50"
+                    >
+                      <HiTrash size={16} />
+                    </button>
+                  </div>
+                </div>
               </div>
             );
           })}
@@ -679,18 +814,17 @@ export default function TransactionsPage() {
 
         {/* Desktop table */}
         {filteredTransactions.length > 0 && (
-          <div className="hidden md:block overflow-x-auto">
+          <div className="hidden md:block overflow-x-auto -mx-4 sm:-mx-6">
             <table className="min-w-full text-sm">
               <thead className="bg-[var(--surface)] sticky top-0">
                 <tr>
-                  <th className="px-4 py-3 text-left font-semibold">Date</th>
-                  <th className="px-4 py-3 text-left font-semibold">Account</th>
-                  <th className="px-4 py-3 text-left font-semibold">Category</th>
-                  <th className="px-4 py-3 text-left font-semibold">Savings Goal</th>
-                  <th className="px-4 py-3 text-right font-semibold">Amount</th>
-                  <th className="px-4 py-3 text-left font-semibold">Type</th>
-                  <th className="px-4 py-3 text-left font-semibold">Description</th>
-                  <th className="px-4 py-3 text-left font-semibold">Tags</th>
+                  <th className="px-4 py-2 text-left font-medium text-[var(--text-muted)]">Date</th>
+                  <th className="px-4 py-2 text-left font-medium text-[var(--text-muted)]">Description</th>
+                  <th className="px-4 py-2 text-left font-medium text-[var(--text-muted)]">Account</th>
+                  <th className="px-4 py-2 text-left font-medium text-[var(--text-muted)]">Category</th>
+                  <th className="px-4 py-2 text-right font-medium text-[var(--text-muted)]">Amount</th>
+                  <th className="px-4 py-2 text-left font-medium text-[var(--text-muted)]">Tags</th>
+                  <th className="px-4 py-2 text-right font-medium text-[var(--text-muted)]">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--border-subtle)]">
@@ -700,43 +834,36 @@ export default function TransactionsPage() {
                   
                   return (
                     <tr key={tx.id} className="hover:bg-[var(--surface)] transition-colors">
-                      <td className="px-4 py-3">{tx.date}</td>
-                      <td className="px-4 py-3">{tx.account_name}</td>
-                      <td className="px-4 py-3">
-                        {tx.category_name ?? (
-                          <span className="text-[var(--text-muted)]">–</span>
+                      <td className="px-4 py-2.5 whitespace-nowrap">{tx.date}</td>
+                      <td className="px-4 py-2.5">
+                        <div className="font-medium">{tx.description || "—"}</div>
+                        {tx.savings_goal_name && (
+                          <div className="text-xs text-blue-600 dark:text-blue-400 mt-0.5">
+                            {tx.savings_goal_emoji} {tx.savings_goal_name}
+                          </div>
                         )}
                       </td>
-                      <td className="px-4 py-3">
-                        {tx.savings_goal_name ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-blue-600 dark:text-blue-400">
-                            <span>{tx.savings_goal_emoji}</span>
-                            <span>{tx.savings_goal_name}</span>
-                          </span>
-                        ) : (
-                          <span className="text-[var(--text-muted)]">–</span>
-                        )}
+                      <td className="px-4 py-2.5">{tx.account_name}</td>
+                      <td className="px-4 py-2.5">
+                        {tx.category_name || <span className="text-[var(--text-muted)]">—</span>}
                       </td>
-                      <td className="px-4 py-3 text-right font-semibold">
-                        {formatMoney(tx.amount)}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
-                          tx.kind === 'INCOME' ? 'bg-green-100 text-green-800' : 
-                          tx.kind === 'EXPENSE' ? 'bg-red-100 text-red-800' : 
-                          'bg-gray-100 text-gray-800'
+                      <td className="px-4 py-2.5 text-right whitespace-nowrap">
+                        <span className={`font-semibold ${
+                          tx.kind === 'INCOME' ? 'text-green-600' : 
+                          tx.kind === 'EXPENSE' ? 'text-red-600' : 
+                          'text-gray-600'
                         }`}>
-                          {tx.kind}
+                          {tx.kind === 'INCOME' ? '+' : tx.kind === 'EXPENSE' ? '-' : ''}
+                          {formatMoney(tx.amount)}
                         </span>
                       </td>
-                      <td className="px-4 py-3">{tx.description}</td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-2.5">
                         {txTags.length > 0 ? (
                           <div className="flex flex-wrap gap-1">
-                            {txTags.map((tag, idx) => (
+                            {txTags.slice(0, 2).map((tag, idx) => (
                               <span
                                 key={idx}
-                                className="inline-block px-2 py-0.5 rounded-full text-xs font-medium"
+                                className="inline-block px-2 py-0.5 rounded text-xs font-medium"
                                 style={{
                                   backgroundColor: (tagColors[tag] || "#3B82F6") + "20",
                                   color: tagColors[tag] || "#3B82F6",
@@ -745,10 +872,32 @@ export default function TransactionsPage() {
                                 {tag}
                               </span>
                             ))}
+                            {txTags.length > 2 && (
+                              <span className="text-xs text-[var(--text-muted)]">+{txTags.length - 2}</span>
+                            )}
                           </div>
                         ) : (
-                          <span className="text-[var(--text-muted)]">–</span>
+                          <span className="text-[var(--text-muted)]">—</span>
                         )}
+                      </td>
+                      <td className="px-4 py-2.5 text-right">
+                        <div className="flex justify-end gap-1">
+                          <button
+                            onClick={() => startEdit(tx)}
+                            className="p-1.5 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-[var(--text-muted)]"
+                            title="Edit"
+                          >
+                            <HiPencil size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(tx.id)}
+                            disabled={deletingId === tx.id}
+                            className="p-1.5 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 disabled:opacity-50"
+                            title="Delete"
+                          >
+                            <HiTrash size={16} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );

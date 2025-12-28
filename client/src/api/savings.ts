@@ -18,6 +18,8 @@ export interface SavingsGoal {
   days_remaining: number | null;
   monthly_target: number;
   total_from_transactions: number;
+  interest_rate: number;
+  projected_value: number;
 }
 
 export interface GoalContribution {
@@ -44,9 +46,9 @@ export interface CreateGoalData {
   target_amount: number | string;
   current_amount?: number | string;
   target_date?: string;
-  linked_account?: number;
   description?: string;
   emoji?: string;
+  interest_rate?: number | string;
 }
 
 export interface CreateContributionData {

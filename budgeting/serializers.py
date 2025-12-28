@@ -9,6 +9,7 @@ class BudgetLineSerializer(serializers.ModelSerializer):
         model = BudgetLine
         fields = [
             "id",
+            "budget",
             "category",
             "category_name",
             "planned_amount",

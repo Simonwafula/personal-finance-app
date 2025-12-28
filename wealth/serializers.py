@@ -22,6 +22,8 @@ class AssetSerializer(serializers.ModelSerializer):
 
 
 class LiabilitySerializer(serializers.ModelSerializer):
+    remaining_tenure = serializers.IntegerField(read_only=True)
+
     class Meta:
         model = Liability
         fields = [
@@ -31,13 +33,16 @@ class LiabilitySerializer(serializers.ModelSerializer):
             "principal_balance",
             "interest_rate",
             "minimum_payment",
+            "tenure_months",
+            "start_date",
+            "remaining_tenure",
             "due_day_of_month",
             "linked_account",
             "notes",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "created_at", "updated_at"]
+        read_only_fields = ["id", "remaining_tenure", "created_at", "updated_at"]
 
 
 class NetWorthSnapshotSerializer(serializers.ModelSerializer):

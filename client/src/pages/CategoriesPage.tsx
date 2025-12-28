@@ -324,6 +324,48 @@ export default function CategoriesPage() {
             </button>
           </div>
 
+          {/* Quick Add Common Categories */}
+          <div className="card p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20">
+            <div className="text-sm font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-3">
+              Quick Add Common Categories
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { name: 'Insurance - Health', kind: 'EXPENSE' as const, emoji: '🏥' },
+                { name: 'Insurance - Life', kind: 'EXPENSE' as const, emoji: '🛡️' },
+                { name: 'Insurance - Car', kind: 'EXPENSE' as const, emoji: '🚗' },
+                { name: 'Insurance - Home', kind: 'EXPENSE' as const, emoji: '🏠' },
+                { name: 'Insurance - Education', kind: 'EXPENSE' as const, emoji: '🎓' },
+                { name: 'Rent', kind: 'EXPENSE' as const, emoji: '🏘️' },
+                { name: 'Utilities', kind: 'EXPENSE' as const, emoji: '💡' },
+                { name: 'Groceries', kind: 'EXPENSE' as const, emoji: '🛒' },
+                { name: 'Transport', kind: 'EXPENSE' as const, emoji: '🚌' },
+                { name: 'Salary', kind: 'INCOME' as const, emoji: '💰' },
+                { name: 'Business Income', kind: 'INCOME' as const, emoji: '💼' },
+                { name: 'Dividends', kind: 'INCOME' as const, emoji: '📈' },
+              ].filter(s => !categories.find(c => c.name.toLowerCase() === s.name.toLowerCase() && c.kind === s.kind))
+               .map((suggestion) => (
+                <button
+                  key={`${suggestion.name}-${suggestion.kind}`}
+                  onClick={async () => {
+                    try {
+                      await createCategory({ name: suggestion.name, kind: suggestion.kind });
+                      await loadCategories();
+                    } catch (err) {
+                      console.error(err);
+                      setError("Failed to create category");
+                    }
+                  }}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all"
+                >
+                  <span>{suggestion.emoji}</span>
+                  <span>{suggestion.name}</span>
+                  <HiPlus size={14} className="text-blue-500" />
+                </button>
+              ))}
+            </div>
+          </div>
+
           {loading && <div className="skeleton h-32 rounded" />}
 
           {!loading && categories.length === 0 && (

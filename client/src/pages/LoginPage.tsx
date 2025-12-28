@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { login } from "../api/auth";
 import Logo from "../components/Logo";
-import "../styles/neumorphism.css";
 
 export default function LoginPage() {
   const [identifier, setIdentifier] = useState("");

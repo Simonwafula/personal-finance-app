@@ -42,6 +42,7 @@ urlpatterns = [
     path("api/wealth/", include("wealth.urls")),
     path("api/debt/", include("debt_planner.urls")),
     path("api/savings/", include("savings.urls")),
+    path("api/investments/", include("investments.urls")),
     path("api/", include("notifications.urls")),
     # Static file helpers
     path("favicon.ico", favicon_view),

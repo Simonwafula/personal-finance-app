@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { forgotPassword } from '../api/auth';
-import '../styles/neumorphism.css';
 
 export default function ForgotPasswordPage() {
   const navigate = useNavigate();

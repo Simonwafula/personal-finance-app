@@ -11,7 +11,6 @@ import {
 import PublicHeader from "../components/PublicHeader";
 import PublicFooter from "../components/PublicFooter";
 import { fetchCurrentUser } from "../api/auth";
-import "../styles/neumorphism.css";
 
 const AuthLink = ({
   children,
@@ -36,71 +35,91 @@ const chartData = [
 ];
 
 const highlights = [
-  { label: "Synced accounts", value: "4" },
-  { label: "Tracked monthly", value: "KES 125k" },
-  { label: "Avg. savings boost", value: "+18%" },
+  { label: "Track accounts", value: "Unlimited" },
+  { label: "Free forever", value: "Core features" },
+  { label: "Your data", value: "Export anytime" },
 ];
 
 const accounts = [
-  { name: "M-Pesa", balance: "KES 45,200", status: "Live", icon: "📱" },
-  { name: "KCB Salary", balance: "KES 62,100", status: "Connected", icon: "🏦" },
-  { name: "SACCO", balance: "KES 18,130", status: "Connected", icon: "🤝" },
+  { name: "M-Pesa", balance: "KES 45,200", status: "Manual", icon: "📱" },
+  { name: "KCB Salary", balance: "KES 62,100", status: "Manual", icon: "🏦" },
+  { name: "SACCO", balance: "KES 18,130", status: "Manual", icon: "🤝" },
 ];
 
 const calculators = [
   {
-    title: "Budget Planner",
-    desc: "Allocate income across categories and keep savings visible.",
+    title: "Budget Tracker",
+    desc: "Set spending limits by category and track progress throughout the month.",
     icon: "📊",
     tone: "from-blue-100/60 via-white to-white/80 dark:from-blue-900/20 dark:via-white/5 dark:to-white/0",
   },
   {
-    title: "Debt Payoff",
-    desc: "See timelines and interest saved when payments change.",
+    title: "Debt Planner",
+    desc: "Compare snowball vs avalanche strategies with payment timelines.",
     icon: "💳",
     tone: "from-purple-100/60 via-white to-white/80 dark:from-purple-900/20 dark:via-white/5 dark:to-white/0",
   },
   {
-    title: "Savings Goal",
-    desc: "Plan how much to save monthly to hit your targets.",
+    title: "Savings Goals",
+    desc: "Set targets with deadlines and track contributions over time.",
     icon: "🎯",
     tone: "from-emerald-100/60 via-white to-white/80 dark:from-emerald-900/20 dark:via-white/5 dark:to-white/0",
+  },
+  {
+    title: "Net Worth Tracker",
+    desc: "Monitor assets, liabilities, and see your financial health over time.",
+    icon: "💰",
+    tone: "from-amber-100/60 via-white to-white/80 dark:from-amber-900/20 dark:via-white/5 dark:to-white/0",
+  },
+  {
+    title: "Investment Portfolio",
+    desc: "Track stocks, funds, crypto, insurance and calculate returns.",
+    icon: "📈",
+    tone: "from-cyan-100/60 via-white to-white/80 dark:from-cyan-900/20 dark:via-white/5 dark:to-white/0",
+  },
+  {
+    title: "Subscription Manager",
+    desc: "Keep track of recurring payments and their renewal dates.",
+    icon: "🔄",
+    tone: "from-rose-100/60 via-white to-white/80 dark:from-rose-900/20 dark:via-white/5 dark:to-white/0",
   },
 ];
 
 const features = [
-  { title: "Multi-Account Sync", desc: "Connect M-Pesa, banks, SACCO, cash", icon: "🔗" },
-  { title: "Smart Insights", desc: "Spot patterns, nudge good habits", icon: "💡" },
-  { title: "Budget Tracking", desc: "Limits, alerts, and auto-categorization", icon: "⚡" },
-  { title: "Debt Management", desc: "Snowball/avalanche timelines", icon: "📈" },
-  { title: "Savings Goals", desc: "Targets with progress and reminders", icon: "🎯" },
-  { title: "Wealth Tracking", desc: "Net worth and investment growth", icon: "💰" },
+  { title: "Multi-Account Tracking", desc: "Track M-Pesa, banks, SACCO, cash manually", icon: "🔗" },
+  { title: "Transaction Categories", desc: "Organize spending with custom categories", icon: "🏷️" },
+  { title: "Budget Limits", desc: "Set monthly limits per category", icon: "⚡" },
+  { title: "Debt Planner", desc: "Snowball/avalanche payoff strategies", icon: "💳" },
+  { title: "Savings Goals", desc: "Track progress towards financial targets", icon: "🎯" },
+  { title: "Investment Portfolio", desc: "Stocks, funds, crypto, insurance", icon: "📈" },
+  { title: "Net Worth Tracking", desc: "Assets minus liabilities over time", icon: "💰" },
+  { title: "Subscription Tracker", desc: "Monitor recurring payments", icon: "🔄" },
 ];
 
 const faqs = [
   {
-    q: "Can I use it without connecting my bank?",
-    a: "Yes, absolutely! You can manually add accounts (bank, M-Pesa, SACCO, cash) and enter transactions by hand. While we support M-Pesa statements and bank imports, you're never forced to connect anything. Your privacy and control come first.",
+    q: "How do I add my accounts?",
+    a: "Simply create accounts manually - add your M-Pesa, bank accounts, SACCO, or cash on hand. Enter the current balance and start tracking. There's no automatic bank connection - you have full control over what data you enter.",
   },
   {
     q: "Can I export my data?",
-    a: "Yes! You can export all your transactions, accounts, and reports to CSV or Excel format. Your data is yours—take it with you anytime, use it in other tools, or keep offline backups. No lock-in, no hidden fees for exports.",
+    a: "Yes! You can export all your transactions, accounts, and reports to CSV format. Your data is yours—take it with you anytime, use it in other tools, or keep offline backups. No lock-in, no hidden fees for exports.",
   },
   {
     q: "Is it really free?",
-    a: "Yes, the core features are completely free. Track unlimited transactions, create budgets, manage debts, and monitor your net worth without paying anything. We may introduce premium features in the future (advanced analytics, automated reports), but the essentials will always be free.",
+    a: "Yes! All current features are completely free: unlimited transactions, budgets, debt planning, savings goals, investment tracking, and net worth monitoring. We may introduce premium features in the future, but everything you see today is free.",
   },
   {
     q: "How secure is my financial data?",
-    a: "Very secure. We use encrypted sessions, secure authentication via Google OAuth, and role-based access control. Your data is isolated—no one else can see it. We don't sell your information to third parties, and we include password recovery flows. Regular security audits ensure your money data stays private.",
+    a: "Your data is protected with encrypted sessions and secure authentication (email/password or Google OAuth). Your data is isolated—no one else can see it. We don't sell your information to third parties.",
   },
   {
     q: "Do I need to be tech-savvy to use this?",
-    a: "Not at all! The interface is designed to be intuitive and user-friendly. If you can use WhatsApp or M-Pesa, you can use this app. We provide clear visual feedback, helpful tooltips, and a demo you can explore without creating an account. Plus, the live calculators show you results in real-time as you type.",
+    a: "Not at all! The interface is designed to be intuitive and user-friendly. If you can use WhatsApp or M-Pesa, you can use this app. We provide clear visual feedback and an easy-to-navigate dashboard.",
   },
   {
     q: "What features are you planning to add?",
-    a: "M-Pesa API Integration (Premium), Chama Management/tracker (Premium), Direct bank connections (Premium), Advanced Analytics with AI forecasting (Premium), Investment Tracking (Premium), Smart Notifications via SMS/WhatsApp (Premium). Core features will always remain free; premium features help us maintain and improve the platform.",
+    a: "Coming soon: M-Pesa statement import, bank statement parsing, Chama/group savings management, automated recurring transactions, and smart notifications. Let us know what features matter most to you!",
   },
 ];
 
@@ -300,8 +319,8 @@ export default function LandingPage() {
                     <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200 uppercase tracking-wide">
                       Accounts
                     </h3>
-                    <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200 font-semibold">
-                      Live
+                    <span className="text-xs px-2 py-1 rounded-full bg-slate-100 text-slate-700 dark:bg-slate-900/40 dark:text-slate-200 font-semibold">
+                      Demo
                     </span>
                   </div>
                   <div className="space-y-3">
@@ -339,7 +358,7 @@ export default function LandingPage() {
               <div className="text-sm text-slate-600 dark:text-slate-400">Pick a calculator and try it.</div>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {calculators.map((calc) => (
                 <div
                   key={calc.title}
@@ -370,15 +389,15 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {features.map((feature) => (
                 <div
                   key={feature.title}
-                  className="rounded-2xl border border-white/60 dark:border-white/10 bg-white/85 dark:bg-white/5 backdrop-blur p-6 shadow-lg shadow-blue-900/10 hover:-translate-y-1 transition-transform"
+                  className="rounded-2xl border border-white/60 dark:border-white/10 bg-white/85 dark:bg-white/5 backdrop-blur p-4 shadow-lg shadow-blue-900/10 hover:-translate-y-1 transition-transform"
                 >
-                  <div className="text-3xl mb-3">{feature.icon}</div>
-                  <h3 className="font-bold text-slate-900 dark:text-white mb-2">{feature.title}</h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-300">{feature.desc}</p>
+                  <div className="text-2xl mb-2">{feature.icon}</div>
+                  <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-1">{feature.title}</h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-300">{feature.desc}</p>
                 </div>
               ))}
             </div>

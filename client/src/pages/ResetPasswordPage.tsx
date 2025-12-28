@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { resetPassword } from '../api/auth';
-import '../styles/neumorphism.css';
 
 export default function ResetPasswordPage() {
   const navigate = useNavigate();

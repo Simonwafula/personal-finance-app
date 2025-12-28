@@ -25,6 +25,7 @@ const ResetPasswordPage = React.lazy(() => import("./pages/ResetPasswordPage"));
 const OAuthCallback = React.lazy(() => import("./pages/OAuthCallback"));
 const ProfilePage = React.lazy(() => import("./pages/ProfilePage"));
 const SavingsPage = React.lazy(() => import("./pages/SavingsPage"));
+const InvestmentsPage = React.lazy(() => import("./pages/InvestmentsPage"));
 const CategoriesPage = React.lazy(() => import("./pages/CategoriesPage"));
 const SubscriptionsPage = React.lazy(() => import("./pages/SubscriptionsPage"));
 const NotificationsPage = React.lazy(() => import("./pages/NotificationsPage"));
@@ -60,6 +61,7 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
                 <Route path="accounts" element={<RequireAuth><AccountsPage /></RequireAuth>} />
                 <Route path="profile" element={<RequireAuth><ProfilePage /></RequireAuth>} />
                 <Route path="savings" element={<RequireAuth><SavingsPage /></RequireAuth>} />
+                <Route path="investments" element={<RequireAuth><InvestmentsPage /></RequireAuth>} />
                 <Route path="categories" element={<RequireAuth><CategoriesPage /></RequireAuth>} />
                 <Route path="subscriptions" element={<RequireAuth><SubscriptionsPage /></RequireAuth>} />
                 <Route path="notifications" element={<RequireAuth><NotificationsPage /></RequireAuth>} />

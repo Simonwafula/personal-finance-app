@@ -1,11 +1,13 @@
 // src/pages/DashboardPage.tsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchAggregatedTransactions, fetchTopCategories } from "../api/finance";
+import { fetchAggregatedTransactions, fetchTopCategories, fetchAccounts } from "../api/finance";
 import { fetchTransactions } from "../api/finance";
 import { fetchCurrentNetWorth, fetchNetWorthSnapshots } from "../api/wealth";
+import { getSavingsSummary, type SavingsSummary } from "../api/savings";
+import { getInvestmentSummary, type InvestmentSummary } from "../api/investments";
+import type { Account } from "../api/types";
 import { useTimeRange } from "../contexts/TimeRangeContext";
-import "../styles/neumorphism.css";
 // TimeRangeSelector comes from global context (rendered in Layout)
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, CartesianGrid } from "recharts";
 import type { NetWorthCurrent } from "../api/types";
@@ -32,6 +34,9 @@ export default function DashboardPage() {
     savings: 0,
   });
   const [netWorth, setNetWorth] = useState<NetWorthCurrent | null>(null);
+  const [liquidity, setLiquidity] = useState<number>(0);
+  const [savingsGoals, setSavingsGoals] = useState<SavingsSummary | null>(null);
+  const [investmentsSummary, setInvestmentsSummary] = useState<InvestmentSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,10 +49,23 @@ export default function DashboardPage() {
         setLoading(true);
         setError(null);
 
-        const [nw, nws] = await Promise.all([
+        const [nw, nws, accountsData, savingsSummary, invSummary] = await Promise.all([
           fetchCurrentNetWorth().catch(() => null),
           fetchNetWorthSnapshots().catch(() => []),
+          fetchAccounts().catch(() => [] as Account[]),
+          getSavingsSummary().catch(() => null),
+          getInvestmentSummary().catch(() => null),
         ]);
+
+        if (savingsSummary) setSavingsGoals(savingsSummary);
+        if (invSummary) setInvestmentsSummary(invSummary);
+
+        // Calculate liquidity (immediate access cash)
+        const liquidTypes = ['BANK', 'MOBILE_MONEY', 'CASH', 'SACCO'];
+        const totalLiquidity = accountsData
+          .filter((a: Account) => liquidTypes.includes(a.account_type))
+          .reduce((sum: number, a: Account) => sum + Number(a.current_balance || a.opening_balance), 0);
+        setLiquidity(totalLiquidity);
 
         // Aggregated data from backend for the selected range
         const q: any = {
@@ -232,9 +250,9 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Savings Card */}
+            {/* Net Cash Flow Card */}
             <div className="kpi-card neu-stat-card">
-              <div className="kpi-label">Net Savings</div>
+              <div className="kpi-label">Net Cash Flow</div>
               <div className="kpi-value" style={{ color: totals.savings >= 0 ? 'var(--primary-400)' : 'var(--danger-400)' }}>
                 {formatMoney(totals.savings)}
               </div>
@@ -259,6 +277,18 @@ export default function DashboardPage() {
               </div>
             </div>
 
+            {/* Liquidity Card - Available Cash */}
+            <div className="kpi-card neu-stat-card cursor-pointer" onClick={() => navigate('/accounts')}>
+              <div className="kpi-label">💵 Available Cash</div>
+              <div className="kpi-value" style={{ color: 'var(--success-400)' }}>
+                {formatMoney(liquidity)}
+              </div>
+              <div className="text-xs text-[var(--text-muted)] mb-3">KES</div>
+              <div className="text-xs text-[var(--text-muted)]">
+                Immediate access funds
+              </div>
+            </div>
+
             {/* Net Worth Card */}
             {netWorth && (
               <div className="kpi-card neu-stat-card cursor-pointer" onClick={() => navigate('/wealth')}>
@@ -273,6 +303,44 @@ export default function DashboardPage() {
                   </span>
                   <span className="kpi-change negative">
                     ↓ Debt: {formatMoney(netWorth.total_liabilities)}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Savings Goals Card */}
+            {savingsGoals && savingsGoals.total_goals > 0 && (
+              <div className="kpi-card neu-stat-card cursor-pointer" onClick={() => navigate('/savings')}>
+                <div className="kpi-label">🎯 Savings Goals</div>
+                <div className="kpi-value" style={{ color: 'var(--primary-400)' }}>
+                  {formatMoney(savingsGoals.total_saved)}
+                </div>
+                <div className="text-xs text-[var(--text-muted)] mb-3">KES saved</div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-[var(--text-muted)]">
+                    {savingsGoals.total_goals} goal{savingsGoals.total_goals !== 1 ? 's' : ''}
+                  </span>
+                  <span className="kpi-change positive">
+                    {savingsGoals.average_progress.toFixed(0)}% avg
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Investments Card */}
+            {investmentsSummary && investmentsSummary.investment_count > 0 && (
+              <div className="kpi-card neu-stat-card cursor-pointer" onClick={() => navigate('/investments')}>
+                <div className="kpi-label">📈 Investments</div>
+                <div className="kpi-value" style={{ color: 'var(--accent-400)' }}>
+                  {formatMoney(investmentsSummary.total_current_value)}
+                </div>
+                <div className="text-xs text-[var(--text-muted)] mb-3">KES value</div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-[var(--text-muted)]">
+                    {investmentsSummary.investment_count} holding{investmentsSummary.investment_count !== 1 ? 's' : ''}
+                  </span>
+                  <span className={`kpi-change ${investmentsSummary.total_gain_loss >= 0 ? 'positive' : 'negative'}`}>
+                    {investmentsSummary.total_gain_loss >= 0 ? '+' : ''}{investmentsSummary.total_gain_loss_percentage.toFixed(1)}%
                   </span>
                 </div>
               </div>

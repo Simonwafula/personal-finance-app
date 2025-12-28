@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { fetchProfile, updateProfile, type UserProfile } from "../api/auth";
-import "../styles/neumorphism.css";
 
 interface ProfileFormData extends UserProfile {
   username: string;

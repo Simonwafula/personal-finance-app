@@ -59,10 +59,19 @@ export interface Transaction {
 
 // --- Wealth / Net worth ---
 
+export interface NetWorthBreakdown {
+  assets_manual: number;
+  savings_goals: number;
+  account_balances: number;
+  liabilities_loans: number;
+  account_overdrafts: number;
+}
+
 export interface NetWorthCurrent {
   total_assets: string;
   total_liabilities: string;
   net_worth: string;
+  breakdown?: NetWorthBreakdown;
 }
 
 // --- Budgets ---
@@ -137,6 +146,9 @@ export interface Liability {
   principal_balance: string;
   interest_rate: string;
   minimum_payment: string;
+  tenure_months: number | null;
+  start_date: string | null;
+  remaining_tenure: number | null;
   due_day_of_month: number | null;
   linked_account: number | null;
   notes: string;

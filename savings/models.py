@@ -31,6 +31,12 @@ class SavingsGoal(models.Model):
     )
     description = models.TextField(blank=True)
     emoji = models.CharField(max_length=10, default="🎯")
+    interest_rate = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=0,
+        help_text="Annual interest rate as a percentage (e.g., 10 for 10%)"
+    )
 
     class Meta:
         ordering = ['-created_at']

@@ -1,11 +1,36 @@
 // src/pages/BudgetsPage.tsx
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { fetchBudgets, fetchBudgetSummary, createBudget, createBudgetLine, fetchBudgetLines, updateBudgetLine, deleteBudgetLine } from "../api/budgeting";
+import {
+  fetchBudgets,
+  fetchBudgetSummary,
+  createBudget,
+  updateBudget,
+  deleteBudget,
+  createBudgetLine,
+  fetchBudgetLines,
+  updateBudgetLine,
+  deleteBudgetLine,
+} from "../api/budgeting";
 import { fetchCategories, fetchTransactions } from "../api/finance";
 import TimeRangeSelector from "../components/TimeRangeSelector";
 import type { Category, Budget, BudgetSummary, BudgetLine } from "../api/types";
-import "../styles/neumorphism.css";
+import {
+  HiPlus,
+  HiX,
+  HiPencil,
+  HiTrash,
+  HiDotsVertical,
+  HiCalendar,
+  HiCurrencyDollar,
+  HiChartBar,
+  HiTrendingUp,
+  HiTrendingDown,
+  HiExclamationCircle,
+  HiCheckCircle,
+  HiClock,
+  HiExternalLink,
+} from "react-icons/hi";
 
 function formatMoney(value: string | number) {
   const num = typeof value === "string" ? Number(value) : value;
@@ -21,8 +46,8 @@ export default function BudgetsPage() {
   const [creating, setCreating] = useState(false);
   const [budgetName, setBudgetName] = useState("");
   const [periodType, setPeriodType] = useState<Budget["period_type"]>("MONTHLY");
-  const [startDate, setStartDate] = useState("2025-01-01");
-  const [endDate, setEndDate] = useState("2025-01-31");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [notes, setNotes] = useState("");
 
   // budget lines
@@ -41,6 +66,11 @@ export default function BudgetsPage() {
   const [customStart, setCustomStart] = useState<string | null>(null);
   const [customEnd, setCustomEnd] = useState<string | null>(null);
   const [customSummary, setCustomSummary] = useState<BudgetSummary | null>(null);
+  const [showCreateBudget, setShowCreateBudget] = useState(false);
+  const [showAddLine, setShowAddLine] = useState(false);
+  const [editingBudgetId, setEditingBudgetId] = useState<number | null>(null);
+  const [budgetMenuOpen, setBudgetMenuOpen] = useState<number | null>(null);
+  const [addingLine, setAddingLine] = useState(false);
   const threshold = 0.9;
 
   const activeSummary = customSummary ?? summary;
@@ -56,6 +86,47 @@ export default function BudgetsPage() {
       .filter((x) => x.ratio >= threshold)
       .sort((a, b) => b.ratio - a.ratio);
   }, [activeSummary]);
+
+  // Budget health calculation
+  const budgetHealth = useMemo(() => {
+    if (!activeSummary) return null;
+    const planned = Number(activeSummary.totals.planned);
+    const actual = Number(activeSummary.totals.actual);
+    if (planned === 0) return { status: "empty", percent: 0 };
+    const percent = (actual / planned) * 100;
+    if (percent >= 100) return { status: "over", percent };
+    if (percent >= 90) return { status: "warning", percent };
+    if (percent >= 50) return { status: "good", percent };
+    return { status: "excellent", percent };
+  }, [activeSummary]);
+
+  const selectedBudget = budgets.find((b) => b.id === selectedId);
+
+  // Days remaining in budget period
+  const daysRemaining = useMemo(() => {
+    if (!selectedBudget) return null;
+    const end = new Date(selectedBudget.end_date);
+    const today = new Date();
+    const diff = Math.ceil((end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    return diff;
+  }, [selectedBudget]);
+
+  // Helper to set dates based on period type
+  function handlePeriodTypeChange(type: Budget["period_type"]) {
+    setPeriodType(type);
+    const now = new Date();
+    if (type === "MONTHLY") {
+      const start = new Date(now.getFullYear(), now.getMonth(), 1);
+      const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      setStartDate(start.toISOString().slice(0, 10));
+      setEndDate(end.toISOString().slice(0, 10));
+      setBudgetName(`${start.toLocaleString("default", { month: "long" })} ${start.getFullYear()}`);
+    } else if (type === "ANNUAL") {
+      setStartDate(`${now.getFullYear()}-01-01`);
+      setEndDate(`${now.getFullYear()}-12-31`);
+      setBudgetName(`${now.getFullYear()} Annual Budget`);
+    }
+  }
 
   useEffect(() => {
     async function loadBudgets() {
@@ -85,7 +156,6 @@ export default function BudgetsPage() {
   }, []);
 
   useEffect(() => {
-    // Reset lines when selecting a new budget
     if (!selectedId) {
       setLines([]);
       return;
@@ -98,8 +168,8 @@ export default function BudgetsPage() {
         ]);
         setSummary(s);
         setLines(blines);
-      } catch (err) {
-        // ignore; lines will be cleared
+      } catch {
+        // ignore
       }
     }
     loadLines();
@@ -115,8 +185,8 @@ export default function BudgetsPage() {
         setLoadingSummary(true);
         const data = await fetchBudgetSummary(selectedId as number);
         setSummary(data);
-      } catch (err) {
-        console.error(err);
+      } catch {
+        console.error("Failed to load budget summary");
         setError("Failed to load budget summary");
       } finally {
         setLoadingSummary(false);
@@ -133,7 +203,6 @@ export default function BudgetsPage() {
       }
       try {
         setLoadingSummary(true);
-        // Fetch the current budget lines if we don't already have them
         const linesData = lines;
         const txs = await fetchTransactions();
         const start = new Date(customStart);
@@ -163,9 +232,18 @@ export default function BudgetsPage() {
         });
 
         setCustomSummary({
-          budget: { id: selectedId, name: budgets.find(b => b.id === selectedId)?.name ?? '', start_date: customStart, end_date: customEnd },
+          budget: {
+            id: selectedId,
+            name: budgets.find((b) => b.id === selectedId)?.name ?? "",
+            start_date: customStart,
+            end_date: customEnd,
+          },
           lines: linesResult,
-          totals: { planned: String(totalPlanned), actual: String(totalActual), difference: String(totalPlanned - totalActual) },
+          totals: {
+            planned: String(totalPlanned),
+            actual: String(totalActual),
+            difference: String(totalPlanned - totalActual),
+          },
         });
       } catch (err) {
         console.error(err);
@@ -178,48 +256,62 @@ export default function BudgetsPage() {
   }, [customStart, customEnd, selectedId, lines, categories]);
 
   return (
-    <div className="space-y-6 pb-20 max-w-7xl mx-auto animate-fade-in">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <div className="space-y-6 pb-20 max-w-6xl mx-auto">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-            📊 Budgets
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent flex items-center gap-2">
+            <HiChartBar className="text-emerald-600" />
+            Budgets
           </h1>
-          <p className="text-base text-[var(--text-muted)] mt-2 font-medium">
-            Plan and track your spending with custom budgets
+          <p className="text-sm text-[var(--text-muted)] mt-1">
+            Plan and track your spending limits
           </p>
         </div>
-        {budgets.length > 0 && (
-          <div className="inline-flex px-4 py-2 rounded-full bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 text-sm font-semibold">
-            {budgets.length} {budgets.length === 1 ? 'Budget' : 'Budgets'}
-          </div>
-        )}
+        <button
+          onClick={() => {
+            setShowCreateBudget(!showCreateBudget);
+            setEditingBudgetId(null);
+            handlePeriodTypeChange("MONTHLY");
+          }}
+          className="btn-primary inline-flex items-center gap-2 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-shadow"
+        >
+          <HiPlus size={18} />
+          <span>New Budget</span>
+        </button>
       </div>
 
       {error && (
-        <div className="card bg-red-50 border-red-200 text-red-700 text-sm p-4 animate-slide-in">
+        <div className="card bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-sm p-3">
           {error}
         </div>
       )}
 
-      {loadingBudgets && <div className="skeleton h-32 rounded" />}
-
+      {/* Budget usage warning */}
       {activeSummary && overThreshold.length > 0 && (
-        <div className="card border-yellow-300 bg-yellow-50 text-yellow-900 animate-slide-in">
+        <div className="card bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border-amber-300 dark:border-amber-700 p-4">
           <div className="flex items-start gap-3">
-            <div className="text-xl">⚠️</div>
+            <div className="p-2 bg-amber-100 dark:bg-amber-800/50 rounded-lg">
+              <HiExclamationCircle className="text-amber-600 dark:text-amber-400" size={20} />
+            </div>
             <div className="flex-1">
-              <div className="font-semibold">Budget usage warning</div>
-              <div className="text-sm">
-                {overThreshold.length} categor{overThreshold.length === 1 ? "y" : "ies"} at or above 90% of planned amount.
+              <div className="font-semibold text-amber-800 dark:text-amber-200">
+                {overThreshold.length} categor{overThreshold.length === 1 ? "y" : "ies"} at 90%+ of budget
               </div>
-              <div className="mt-2 flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5 mt-2">
                 {overThreshold.slice(0, 5).map((x) => (
-                  <span key={x.name} className="badge bg-yellow-200 text-yellow-900">
-                    {x.name}: {Math.round(x.ratio * 100)}%
+                  <span
+                    key={x.name}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-200 dark:bg-amber-800 text-amber-900 dark:text-amber-100"
+                  >
+                    {x.name}
+                    <span className="px-1.5 py-0.5 bg-amber-300 dark:bg-amber-700 rounded-full">
+                      {Math.round(x.ratio * 100)}%
+                    </span>
                   </span>
                 ))}
                 {overThreshold.length > 5 && (
-                  <span className="badge bg-yellow-200 text-yellow-900">+{overThreshold.length - 5} more</span>
+                  <span className="text-xs text-amber-700 dark:text-amber-300 self-center">+{overThreshold.length - 5} more</span>
                 )}
               </div>
             </div>
@@ -227,546 +319,822 @@ export default function BudgetsPage() {
         </div>
       )}
 
-      <div className="grid lg:grid-cols-5 gap-6">
-        {/* Create budget form - left column */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="neu-card animate-slide-in sticky top-6">
-            <div className="neu-header">
-              <h2 className="neu-title">📝 Create Budget</h2>
-            </div>
+      {/* Create/Edit Budget Form */}
+      {showCreateBudget && (
         <form
           onSubmit={async (e) => {
             e.preventDefault();
+            setError(null);
+            
+            // Validate before setting creating state
+            if (!budgetName.trim()) {
+              setError("Budget name is required");
+              return;
+            }
+            if (!startDate || !endDate) {
+              setError("Start and end dates are required");
+              return;
+            }
+            
             setCreating(true);
             try {
-              await createBudget({
-                name: budgetName,
-                period_type: periodType,
-                start_date: startDate,
-                end_date: endDate,
-                notes,
-              });
+              if (editingBudgetId) {
+                // Update existing budget
+                await updateBudget(editingBudgetId, {
+                  name: budgetName.trim(),
+                  period_type: periodType,
+                  start_date: startDate,
+                  end_date: endDate,
+                  notes: notes.trim(),
+                });
+              } else {
+                // Create new budget
+                await createBudget({
+                  name: budgetName.trim(),
+                  period_type: periodType,
+                  start_date: startDate,
+                  end_date: endDate,
+                  notes: notes.trim(),
+                });
+              }
               setBudgetName("");
               setNotes("");
-              setStartDate("2025-01-01");
-              setEndDate("2025-01-31");
-              await (async function reload() {
-                setLoadingBudgets(true);
-                const data = await fetchBudgets();
-                setBudgets(data);
-                setLoadingBudgets(false);
-              })();
-            } catch (err) {
-              console.error(err);
-              setError("Failed to create budget");
+              setShowCreateBudget(false);
+              setEditingBudgetId(null);
+              const data = await fetchBudgets();
+              setBudgets(data);
+              if (!editingBudgetId && data.length > 0) {
+                setSelectedId(data[data.length - 1].id);
+              }
+            } catch (err: unknown) {
+              console.error("Budget save error:", err);
+              const errorObj = err as { message?: string; payload?: Record<string, string[]> };
+              if (errorObj.payload) {
+                // Handle Django validation errors
+                const messages = Object.entries(errorObj.payload)
+                  .map(([field, errors]) => `${field}: ${Array.isArray(errors) ? errors.join(", ") : errors}`)
+                  .join("; ");
+                setError(messages || "Failed to save budget");
+              } else {
+                setError(errorObj.message || "Failed to save budget");
+              }
             } finally {
               setCreating(false);
             }
           }}
-          className="neu-form"
+          className="card p-4 space-y-4 animate-slide-in"
         >
-          <div className="grid sm:grid-cols-3 gap-4">
-            <div className="sm:col-span-2 neu-form-group">
-              <div className="neu-input">
-                <input
-                  id="budget_name"
-                  value={budgetName}
-                  onChange={(e) => setBudgetName(e.target.value)}
-                  placeholder=" "
-                  required
-                />
-                <label htmlFor="budget_name">e.g., January 2025, Q1 Budget</label>
-                <div className="neu-input-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                  </svg>
-                </div>
-              </div>
+          <div className="flex items-center justify-between">
+            <h4 className="font-semibold">{editingBudgetId ? "Edit Budget" : "Create New Budget"}</h4>
+            <button
+              type="button"
+              onClick={() => {
+                setShowCreateBudget(false);
+                setEditingBudgetId(null);
+                setBudgetName("");
+                setNotes("");
+              }}
+              className="text-[var(--text-muted)] hover:text-[var(--text)]"
+            >
+              <HiX size={20} />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="col-span-2">
+              <label className="block text-xs font-medium mb-1 text-[var(--text-muted)]">Budget Name *</label>
+              <input
+                value={budgetName}
+                onChange={(e) => setBudgetName(e.target.value)}
+                placeholder="e.g., January 2025"
+                required
+                className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800"
+              />
             </div>
-            <div className="neu-form-group">
-              <label className="block text-sm font-medium mb-2">Period Type</label>
+            <div>
+              <label className="block text-xs font-medium mb-1 text-[var(--text-muted)]">Period</label>
               <select
                 value={periodType}
-                onChange={(e) => setPeriodType(e.target.value as any)}
-                className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
+                onChange={(e) => handlePeriodTypeChange(e.target.value as Budget["period_type"])}
+                className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800"
               >
                 <option value="MONTHLY">Monthly</option>
                 <option value="ANNUAL">Annual</option>
                 <option value="CUSTOM">Custom</option>
               </select>
             </div>
-          </div>
-          <div className="grid sm:grid-cols-2 gap-4 mt-4">
-            <div className="neu-form-group">
-              <div className="neu-input">
-                <input
-                  type="date"
-                  id="budget_start"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  placeholder=" "
-                />
-                <label htmlFor="budget_start">Start Date</label>
-                <div className="neu-input-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                    <line x1="16" y1="2" x2="16" y2="6"/>
-                    <line x1="8" y1="2" x2="8" y2="6"/>
-                    <line x1="3" y1="10" x2="21" y2="10"/>
-                  </svg>
-                </div>
-              </div>
+            <div className="hidden sm:block" />
+            <div>
+              <label className="block text-xs font-medium mb-1 text-[var(--text-muted)]">Start Date *</label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                required
+                className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800"
+              />
             </div>
-            <div className="neu-form-group">
-              <div className="neu-input">
-                <input
-                  type="date"
-                  id="budget_end"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  placeholder=" "
-                />
-                <label htmlFor="budget_end">End Date</label>
-                <div className="neu-input-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                    <line x1="16" y1="2" x2="16" y2="6"/>
-                    <line x1="8" y1="2" x2="8" y2="6"/>
-                    <line x1="3" y1="10" x2="21" y2="10"/>
-                  </svg>
-                </div>
-              </div>
+            <div>
+              <label className="block text-xs font-medium mb-1 text-[var(--text-muted)]">End Date *</label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                required
+                className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800"
+              />
             </div>
           </div>
-          <div className="mt-4 neu-form-group">
-            <label className="block text-sm font-medium mb-2">Notes (optional)</label>
-            <textarea
-              className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Add any additional notes..."
-              rows={3}
-            />
-          </div>
-          <div className="mt-6 pt-4 border-t border-[var(--border-subtle)]">
-            <button
-              type="submit"
-              disabled={creating}
-              className="neu-button disabled:opacity-60"
-            >
-              {creating ? (
-                <>
-                  <span className="neu-spinner"></span>
-                  <span>Creating…</span>
-                </>
-              ) : (
-                "Create Budget"
-              )}
+
+          <div className="flex gap-2 pt-2">
+            <button type="submit" disabled={creating} className="btn-primary disabled:opacity-60">
+              {creating ? (editingBudgetId ? "Saving..." : "Creating...") : (editingBudgetId ? "Save Changes" : "Create Budget")}
+            </button>
+            <button type="button" onClick={() => {
+              setShowCreateBudget(false);
+              setEditingBudgetId(null);
+              setBudgetName("");
+              setNotes("");
+            }} className="btn-secondary">
+              Cancel
             </button>
           </div>
         </form>
-      </div>
-
-      {/* Budgeting Tips Card */}
-      <div className="card bg-gradient-to-br from-amber-50/50 to-yellow-50/50 dark:from-amber-900/10 dark:to-yellow-900/10 border border-amber-200 dark:border-amber-800">
-        <div className="flex items-start gap-3 mb-4">
-          <span className="text-3xl">💡</span>
-          <div>
-            <h3 className="font-semibold text-lg mb-1">Smart Budgeting Tips</h3>
-            <p className="text-sm text-[var(--text-muted)]">Expert advice for better financial planning</p>
-          </div>
-        </div>
-        <div className="space-y-3 text-sm">
-          <Link to="/blog/budgeting-50-30-20-rule" className="flex gap-2 hover:bg-white/50 dark:hover:bg-gray-800/50 p-2 rounded-lg transition-colors group">
-            <span className="text-green-600 dark:text-green-400 font-bold">•</span>
-            <div>
-              <p><strong>50/30/20 Rule:</strong> Allocate 50% to needs, 30% to wants, and 20% to savings.</p>
-              <span className="text-xs text-blue-600 dark:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">Read full guide →</span>
-            </div>
-          </Link>
-          <Link to="/blog/zero-based-budgeting" className="flex gap-2 hover:bg-white/50 dark:hover:bg-gray-800/50 p-2 rounded-lg transition-colors group">
-            <span className="text-blue-600 dark:text-blue-400 font-bold">•</span>
-            <div>
-              <p><strong>Zero-Based Budgeting:</strong> Give every shilling a purpose by planning where each one goes.</p>
-              <span className="text-xs text-blue-600 dark:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity">Read full guide →</span>
-            </div>
-          </Link>
-          <div className="flex gap-2">
-            <span className="text-purple-600 dark:text-purple-400 font-bold">•</span>
-            <p><strong>Review Monthly:</strong> Check your budgets regularly and adjust based on actual spending patterns.</p>
-          </div>
-          <div className="flex gap-2">
-            <span className="text-orange-600 dark:text-orange-400 font-bold">•</span>
-            <p><strong>Emergency Fund First:</strong> Build a buffer of 3-6 months of expenses before aggressive investing.</p>
-          </div>
-        </div>
-        <Link to="/blog" className="mt-4 pt-4 border-t border-amber-200 dark:border-amber-800 block text-center text-sm font-semibold text-blue-600 hover:text-blue-700">
-          View All Financial Tips →
-        </Link>
-      </div>
-      </div>
-      {/* End of left column */}
-
-      {/* Right column */}
-      <div className="lg:col-span-3 space-y-6">
-        {/* Budget line creation */}
-        {selectedId && (
-        <div className="card animate-slide-in">
-          <div className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <span>➕</span>
-            Add Budget Line
-          </div>
-          <form
-            onSubmit={async (e) => {
-              e.preventDefault();
-              try {
-                await createBudgetLine({
-                  budget: selectedId,
-                  category: categoryId as number,
-                  planned_amount: Number(plannedAmount),
-                });
-                setCategoryId("");
-                setPlannedAmount("0");
-                const [s, blines] = await Promise.all([
-                  fetchBudgetSummary(selectedId as number),
-                  fetchBudgetLines(selectedId as number),
-                ]);
-                setSummary(s);
-                setLines(blines);
-              } catch (err) {
-                console.error(err);
-                setError("Failed to create budget line");
-              }
-            }}
-          >
-            <div className="grid sm:grid-cols-3 gap-4">
-              <div className="sm:col-span-2">
-                <label className="block text-sm font-medium mb-2">Category *</label>
-                <select
-                  value={categoryId}
-                  onChange={(e) =>
-                    setCategoryId(e.target.value ? Number(e.target.value) : "")
-                  }
-                  className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
-                  required
-                >
-                  <option value="">— select category —</option>
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id}>{c.name} ({c.kind})</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Planned Amount *</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={plannedAmount}
-                  onChange={(e) => setPlannedAmount(e.target.value)}
-                  className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3.5 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200 placeholder:text-gray-400"
-                  required
-                />
-              </div>
-            </div>
-            <div className="mt-4">
-              <button
-                type="submit"
-                className="btn-primary disabled:opacity-60"
-              >
-                Add Line
-              </button>
-            </div>
-          </form>
-
-          {/* Budget lines list */}
-          <div className="mt-6 pt-6 border-t border-[var(--border-subtle)]">
-            <div className="text-sm font-semibold mb-3 text-[var(--text-muted)] uppercase tracking-wide">
-              Budget Lines {lines.length > 0 && `(${lines.length})`}
-            </div>
-            {lines.length === 0 && (
-              <div className="text-center py-8 text-[var(--text-muted)]">
-                <div className="text-4xl mb-2">📋</div>
-                <p className="text-sm">No lines for this budget yet</p>
-              </div>
-            )}
-            {lines.length > 0 && (
-              <div className="overflow-x-auto">
-                <table className="min-w-full text-sm">
-                  <thead className="bg-[var(--surface)] sticky top-0">
-                    <tr>
-                      <th className="px-4 py-3 text-left font-semibold">Category</th>
-                      <th className="px-4 py-3 text-right font-semibold">Planned</th>
-                      <th className="px-4 py-3 text-right font-semibold">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[var(--border-subtle)]">
-                    {lines.map((line) => {
-                      const editing = editingId === line.id;
-                      return (
-                        <tr key={line.id} className="hover:bg-[var(--surface)] transition-colors">
-                          <td className="px-4 py-3">
-                            {editing ? (
-                              <select
-                                className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
-                                value={editCategoryId}
-                                onChange={(e) => setEditCategoryId(e.target.value ? Number(e.target.value) : "")}
-                              >
-                                <option value="">— select category —</option>
-                                {categories.map((c) => (
-                                  <option key={c.id} value={c.id}>{c.name} ({c.kind})</option>
-                                ))}
-                              </select>
-                            ) : (
-                              <span className="font-medium">{line.category_name}</span>
-                            )}
-                          </td>
-                          <td className="px-4 py-3 text-right">
-                            {editing ? (
-                              <input
-                                type="number"
-                                step="0.01"
-                                className="w-full border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
-                                value={editPlannedAmount}
-                                onChange={(e) => setEditPlannedAmount(e.target.value)}
-                              />
-                            ) : (
-                              <span className="font-semibold">{formatMoney(line.planned_amount)}</span>
-                            )}
-                          </td>
-                          <td className="px-4 py-3 text-right">
-                            {editing ? (
-                              <div className="flex gap-2 justify-end">
-                                <button
-                                  className="btn-primary text-xs px-3 py-1.5 rounded"
-                                  onClick={async () => {
-                                    try {
-                                      await updateBudgetLine(line.id, {
-                                        category: editCategoryId as number,
-                                        planned_amount: Number(editPlannedAmount),
-                                      });
-                                      setEditingId(null);
-                                      const [s, blines] = await Promise.all([
-                                        fetchBudgetSummary(selectedId as number),
-                                        fetchBudgetLines(selectedId as number),
-                                      ]);
-                                      setSummary(s);
-                                      setLines(blines);
-                                    } catch (err) {
-                                      console.error(err);
-                                      setError("Failed to update line");
-                                    }
-                                  }}
-                                >
-                                  Save
-                                </button>
-                                <button
-                                  className="btn-secondary text-xs px-3 py-1.5 rounded"
-                                  onClick={() => setEditingId(null)}
-                                >
-                                  Cancel
-                                </button>
-                              </div>
-                            ) : (
-                              <div className="flex gap-2 justify-end">
-                                <button
-                                  className="btn-edit text-xs px-3 py-1.5 rounded inline-flex items-center gap-1"
-                                  onClick={() => {
-                                    setEditingId(line.id);
-                                    setEditCategoryId(line.category);
-                                    setEditPlannedAmount(String(line.planned_amount));
-                                  }}
-                                >
-                                  Edit
-                                </button>
-                                <button
-                                  className="btn-delete text-xs px-3 py-1.5 rounded inline-flex items-center gap-1"
-                                  onClick={async () => {
-                                    if (!confirm("Delete this budget line?")) return;
-                                    try {
-                                      await deleteBudgetLine(line.id);
-                                      const [s, blines] = await Promise.all([
-                                        fetchBudgetSummary(selectedId as number),
-                                        fetchBudgetLines(selectedId as number),
-                                      ]);
-                                      setSummary(s);
-                                      setLines(blines);
-                                    } catch (err) {
-                                      console.error(err);
-                                      setError("Failed to delete line");
-                                    }
-                                  }}
-                                >
-                                  Delete
-                                </button>
-                              </div>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </div>
       )}
 
-      {!loadingBudgets && budgets.length === 0 && (
+      {loadingBudgets && <div className="skeleton h-32 rounded" />}
+
+      {/* Empty state */}
+      {!loadingBudgets && budgets.length === 0 && !showCreateBudget && (
         <div className="card text-center py-16">
-          <div className="text-5xl mb-4">💰</div>
-          <p className="text-lg mb-2 font-medium">No budgets yet</p>
-          <p className="text-sm text-[var(--text-muted)]">Create your first budget above to start tracking</p>
+          <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 flex items-center justify-center">
+            <HiChartBar className="text-emerald-600 dark:text-emerald-400" size={36} />
+          </div>
+          <h3 className="text-lg font-semibold mb-1">No budgets yet</h3>
+          <p className="text-sm text-[var(--text-muted)] mb-6 max-w-sm mx-auto">
+            Create your first budget to start tracking your spending and reach your financial goals
+          </p>
+          <button
+            onClick={() => {
+              setShowCreateBudget(true);
+              handlePeriodTypeChange("MONTHLY");
+            }}
+            className="btn-primary inline-flex items-center gap-2"
+          >
+            <HiPlus size={18} /> Create Your First Budget
+          </button>
         </div>
       )}
-      
+
+      {/* Budgets Section */}
       {budgets.length > 0 && (
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Budget list */}
+        <div className="grid lg:grid-cols-4 gap-6">
+          {/* Budget List */}
           <div className="lg:col-span-1">
-            <div className="card">
-              <div className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <span>📊</span>
-                Your Budgets
+            <div className="card p-4 sticky top-4">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-sm text-[var(--text-muted)] uppercase tracking-wide">
+                  Budgets
+                </h3>
+                <span className="text-xs bg-[var(--surface)] px-2 py-0.5 rounded-full">
+                  {budgets.length}
+                </span>
               </div>
-              <ul className="space-y-2">
+              <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-1">
                 {budgets.map((b) => {
                   const active = b.id === selectedId;
                   return (
-                    <li key={b.id}>
+                    <div
+                      key={b.id}
+                      className={`relative rounded-lg text-sm transition-all ${
+                        active
+                          ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow"
+                          : "bg-[var(--surface)] hover:bg-[var(--surface-hover)]"
+                      }`}
+                    >
                       <button
-                        className={
-                          "w-full text-left px-4 py-3 rounded-lg text-sm transition-all " +
-                          (active
-                            ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
-                            : "bg-[var(--surface)] hover:bg-[var(--surface-hover)] hover:shadow-md")
-                        }
                         onClick={() => setSelectedId(b.id)}
+                        className="w-full text-left px-3 py-2.5 pr-10"
                       >
-                        <div className="font-semibold">{b.name}</div>
-                        <div className={`text-xs mt-1 ${active ? 'text-white/80' : 'text-[var(--text-muted)]'}`}>
+                        <div className="font-medium truncate">{b.name}</div>
+                        <div className={`text-xs mt-0.5 ${active ? "text-white/80" : "text-[var(--text-muted)]"}`}>
                           {b.start_date} → {b.end_date}
                         </div>
                       </button>
-                    </li>
+                      
+                      {/* Budget Actions Menu */}
+                      <div className="absolute right-1 top-1/2 -translate-y-1/2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setBudgetMenuOpen(budgetMenuOpen === b.id ? null : b.id);
+                          }}
+                          className={`p-1.5 rounded hover:bg-black/10 ${active ? "text-white/80" : "text-[var(--text-muted)]"}`}
+                        >
+                          <HiDotsVertical size={16} />
+                        </button>
+                        
+                        {budgetMenuOpen === b.id && (
+                          <div className="absolute right-0 top-full mt-1 bg-[var(--card)] border border-[var(--border-subtle)] rounded-lg shadow-lg z-10 min-w-[120px]">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingBudgetId(b.id);
+                                setBudgetName(b.name);
+                                setPeriodType(b.period_type);
+                                setStartDate(b.start_date);
+                                setEndDate(b.end_date);
+                                setNotes(b.notes || "");
+                                setShowCreateBudget(true);
+                                setBudgetMenuOpen(null);
+                              }}
+                              className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--surface)] flex items-center gap-2"
+                            >
+                              <HiPencil size={14} /> Edit
+                            </button>
+                            <button
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                if (!confirm(`Delete budget "${b.name}"?`)) return;
+                                try {
+                                  await deleteBudget(b.id);
+                                  const data = await fetchBudgets();
+                                  setBudgets(data);
+                                  if (selectedId === b.id) {
+                                    setSelectedId(data.length > 0 ? data[0].id : null);
+                                  }
+                                } catch (err) {
+                                  console.error(err);
+                                  setError("Failed to delete budget");
+                                }
+                                setBudgetMenuOpen(null);
+                              }}
+                              className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--surface)] flex items-center gap-2 text-red-600"
+                            >
+                              <HiTrash size={14} /> Delete
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   );
                 })}
-              </ul>
+              </div>
             </div>
           </div>
 
-          {/* Budget summary */}
-          <div className="lg:col-span-2">
-            <div className="card">
-              {loadingSummary && <div className="skeleton h-64 rounded" />}
-
-              {!loadingSummary && summary && (
-                <>
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-                    <div>
-                      <div className="text-lg font-semibold">
-                        {(customSummary ?? summary)?.budget.name}
-                      </div>
-                      <div className="text-sm text-[var(--text-muted)]">
-                        {(customSummary ?? summary)?.budget.start_date} → {(customSummary ?? summary)?.budget.end_date}
+          {/* Budget Detail */}
+          <div className="lg:col-span-3 space-y-6">
+            {selectedBudget && (
+              <>
+                {/* Budget Overview Cards */}
+                {activeSummary && (
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="card p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                          <HiCurrencyDollar className="text-blue-600 dark:text-blue-400" size={20} />
+                        </div>
+                        <div>
+                          <p className="text-xs text-[var(--text-muted)]">Planned</p>
+                          <p className="text-lg font-bold">{formatMoney(activeSummary.totals.planned)}</p>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <TimeRangeSelector
-                        onChange={(r) => { setCustomStart(r.startDate); setCustomEnd(r.endDate); }}
-                        initialStart={customStart ?? undefined}
-                        initialEnd={customEnd ?? undefined}
+                    <div className="card p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
+                          <HiChartBar className="text-purple-600 dark:text-purple-400" size={20} />
+                        </div>
+                        <div>
+                          <p className="text-xs text-[var(--text-muted)]">Spent</p>
+                          <p className="text-lg font-bold">{formatMoney(activeSummary.totals.actual)}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="card p-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-lg ${Number(activeSummary.totals.difference) >= 0 ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30'}`}>
+                          {Number(activeSummary.totals.difference) >= 0 
+                            ? <HiTrendingUp className="text-green-600 dark:text-green-400" size={20} />
+                            : <HiTrendingDown className="text-red-600 dark:text-red-400" size={20} />
+                          }
+                        </div>
+                        <div>
+                          <p className="text-xs text-[var(--text-muted)]">Remaining</p>
+                          <p className={`text-lg font-bold ${Number(activeSummary.totals.difference) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                            {formatMoney(activeSummary.totals.difference)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="card p-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-lg ${
+                          !daysRemaining || daysRemaining <= 0 ? 'bg-gray-100 dark:bg-gray-800' :
+                          daysRemaining <= 7 ? 'bg-amber-100 dark:bg-amber-900/30' :
+                          'bg-emerald-100 dark:bg-emerald-900/30'
+                        }`}>
+                          <HiClock className={`${
+                            !daysRemaining || daysRemaining <= 0 ? 'text-gray-600 dark:text-gray-400' :
+                            daysRemaining <= 7 ? 'text-amber-600 dark:text-amber-400' :
+                            'text-emerald-600 dark:text-emerald-400'
+                          }`} size={20} />
+                        </div>
+                        <div>
+                          <p className="text-xs text-[var(--text-muted)]">Days Left</p>
+                          <p className="text-lg font-bold">
+                            {daysRemaining !== null ? (daysRemaining <= 0 ? 'Ended' : daysRemaining) : '-'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Budget Health Indicator */}
+                {budgetHealth && budgetHealth.status !== 'empty' && (
+                  <div className={`card p-4 ${
+                    budgetHealth.status === 'over' ? 'bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 border-red-200 dark:border-red-800' :
+                    budgetHealth.status === 'warning' ? 'bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border-amber-200 dark:border-amber-800' :
+                    budgetHealth.status === 'good' ? 'bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-200 dark:border-blue-800' :
+                    'bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 border-emerald-200 dark:border-emerald-800'
+                  }`}>
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        {budgetHealth.status === 'over' && <HiExclamationCircle className="text-red-600" size={20} />}
+                        {budgetHealth.status === 'warning' && <HiExclamationCircle className="text-amber-600" size={20} />}
+                        {budgetHealth.status === 'good' && <HiCheckCircle className="text-blue-600" size={20} />}
+                        {budgetHealth.status === 'excellent' && <HiCheckCircle className="text-emerald-600" size={20} />}
+                        <span className="font-semibold">
+                          {budgetHealth.status === 'over' && 'Over Budget!'}
+                          {budgetHealth.status === 'warning' && 'Approaching Limit'}
+                          {budgetHealth.status === 'good' && 'On Track'}
+                          {budgetHealth.status === 'excellent' && 'Excellent Progress'}
+                        </span>
+                      </div>
+                      <span className="text-sm font-medium">{budgetHealth.percent.toFixed(1)}% used</span>
+                    </div>
+                    <div className="h-3 bg-white/50 dark:bg-black/20 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full transition-all rounded-full ${
+                          budgetHealth.status === 'over' ? 'bg-red-500' :
+                          budgetHealth.status === 'warning' ? 'bg-amber-500' :
+                          budgetHealth.status === 'good' ? 'bg-blue-500' :
+                          'bg-emerald-500'
+                        }`}
+                        style={{ width: `${Math.min(budgetHealth.percent, 100)}%` }}
                       />
-                      {customStart && customEnd && (
-                        <button 
-                          className="btn-secondary text-xs px-3 py-2" 
-                          onClick={() => { 
-                            setCustomStart(null); 
-                            setCustomEnd(null); 
-                            setCustomSummary(null); 
-                          }}
-                        >
-                          Clear
-                        </button>
-                      )}
                     </div>
                   </div>
+                )}
 
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full text-sm">
-                      <thead className="bg-[var(--surface)]">
-                        <tr>
-                          <th className="px-4 py-3 text-left font-semibold">Category</th>
-                          <th className="px-4 py-3 text-right font-semibold">Planned</th>
-                          <th className="px-4 py-3 text-right font-semibold">Actual</th>
-                          <th className="px-4 py-3 text-right font-semibold">Difference</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[var(--border-subtle)]">
-                        {(customSummary ? customSummary.lines : summary.lines).map((line) => (
-                          <tr key={line.category_id} className="hover:bg-[var(--surface)] transition-colors">
-                            <td className="px-4 py-3 font-medium">{line.category_name}</td>
-                            <td className="px-4 py-3 text-right font-semibold">
-                              {formatMoney(line.planned)}
-                            </td>
-                            <td className="px-4 py-3 text-right">
-                              {formatMoney(line.actual)}
-                            </td>
-                            <td
-                              className={
-                                "px-4 py-3 text-right font-semibold " +
-                                (Number(line.difference) >= 0
-                                  ? "text-green-600 dark:text-green-400"
-                                  : "text-red-600 dark:text-red-400")
-                              }
-                            >
-                              {formatMoney(line.difference)}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                      <tfoot className="bg-[var(--surface)] border-t-2 border-[var(--border-subtle)]">
-                        <tr className="font-bold">
-                          <td className="px-4 py-4">Total</td>
-                          <td className="px-4 py-4 text-right">
-                            {formatMoney((customSummary ? customSummary.totals.planned : summary.totals.planned))}
-                          </td>
-                          <td className="px-4 py-4 text-right">
-                            {formatMoney((customSummary ? customSummary.totals.actual : summary.totals.actual))}
-                          </td>
-                          <td
-                            className={
-                              "px-4 py-4 text-right text-lg " +
-                              (Number((customSummary ? customSummary.totals.difference : summary.totals.difference)) >= 0
-                                ? "text-green-600 dark:text-green-400"
-                                : "text-red-600 dark:text-red-400")
-                            }
-                          >
-                            {formatMoney((customSummary ? customSummary.totals.difference : summary.totals.difference))}
-                          </td>
-                        </tr>
-                      </tfoot>
-                    </table>
+                {/* Budget Header & Add Line */}
+                <div className="card p-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                    <div>
+                      <h2 className="text-lg font-semibold flex items-center gap-2">
+                        <HiCalendar className="text-[var(--text-muted)]" size={20} />
+                        {selectedBudget.name}
+                      </h2>
+                      <p className="text-sm text-[var(--text-muted)] mt-0.5">
+                        {new Date(selectedBudget.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} → {new Date(selectedBudget.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setShowAddLine(!showAddLine)}
+                      className="btn-secondary inline-flex items-center gap-1.5 text-sm"
+                    >
+                      <HiPlus size={16} />
+                      Add Category
+                    </button>
                   </div>
-                </>
-              )}
 
-              {!loadingSummary && !summary && (
-                <div className="text-center py-16 text-[var(--text-muted)]">
-                  <div className="text-5xl mb-4">📋</div>
-                  <p className="text-lg mb-2 font-medium">Select a budget</p>
-                  <p className="text-sm">Choose a budget from the list to view its summary</p>
+                  {/* Add Line Form */}
+                  {showAddLine && (
+                    <form
+                      onSubmit={async (e) => {
+                        e.preventDefault();
+                        setError(null);
+                        
+                        // Validation
+                        if (!categoryId) {
+                          setError("Please select a category");
+                          return;
+                        }
+                        if (!plannedAmount || Number(plannedAmount) <= 0) {
+                          setError("Please enter a valid planned amount");
+                          return;
+                        }
+                        
+                        setAddingLine(true);
+                        try {
+                          await createBudgetLine({
+                            budget: selectedId as number,
+                            category: categoryId as number,
+                            planned_amount: Number(plannedAmount),
+                          });
+                          setCategoryId("");
+                          setPlannedAmount("0");
+                          setShowAddLine(false);
+                          const [s, blines] = await Promise.all([
+                            fetchBudgetSummary(selectedId as number),
+                            fetchBudgetLines(selectedId as number),
+                          ]);
+                          setSummary(s);
+                          setLines(blines);
+                        } catch (err: unknown) {
+                          console.error("Budget line creation error:", err);
+                          const errorObj = err as { message?: string; response?: { data?: Record<string, string[]> } };
+                          if (errorObj.response?.data) {
+                            const messages = Object.entries(errorObj.response.data)
+                              .map(([field, errors]) => `${field}: ${Array.isArray(errors) ? errors.join(", ") : errors}`)
+                              .join("; ");
+                            setError(messages || "Failed to add budget line");
+                          } else {
+                            setError(errorObj.message || "Failed to add budget line");
+                          }
+                        } finally {
+                          setAddingLine(false);
+                        }
+                      }}
+                      className="p-3 bg-[var(--surface)] rounded-lg mb-4 animate-slide-in"
+                    >
+                      <div className="grid sm:grid-cols-3 gap-3">
+                        <div className="sm:col-span-2">
+                          <label className="block text-xs font-medium mb-1 text-[var(--text-muted)]">Category</label>
+                          <select
+                            value={categoryId}
+                            onChange={(e) => setCategoryId(e.target.value ? Number(e.target.value) : "")}
+                            required
+                            className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800"
+                          >
+                            <option value="">Select category...</option>
+                            {categories.map((c) => (
+                              <option key={c.id} value={c.id}>
+                                {c.name} ({c.kind})
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium mb-1 text-[var(--text-muted)]">
+                            Planned Amount
+                          </label>
+                          <input
+                            type="number"
+                            step="0.01"
+                            min="0.01"
+                            value={plannedAmount}
+                            onChange={(e) => setPlannedAmount(e.target.value)}
+                            required
+                            className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex gap-2 mt-3">
+                        <button type="submit" disabled={addingLine} className="btn-primary text-sm disabled:opacity-50">
+                          {addingLine ? "Adding..." : "Add"}
+                        </button>
+                        <button type="button" onClick={() => setShowAddLine(false)} className="btn-secondary text-sm">
+                          Cancel
+                        </button>
+                      </div>
+                    </form>
+                  )}
+
+                  {/* Budget Lines */}
+                  {lines.length === 0 && !showAddLine && (
+                    <div className="text-center py-10 text-[var(--text-muted)]">
+                      <div className="w-14 h-14 mx-auto mb-3 rounded-full bg-[var(--surface)] flex items-center justify-center">
+                        <HiCurrencyDollar className="text-[var(--text-muted)]" size={28} />
+                      </div>
+                      <p className="font-medium mb-1">No categories yet</p>
+                      <p className="text-sm mb-3">Add spending categories to track your budget</p>
+                      <button
+                        onClick={() => setShowAddLine(true)}
+                        className="text-emerald-600 dark:text-emerald-400 text-sm font-medium hover:underline inline-flex items-center gap-1"
+                      >
+                        <HiPlus size={14} /> Add your first category
+                      </button>
+                    </div>
+                  )}
+
+                  {lines.length > 0 && (
+                    <div className="space-y-3">
+                      {lines.map((line) => {
+                        const editing = editingId === line.id;
+                        const summaryLine = activeSummary?.lines.find((l) => l.category_id === line.category);
+                        const planned = Number(line.planned_amount);
+                        const actual = summaryLine ? Number(summaryLine.actual) : 0;
+                        const pct = planned > 0 ? (actual / planned) * 100 : 0;
+                        const overBudget = actual > planned;
+                        const nearLimit = pct >= 80 && !overBudget;
+
+                        return (
+                          <div key={line.id} className={`p-4 rounded-xl border transition-all ${
+                            overBudget 
+                              ? 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800' 
+                              : nearLimit
+                              ? 'bg-amber-50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800'
+                              : 'bg-[var(--surface)] border-transparent'
+                          }`}>
+                            {editing ? (
+                              <div className="grid sm:grid-cols-3 gap-3">
+                                <select
+                                  value={editCategoryId}
+                                  onChange={(e) => setEditCategoryId(e.target.value ? Number(e.target.value) : "")}
+                                  className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800"
+                                >
+                                  {categories.map((c) => (
+                                    <option key={c.id} value={c.id}>
+                                      {c.name}
+                                    </option>
+                                  ))}
+                                </select>
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  value={editPlannedAmount}
+                                  onChange={(e) => setEditPlannedAmount(e.target.value)}
+                                  className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800"
+                                />
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={async () => {
+                                      try {
+                                        await updateBudgetLine(line.id, {
+                                          category: editCategoryId as number,
+                                          planned_amount: Number(editPlannedAmount),
+                                        });
+                                        setEditingId(null);
+                                        const [s, blines] = await Promise.all([
+                                          fetchBudgetSummary(selectedId as number),
+                                          fetchBudgetLines(selectedId as number),
+                                        ]);
+                                        setSummary(s);
+                                        setLines(blines);
+                                      } catch (err) {
+                                        console.error(err);
+                                        setError("Failed to update line");
+                                      }
+                                    }}
+                                    className="btn-primary text-sm flex-1"
+                                  >
+                                    Save
+                                  </button>
+                                  <button
+                                    onClick={() => setEditingId(null)}
+                                    className="btn-secondary text-sm flex-1"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="space-y-3">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-semibold">{line.category_name}</span>
+                                    {overBudget && (
+                                      <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 font-medium">
+                                        Over
+                                      </span>
+                                    )}
+                                    {nearLimit && (
+                                      <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 font-medium">
+                                        Near limit
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <button
+                                      onClick={() => {
+                                        setEditingId(line.id);
+                                        setEditCategoryId(line.category);
+                                        setEditPlannedAmount(String(line.planned_amount));
+                                      }}
+                                      className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
+                                      title="Edit"
+                                    >
+                                      <HiPencil size={15} />
+                                    </button>
+                                    <button
+                                      onClick={async () => {
+                                        if (!confirm("Delete this budget line?")) return;
+                                        try {
+                                          await deleteBudgetLine(line.id);
+                                          const [s, blines] = await Promise.all([
+                                            fetchBudgetSummary(selectedId as number),
+                                            fetchBudgetLines(selectedId as number),
+                                          ]);
+                                          setSummary(s);
+                                          setLines(blines);
+                                        } catch (err) {
+                                          console.error(err);
+                                          setError("Failed to delete line");
+                                        }
+                                      }}
+                                      className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
+                                      title="Delete"
+                                    >
+                                      <HiTrash size={15} />
+                                    </button>
+                                  </div>
+                                </div>
+                                {/* Amount display */}
+                                <div className="flex items-baseline justify-between">
+                                  <div className="flex items-baseline gap-1">
+                                    <span className={`text-2xl font-bold ${overBudget ? 'text-red-600 dark:text-red-400' : ''}`}>
+                                      {formatMoney(actual)}
+                                    </span>
+                                    <span className="text-sm text-[var(--text-muted)]">
+                                      of {formatMoney(planned)}
+                                    </span>
+                                  </div>
+                                  <span className={`text-sm font-medium ${
+                                    overBudget ? 'text-red-600 dark:text-red-400' :
+                                    nearLimit ? 'text-amber-600 dark:text-amber-400' :
+                                    'text-emerald-600 dark:text-emerald-400'
+                                  }`}>
+                                    {overBudget ? `+${formatMoney(actual - planned)} over` : `${formatMoney(planned - actual)} left`}
+                                  </span>
+                                </div>
+                                {/* Progress bar */}
+                                <div className="h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                  <div
+                                    className={`h-full transition-all rounded-full ${
+                                      overBudget
+                                        ? "bg-gradient-to-r from-red-500 to-pink-500"
+                                        : nearLimit
+                                        ? "bg-gradient-to-r from-amber-500 to-orange-500"
+                                        : "bg-gradient-to-r from-emerald-500 to-teal-500"
+                                    }`}
+                                    style={{ width: `${Math.min(pct, 100)}%` }}
+                                  />
+                                </div>
+                                <div className="flex justify-between text-xs">
+                                  <span className="text-[var(--text-muted)]">{pct.toFixed(0)}% of budget used</span>
+                                  <Link
+                                    to={`/transactions?category=${line.category}`}
+                                    className="text-emerald-600 dark:text-emerald-400 hover:underline inline-flex items-center gap-1 font-medium"
+                                  >
+                                    View transactions <HiExternalLink size={12} />
+                                  </Link>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
-              )}
+
+                {/* Budget Summary Table */}
+                {loadingSummary && <div className="skeleton h-48 rounded-xl" />}
+
+                {!loadingSummary && activeSummary && activeSummary.lines.length > 0 && (
+                  <div className="card p-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                      <h3 className="font-semibold flex items-center gap-2">
+                        <HiChartBar className="text-[var(--text-muted)]" size={18} />
+                        Detailed Summary
+                      </h3>
+                      <div className="flex items-center gap-2">
+                        <TimeRangeSelector
+                          onChange={(r) => {
+                            setCustomStart(r.startDate);
+                            setCustomEnd(r.endDate);
+                          }}
+                          initialStart={customStart ?? undefined}
+                          initialEnd={customEnd ?? undefined}
+                        />
+                        {customStart && customEnd && (
+                          <button
+                            className="btn-secondary text-xs px-2 py-1"
+                            onClick={() => {
+                              setCustomStart(null);
+                              setCustomEnd(null);
+                              setCustomSummary(null);
+                            }}
+                          >
+                            Reset
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Desktop Table */}
+                    <div className="hidden sm:block overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-[var(--border-subtle)]">
+                            <th className="text-left py-2 font-medium">Category</th>
+                            <th className="text-right py-2 font-medium">Planned</th>
+                            <th className="text-right py-2 font-medium">Actual</th>
+                            <th className="text-right py-2 font-medium">Difference</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {activeSummary.lines.map((line) => (
+                            <tr key={line.category_id} className="border-b border-[var(--border-subtle)] last:border-0">
+                              <td className="py-2">{line.category_name}</td>
+                              <td className="py-2 text-right">{formatMoney(line.planned)}</td>
+                              <td className="py-2 text-right">{formatMoney(line.actual)}</td>
+                              <td
+                                className={`py-2 text-right font-medium ${
+                                  Number(line.difference) >= 0
+                                    ? "text-green-600 dark:text-green-400"
+                                    : "text-red-600 dark:text-red-400"
+                                }`}
+                              >
+                                {formatMoney(line.difference)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Mobile Cards */}
+                    <div className="sm:hidden space-y-2">
+                      {activeSummary.lines.map((line) => (
+                        <div key={line.category_id} className="p-2 bg-[var(--surface)] rounded-lg">
+                          <div className="font-medium mb-1">{line.category_name}</div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-[var(--text-muted)]">
+                              {formatMoney(line.actual)} / {formatMoney(line.planned)}
+                            </span>
+                            <span
+                              className={`font-medium ${
+                                Number(line.difference) >= 0
+                                  ? "text-green-600 dark:text-green-400"
+                                  : "text-red-600 dark:text-red-400"
+                              }`}
+                            >
+                              {Number(line.difference) >= 0 ? "+" : ""}
+                              {formatMoney(line.difference)}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
+            {!selectedBudget && !loadingBudgets && (
+              <div className="card text-center py-16 text-[var(--text-muted)]">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--surface)] flex items-center justify-center">
+                  <HiChartBar size={32} />
+                </div>
+                <p className="font-semibold text-lg mb-1">Select a budget</p>
+                <p className="text-sm">Choose a budget from the list to view details and track spending</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Tips Section */}
+      {budgets.length > 0 && (
+        <div className="card bg-gradient-to-br from-emerald-50/50 to-teal-50/50 dark:from-emerald-900/10 dark:to-teal-900/10 p-5">
+          <h3 className="font-semibold mb-3 flex items-center gap-2">
+            <span className="text-xl">💡</span> Budgeting Tips
+          </h3>
+          <div className="grid sm:grid-cols-3 gap-4 text-sm">
+            <div className="flex gap-3">
+              <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0">
+                <span className="text-emerald-600 font-bold">50</span>
+              </div>
+              <div>
+                <p className="font-semibold">50/30/20 Rule</p>
+                <p className="text-[var(--text-muted)]">50% needs, 30% wants, 20% savings</p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
+                <HiCalendar className="text-blue-600" size={16} />
+              </div>
+              <div>
+                <p className="font-semibold">Review Weekly</p>
+                <p className="text-[var(--text-muted)]">Check your progress regularly</p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center flex-shrink-0">
+                <HiTrendingUp className="text-purple-600" size={16} />
+              </div>
+              <div>
+                <p className="font-semibold">Adjust & Improve</p>
+                <p className="text-[var(--text-muted)]">Refine budgets based on actual spending</p>
+              </div>
             </div>
           </div>
         </div>
       )}
-      </div>
-      {/* End of right column */}
-      </div>
-      {/* End of first grid */}
     </div>
   );
 }

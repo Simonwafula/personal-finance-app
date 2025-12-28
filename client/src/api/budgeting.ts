@@ -31,6 +31,18 @@ export async function createBudget(
   return res.data;
 }
 
+export async function updateBudget(
+  id: number,
+  payload: Partial<CreateBudgetPayload>
+): Promise<Budget> {
+  const res = await api.patch(`/api/budgeting/budgets/${id}/`, payload);
+  return res.data;
+}
+
+export async function deleteBudget(id: number): Promise<void> {
+  await api.delete(`/api/budgeting/budgets/${id}/`);
+}
+
 export interface CreateBudgetLinePayload {
   budget: number;
   category: number;
