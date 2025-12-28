@@ -47,7 +47,6 @@ db.sqlite3
 instance/
 .webassets-cache
 local_settings.py
-settings.py
 staticfiles/  # Django collectstatic output
 media/  # User-uploaded files
 
