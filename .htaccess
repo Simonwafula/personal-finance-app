@@ -1,0 +1,7 @@
+RewriteEngine On
+RewriteRule ^api/(.*)$ http://127.0.0.1:8000/api/$1 [P,L]
+RewriteRule ^accounts/(.*)$ http://127.0.0.1:8000/accounts/$1 [P,L]
+RewriteRule ^admin/(.*)$ http://127.0.0.1:8000/admin/$1 [P,L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ /index.html [L]
