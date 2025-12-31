@@ -17,19 +17,8 @@ from dotenv import load_dotenv
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Load .env file - check multiple locations
-# 1. Production path
-# 2. Development path (same directory as manage.py)
-env_paths = [
-    Path('/home/finance.mstatilitechnologies.com/.env'),  # Production
-    BASE_DIR / '.env',  # Development
-    BASE_DIR.parent / '.env',  # Parent directory
-]
-
-for env_path in env_paths:
-    if env_path.exists():
-        load_dotenv(env_path)
-        break
+# Load .env file from parent directory: Specify full path directly
+load_dotenv('/home/finance.mstatilitechnologies.com/.env')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -93,6 +82,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+if not DEBUG:
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 ROOT_URLCONF = 'backend.urls'
 
@@ -191,15 +183,15 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'  # Where collectstatic will copy files
 
-# Include frontend build assets - Django will serve these
-# The client/dist/assets folder contains the built React app
-_client_dist = BASE_DIR / 'client' / 'dist'
-_client_assets = _client_dist / 'assets'
+# Additional directories for static files (for Django admin, etc.)
 STATICFILES_DIRS = []
-if _client_assets.exists():
-    STATICFILES_DIRS.append(_client_assets)
 
-# WhiteNoise for efficient static file serving in production
+# If you want to serve the built frontend from Django, uncomment:
+STATICFILES_DIRS = [BASE_DIR / 'client' / 'dist']
+
+# For production: WhiteNoise middleware for serving static files
+# Add 'whitenoise.middleware.WhiteNoiseMiddleware' after SecurityMiddleware
+# pip install whitenoise
 if not DEBUG:
     STATICFILES_STORAGE = (
         'whitenoise.storage.CompressedManifestStaticFilesStorage'
@@ -356,21 +348,8 @@ else:
 PASSWORD_RESET_TIMEOUT = int(os.getenv('PASSWORD_RESET_TIMEOUT', '86400'))
 
 # Logging configuration
-# Use environment variable or default to project-level logs directory
-_log_dir_env = os.getenv('LOG_DIR', '')
-if _log_dir_env:
-    LOG_DIR = Path(_log_dir_env)
-else:
-    LOG_DIR = BASE_DIR / 'logs'
-
-# Create log directory if it doesn't exist (handles both dev and prod)
-try:
-    LOG_DIR.mkdir(parents=True, exist_ok=True)
-except PermissionError:
-    # Fall back to temp directory if we can't create logs
-    import tempfile
-    LOG_DIR = Path(tempfile.gettempdir()) / 'finance-app-logs'
-    LOG_DIR.mkdir(parents=True, exist_ok=True)
+LOG_DIR = BASE_DIR.parent / 'logs'
+LOG_DIR.mkdir(exist_ok=True)
 
 LOGGING = {
     'version': 1,
