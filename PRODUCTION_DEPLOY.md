@@ -204,7 +204,13 @@ After=network.target
 [Service]
 User=finan1713
 Group=finan1713
+# Set `WorkingDirectory` to where your project files live on the VPS.
+# If CyberPanel placed the site in `public_html`, use that path instead.
+# Example (personal-finance-app layout):
 WorkingDirectory=/home/finance.mstatilitechnologies.com/personal-finance-app
+
+# Example (CyberPanel default public_html layout):
+# WorkingDirectory=/home/finance.mstatilitechnologies.com/public_html
 EnvironmentFile=/home/finance.mstatilitechnologies.com/.env
 ExecStart=/home/finance.mstatilitechnologies.com/.venv/bin/gunicorn \
     --workers 3 \

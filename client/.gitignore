@@ -53,3 +53,5 @@ pnpm-debug.log*
 .vscode/
 .idea/
 *.iml
+
+PRODUCTION_DEPLOY.md
