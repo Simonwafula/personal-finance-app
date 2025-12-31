@@ -21,7 +21,7 @@ echo ""
 PRODUCTION=false
 if [ -d "/home/finance.mstatilitechnologies.com" ]; then
     PRODUCTION=true
-    PROJECT_DIR="/home/finance.mstatilitechnologies.com/personal-finance-app"
+    PROJECT_DIR="/home/finance.mstatilitechnologies.com/public_html"
     VENV_DIR="/home/finance.mstatilitechnologies.com/.venv"
     ENV_FILE="/home/finance.mstatilitechnologies.com/.env"
 else
