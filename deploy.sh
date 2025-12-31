@@ -30,6 +30,9 @@ else
     ENV_FILE="$PROJECT_DIR/.env"
 fi
 
+# Deployment user (used for chown in production and service file). Defaults to current user.
+DEPLOY_USER=${DEPLOY_USER:-$(whoami)}
+
 echo -e "${BLUE}📍 Environment: ${NC}$($PRODUCTION && echo 'PRODUCTION' || echo 'DEVELOPMENT')"
 echo -e "${BLUE}📂 Project Dir: ${NC}$PROJECT_DIR"
 echo ""
@@ -96,6 +99,31 @@ echo -e "${GREEN}✅ Python dependencies installed${NC}"
 echo ""
 
 # =============================================================================
+# Ensure log directory exists and is writable
+# =============================================================================
+echo -e "${BLUE}🗂️  Ensuring log directory exists...${NC}"
+if [ -z "$LOG_DIR" ]; then
+    # Try reading from .env if available
+    if [ -f "$ENV_FILE" ]; then
+        # shellcheck disable=SC1090
+        source "$ENV_FILE" 2>/dev/null || true
+    fi
+fi
+# Use default if still unset
+: ${LOG_DIR:="/home/finance.mstatilitechnologies.com/logs"}
+mkdir -p "$LOG_DIR"
+touch "$LOG_DIR/gunicorn-access.log" || true
+touch "$LOG_DIR/gunicorn-error.log" || true
+touch "$LOG_DIR/django.log" || true
+
+if [ "$PRODUCTION" = true ]; then
+    # Attempt to set ownership to deploy user if it exists
+    if id -u "$DEPLOY_USER" >/dev/null 2>&1; then
+        sudo chown -R "$DEPLOY_USER":"$DEPLOY_USER" "$LOG_DIR" || true
+    fi
+fi
+echo -e "${GREEN}✅ Log directory ready: ${LOG_DIR}${NC}"
+echo ""
 # Step 3: Build frontend
 # =============================================================================
 echo -e "${BLUE}🔨 Step 3: Building frontend...${NC}"

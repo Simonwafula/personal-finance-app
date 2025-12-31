@@ -202,8 +202,8 @@ Description=Finance App Gunicorn Daemon
 After=network.target
 
 [Service]
-User=finance.mstatilitechnologies.com
-Group=finance.mstatilitechnologies.com
+User=finan1713
+Group=finan1713
 WorkingDirectory=/home/finance.mstatilitechnologies.com/personal-finance-app
 EnvironmentFile=/home/finance.mstatilitechnologies.com/.env
 ExecStart=/home/finance.mstatilitechnologies.com/.venv/bin/gunicorn \
@@ -489,4 +489,99 @@ PGPASSWORD=YOUR_PASSWORD psql -h localhost -U finance_user -d finance_db -c "SEL
 │   ├── staticfiles/              # Collected static files
 │   └── ...                       # Other Django apps
 └── public_html/                  # CyberPanel default (not used)
+```
+
+---
+
+## Nginx (Alternative to OpenLiteSpeed)
+
+If you prefer Nginx instead of OpenLiteSpeed (or want an alternative), save the following server block to `/etc/nginx/sites-available/finance_app` and enable it with `sudo ln -s /etc/nginx/sites-available/finance_app /etc/nginx/sites-enabled/`.
+
+Replace certificate paths with your actual certbot/Let's Encrypt paths.
+
+```nginx
+# Nginx config -- /etc/nginx/sites-available/finance_app
+server {
+    listen 80;
+    listen [::]:80;
+    server_name finance.mstatilitechnologies.com www.finance.mstatilitechnologies.com;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name finance.mstatilitechnologies.com www.finance.mstatilitechnologies.com;
+
+    # SSL certs (certbot path shown)
+    ssl_certificate /etc/letsencrypt/live/finance.mstatilitechnologies.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/finance.mstatilitechnologies.com/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers on;
+
+    client_max_body_size 20M;
+
+    # Serve Django static files directly
+    location /static/ {
+        alias /home/finance.mstatilitechnologies.com/personal-finance-app/staticfiles/;
+        expires 30d;
+        add_header Cache-Control "public, must-revalidate";
+    }
+
+    location /media/ {
+        alias /home/finance.mstatilitechnologies.com/personal-finance-app/media/;
+        expires 30d;
+    }
+
+    # Proxy API requests to Gunicorn
+    location /api/ {
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_pass http://127.0.0.1:8000/api/;
+        proxy_redirect off;
+    }
+
+    # Proxy admin
+    location /admin/ {
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_pass http://127.0.0.1:8000/admin/;
+        proxy_redirect off;
+    }
+
+    # Proxy accounts (OAuth)
+    location /accounts/ {
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_pass http://127.0.0.1:8000/accounts/;
+        proxy_redirect off;
+    }
+
+    # Serve SPA (React) from client/dist
+    location / {
+        try_files $uri $uri/ /index.html;
+        root /home/finance.mstatilitechnologies.com/personal-finance-app/client/dist;
+    }
+
+    proxy_read_timeout 120;
+    proxy_connect_timeout 60;
+    proxy_send_timeout 60;
+
+    access_log /var/log/nginx/finance_app.access.log;
+    error_log /var/log/nginx/finance_app.error.log;
+}
+```
+
+After creating the file:
+
+```bash
+sudo ln -s /etc/nginx/sites-available/finance_app /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl reload nginx
 ```
