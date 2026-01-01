@@ -204,54 +204,6 @@ export async function exportTransactionsCsv(params: any = {}) {
   return res.data;
 }
 
-export async function exportAccountsCsv() {
-  const res = await api.get("/api/finance/accounts/export-csv/", { responseType: 'blob' });
-  return res.data;
-}
-
-export async function exportCategoriesCsv() {
-  const res = await api.get("/api/finance/categories/export-csv/", { responseType: 'blob' });
-  return res.data;
-}
-
-// Import M-Pesa statement
-export async function importMpesaStatement(file: File, accountId: number) {
-  const fd = new FormData();
-  fd.append("file", file);
-  fd.append("account_id", accountId.toString());
-  const res = await api.post("/api/finance/transactions/import-mpesa/", fd, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
-  return res.data;
-}
-
-// Import generic bank statement
-export interface BankImportOptions {
-  accountId: number;
-  dateColumn: string;
-  amountColumn?: string;
-  debitColumn?: string;
-  creditColumn?: string;
-  descriptionColumn?: string;
-  dateFormat?: string;
-}
-
-export async function importBankStatement(file: File, options: BankImportOptions) {
-  const fd = new FormData();
-  fd.append("file", file);
-  fd.append("account_id", options.accountId.toString());
-  fd.append("date_column", options.dateColumn);
-  if (options.amountColumn) fd.append("amount_column", options.amountColumn);
-  if (options.debitColumn) fd.append("debit_column", options.debitColumn);
-  if (options.creditColumn) fd.append("credit_column", options.creditColumn);
-  if (options.descriptionColumn) fd.append("description_column", options.descriptionColumn);
-  if (options.dateFormat) fd.append("date_format", options.dateFormat);
-  const res = await api.post("/api/finance/transactions/import-bank/", fd, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
-  return res.data;
-}
-
 // Tags
 export async function fetchTags(): Promise<Tag[]> {
   const res = await api.get("/api/finance/tags/");

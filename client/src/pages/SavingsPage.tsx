@@ -170,11 +170,10 @@ export default function SavingsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent flex items-center gap-2">
-            <PiggyBank className="text-green-600" size={28} />
-            Savings Goals
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+            💰 Savings
           </h1>
-          <p className="text-sm text-[var(--text-muted)] mt-1">
+          <p className="text-base text-[var(--text-muted)] mt-2 font-medium">
             Track progress toward your financial objectives
           </p>
         </div>

@@ -8,9 +8,9 @@ import { getSavingsSummary, type SavingsSummary } from "../api/savings";
 import { getInvestmentSummary, type InvestmentSummary } from "../api/investments";
 import type { Account } from "../api/types";
 import { useTimeRange } from "../contexts/TimeRangeContext";
+// TimeRangeSelector comes from global context (rendered in Layout)
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, CartesianGrid } from "recharts";
 import type { NetWorthCurrent } from "../api/types";
-import { HiHome, HiPlus, HiRefresh } from "react-icons/hi";
 
 interface DashboardTotals {
   income: number;
@@ -160,51 +160,15 @@ export default function DashboardPage() {
 
   // categorySeries is populated by the backend top categories endpoint
 
-  // Helper to format date range nicely
-  const formatDateRange = (start: string, end: string) => {
-    const startD = new Date(start);
-    const endD = new Date(end);
-    const sameYear = startD.getFullYear() === endD.getFullYear();
-    const sameMonth = sameYear && startD.getMonth() === endD.getMonth();
-    
-    if (sameMonth) {
-      return `${startD.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} - ${endD.getDate()}, ${endD.getFullYear()}`;
-    }
-    if (sameYear) {
-      return `${startD.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${endD.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${endD.getFullYear()}`;
-    }
-    return `${startD.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - ${endD.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
-  };
-
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="section-header">
         <div>
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-2">
-            <HiHome className="text-indigo-600" />
-            Dashboard
-          </h1>
-          <p className="text-sm text-[var(--text-muted)] mt-1">
-            {formatDateRange(range.startDate, range.endDate)}
+          <h1 className="section-title">Dashboard</h1>
+          <p className="text-base text-[var(--text-muted)] mt-1 font-medium">
+            {range.startDate} → {range.endDate}
           </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => navigate('/transactions?action=add')}
-            className="btn-primary inline-flex items-center gap-2 text-sm shadow-lg shadow-indigo-500/20"
-          >
-            <HiPlus size={16} />
-            <span className="hidden sm:inline">Add Transaction</span>
-            <span className="sm:hidden">Add</span>
-          </button>
-          <button
-            onClick={() => window.location.reload()}
-            className="btn-secondary p-2"
-            title="Refresh"
-          >
-            <HiRefresh size={18} />
-          </button>
         </div>
       </div>
 

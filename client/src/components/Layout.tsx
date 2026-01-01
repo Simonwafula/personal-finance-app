@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { HiMenu, HiSun, HiMoon, HiX, HiHome, HiCreditCard, HiChartBar, HiTrendingUp, HiCalculator, HiBriefcase, HiTag, HiUser, HiBell, HiBookOpen, HiDocumentReport } from "react-icons/hi";
+import { HiMenu, HiSun, HiMoon, HiX, HiHome, HiCreditCard, HiChartBar, HiTrendingUp, HiCalculator, HiBriefcase, HiTag, HiUser, HiBell, HiBookOpen } from "react-icons/hi";
 import Logo from "./Logo";
 import { Outlet, NavLink, Link, useLocation } from "react-router-dom";
 import TimeRangeSelector from "../components/TimeRangeSelector";
@@ -130,10 +130,6 @@ export default function Layout() {
               <NavLink to="/subscriptions" className={({isActive}) => isActive ? 'active' : ''}>
                 <HiCreditCard className="nav-icon" />
                 <span>Subscriptions</span>
-              </NavLink>
-              <NavLink to="/reports" className={({isActive}) => isActive ? 'active' : ''}>
-                <HiDocumentReport className="nav-icon" />
-                <span>Reports</span>
               </NavLink>
             </nav>
           </div>
@@ -387,10 +383,6 @@ export default function Layout() {
               <NavLink to="/subscriptions" onClick={() => setOpen(false)} className={({isActive}) => isActive ? 'active' : ''}>
                 <HiCreditCard className="nav-icon" />
                 <span>Subscriptions</span>
-              </NavLink>
-              <NavLink to="/reports" onClick={() => setOpen(false)} className={({isActive}) => isActive ? 'active' : ''}>
-                <HiDocumentReport className="nav-icon" />
-                <span>Reports</span>
               </NavLink>
               <NavLink to="/wealth" onClick={() => setOpen(false)} className={({isActive}) => isActive ? 'active' : ''}>
                 <HiTrendingUp className="nav-icon" />

@@ -254,13 +254,12 @@ export default function DebtPlannerPage() {
 
   return (
     <div className="space-y-6 pb-20 max-w-7xl mx-auto animate-fade-in">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent flex items-center gap-2">
-            <span className="text-red-600">💳</span>
-            Debt Manager
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+            💳 Debt Manager
           </h1>
-          <p className="text-sm text-[var(--text-muted)] mt-1">
+          <p className="text-base text-[var(--text-muted)] mt-2 font-medium">
             Track your debts and create payoff strategies
           </p>
         </div>

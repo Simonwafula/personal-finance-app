@@ -1,6 +1,6 @@
 from django.contrib import admin
-from django.urls import path, include
-from django.views.generic import RedirectView
+from django.urls import path, include, re_path
+from django.views.generic import TemplateView, RedirectView
 from django.http import HttpResponse, JsonResponse
 from django.conf import settings
 from django.conf.urls.static import static
@@ -26,8 +26,16 @@ def robots_txt_view(request):
         "User-agent: *",
         "Disallow: /admin/",
         "Disallow: /api/",
+        "Allow: /",
     ]
+    if settings.ALLOWED_HOSTS:
+        lines.append(f"Sitemap: https://{settings.ALLOWED_HOSTS[0]}/sitemap.xml")
     return HttpResponse("\n".join(lines), content_type="text/plain")
+
+
+def health_check(request):
+    """Simple health check endpoint for monitoring."""
+    return JsonResponse({'status': 'healthy', 'service': 'finance-app'})
 
 
 def google_login_check(request):
@@ -46,10 +54,17 @@ def google_login_check(request):
 
 
 urlpatterns = [
+    # Admin
     path("admin/", admin.site.urls),
-    # Custom Google login check before allauth handles it
+    
+    # Health check for monitoring
+    path("api/health/", health_check, name="health_check"),
+    
+    # Google OAuth - custom check before allauth handles it
     path("accounts/google/login/", google_login_check, name="google_login_check"),
-    path("accounts/", include("allauth.urls")),  # <-- allauth
+    path("accounts/", include("allauth.urls")),
+    
+    # API Auth endpoints
     path("api/auth/me/", CurrentUserView.as_view()),
     path("api/auth/register/", register_view),
     path("api/auth/login/", login_view),
@@ -57,6 +72,8 @@ urlpatterns = [
     path("api/auth/reset-password/", reset_password_view),
     path("api/auth/change-password/", change_password_view),
     path("api/auth/profile/", include("profiles.urls")),
+    
+    # API endpoints
     path("api/finance/", include("finance.urls")),
     path("api/budgeting/", include("budgeting.urls")),
     path("api/wealth/", include("wealth.urls")),
@@ -64,11 +81,10 @@ urlpatterns = [
     path("api/savings/", include("savings.urls")),
     path("api/investments/", include("investments.urls")),
     path("api/", include("notifications.urls")),
+    
     # Static file helpers
     path("favicon.ico", favicon_view),
     path("robots.txt", robots_txt_view),
-    # Dev: redirect backend root to frontend
-    path("", RedirectView.as_view(url="http://localhost:5173/")),
 ]
 
 # Serve media files in development
@@ -77,3 +93,15 @@ if settings.DEBUG:
         settings.MEDIA_URL,
         document_root=settings.MEDIA_ROOT
     )
+    # Dev: redirect backend root to frontend dev server
+    urlpatterns += [
+        path("", RedirectView.as_view(url="http://localhost:5173/")),
+    ]
+else:
+    # Production: Serve frontend - Django serves React SPA for all non-API routes
+    # This must be LAST to act as catch-all for SPA routing
+    urlpatterns += [
+        path('', TemplateView.as_view(template_name='index.html'), name='home'),
+        re_path(r'^(?!api/|admin/|accounts/|static/|media/).*$', 
+                TemplateView.as_view(template_name='index.html'), name='spa_catchall'),
+    ]
