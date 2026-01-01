@@ -273,25 +273,14 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 # Google OAuth Configuration
-_google_client_id = os.getenv('GOOGLE_CLIENT_ID', '')
-_google_client_secret = os.getenv('GOOGLE_CLIENT_SECRET', '')
-
-if DEBUG and not _google_client_id:
-    import warnings
-    warnings.warn(
-        "\n⚠️  GOOGLE_CLIENT_ID is not set! Google OAuth login will not work.\n"
-        "   To fix: Add your Google OAuth credentials to .env file.\n"
-        "   Get credentials from: https://console.cloud.google.com/apis/credentials\n"
-    )
-
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
         'SCOPE': ['profile', 'email'],
         'AUTH_PARAMS': {'access_type': 'online'},
         'VERIFIED_EMAIL': True,
         'APP': {
-            'client_id': _google_client_id,
-            'secret': _google_client_secret,
+            'client_id': os.getenv('GOOGLE_CLIENT_ID', ''),
+            'secret': os.getenv('GOOGLE_CLIENT_SECRET', ''),
             'key': '',
         }
     }
