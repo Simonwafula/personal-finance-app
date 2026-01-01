@@ -9,8 +9,8 @@
 #   ./deploy-docker.sh down         # Stop containers
 #   ./deploy-docker.sh logs         # View logs
 #   ./deploy-docker.sh restart      # Restart all
-#   ./deploy-docker.sh ssl          # Setup SSL certificates
 #   ./deploy-docker.sh local        # Run locally for testing
+#   ./deploy-docker.sh cyberpanel   # Deploy alongside CyberPanel
 # ============================================
 
 set -e
@@ -193,6 +193,67 @@ manage() {
     docker compose -f $COMPOSE_FILE exec backend python manage.py "$@"
 }
 
+# Deploy alongside CyberPanel (use host network for ports 8080/8443)
+cyberpanel() {
+    log_info "Deploying alongside CyberPanel..."
+    
+    check_prerequisites
+    setup_env
+    setup_dirs
+    
+    # Stop existing containers
+    docker compose -f $COMPOSE_FILE down 2>/dev/null || true
+    
+    # Stop CyberPanel's nginx temporarily for this domain
+    log_warn "You may need to disable nginx for this domain in CyberPanel"
+    log_warn "Or configure CyberPanel to proxy to Docker container"
+    
+    # Build and start
+    build
+    
+    # Use different ports if CyberPanel uses 80/443
+    log_info "Starting containers..."
+    docker compose -f $COMPOSE_FILE up -d
+    
+    sleep 5
+    
+    # Run migrations
+    log_info "Running database migrations..."
+    docker compose -f $COMPOSE_FILE exec -T backend python manage.py migrate --noinput || true
+    
+    log_success "🚀 CyberPanel deployment complete!"
+    echo ""
+    echo "=========================================="
+    echo "  If CyberPanel uses ports 80/443, configure"
+    echo "  CyberPanel to proxy to Docker or use"
+    echo "  different ports in docker-compose.yml"
+    echo "=========================================="
+}
+
+# Configure PostgreSQL access for Docker
+setup_postgres() {
+    log_info "Configuring PostgreSQL for Docker access..."
+    
+    # Check if PostgreSQL is installed
+    if ! command -v psql &> /dev/null; then
+        log_warn "PostgreSQL client not found on host"
+        return
+    fi
+    
+    log_info "Ensure PostgreSQL allows connections from Docker:"
+    echo "1. Edit /etc/postgresql/*/main/postgresql.conf:"
+    echo "   listen_addresses = '*'"
+    echo ""
+    echo "2. Edit /etc/postgresql/*/main/pg_hba.conf, add:"
+    echo "   host    all    all    172.16.0.0/12    md5"
+    echo ""
+    echo "3. Restart PostgreSQL:"
+    echo "   sudo systemctl restart postgresql"
+    echo ""
+    echo "4. In .env.production, set:"
+    echo "   DATABASE_HOST=host.docker.internal"
+}
+
 # Main entry point
 case "${1:-deploy}" in
     build)
@@ -213,9 +274,6 @@ case "${1:-deploy}" in
     restart)
         restart
         ;;
-    ssl)
-        setup_ssl
-        ;;
     local)
         local
         ;;
@@ -231,6 +289,12 @@ case "${1:-deploy}" in
     manage)
         shift
         manage "$@"
+        ;;
+    cyberpanel)
+        cyberpanel
+        ;;
+    setup-postgres)
+        setup_postgres
         ;;
     deploy|*)
         deploy

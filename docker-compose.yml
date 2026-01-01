@@ -13,10 +13,12 @@ services:
     volumes:
       - static_volume:/app/staticfiles
       - media_volume:/app/media
-      - ./db.sqlite3:/app/db.sqlite3
       - ./logs:/app/logs
     networks:
       - finance-network
+    # Connect to host's PostgreSQL
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health/')"]
       interval: 30s
@@ -36,23 +38,12 @@ services:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - static_volume:/app/staticfiles:ro
       - media_volume:/app/media:ro
-      - ./certbot/conf:/etc/letsencrypt:ro
-      - ./certbot/www:/var/www/certbot:ro
+      # Mount existing SSL certificates from CyberPanel
+      - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       - backend
     networks:
       - finance-network
-
-  # Certbot for SSL (optional - run manually)
-  certbot:
-    image: certbot/certbot
-    container_name: finance-certbot
-    volumes:
-      - ./certbot/conf:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
-    profiles:
-      - ssl
 
 volumes:
   static_volume:
