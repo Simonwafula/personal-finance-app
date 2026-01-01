@@ -327,63 +327,106 @@ else:
 PASSWORD_RESET_TIMEOUT = int(os.getenv('PASSWORD_RESET_TIMEOUT', '86400'))
 
 # Logging configuration
-LOG_DIR = BASE_DIR.parent / 'logs'
-LOG_DIR.mkdir(exist_ok=True)
+# Use console-only logging in Docker/production, file logging in development
+USE_FILE_LOGGING = os.environ.get('USE_FILE_LOGGING', 'true').lower() == 'true' and not os.environ.get('DOCKER_CONTAINER', False)
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
-            'style': '{',
+if USE_FILE_LOGGING:
+    LOG_DIR = BASE_DIR.parent / 'logs'
+    LOG_DIR.mkdir(exist_ok=True)
+    
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'verbose': {
+                'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+                'style': '{',
+            },
+            'simple': {
+                'format': '{levelname} {asctime} {message}',
+                'style': '{',
+            },
         },
-        'simple': {
-            'format': '{levelname} {asctime} {message}',
-            'style': '{',
+        'handlers': {
+            'file': {
+                'level': 'INFO',
+                'class': 'logging.handlers.RotatingFileHandler',
+                'filename': str(LOG_DIR / 'django.log'),
+                'maxBytes': 1024 * 1024 * 10,  # 10 MB
+                'backupCount': 5,
+                'formatter': 'verbose',
+            },
+            'error_file': {
+                'level': 'ERROR',
+                'class': 'logging.handlers.RotatingFileHandler',
+                'filename': str(LOG_DIR / 'django-error.log'),
+                'maxBytes': 1024 * 1024 * 10,  # 10 MB
+                'backupCount': 5,
+                'formatter': 'verbose',
+            },
+            'console': {
+                'class': 'logging.StreamHandler',
+                'formatter': 'verbose',
+            },
         },
-    },
-    'handlers': {
-        'file': {
-            'level': 'INFO',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': str(LOG_DIR / 'django.log'),
-            'maxBytes': 1024 * 1024 * 10,  # 10 MB
-            'backupCount': 5,
-            'formatter': 'verbose',
-        },
-        'error_file': {
-            'level': 'ERROR',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': str(LOG_DIR / 'django-error.log'),
-            'maxBytes': 1024 * 1024 * 10,  # 10 MB
-            'backupCount': 5,
-            'formatter': 'verbose',
-        },
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
-        },
-    },
-    'root': {
-        'handlers': ['console', 'file'],
-        'level': 'INFO',
-    },
-    'loggers': {
-        'django': {
+        'root': {
             'handlers': ['console', 'file'],
             'level': 'INFO',
-            'propagate': False,
         },
-        'django.request': {
-            'handlers': ['console', 'error_file'],
-            'level': 'ERROR',
-            'propagate': False,
+        'loggers': {
+            'django': {
+                'handlers': ['console', 'file'],
+                'level': 'INFO',
+                'propagate': False,
+            },
+            'django.request': {
+                'handlers': ['console', 'error_file'],
+                'level': 'ERROR',
+                'propagate': False,
+            },
+            'django.server': {
+                'handlers': ['console', 'file'],
+                'level': 'INFO',
+                'propagate': False,
+            },
         },
-        'django.server': {
-            'handlers': ['console', 'file'],
+    }
+else:
+    # Docker/Production: Console-only logging (best practice for containers)
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'verbose': {
+                'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+                'style': '{',
+            },
+        },
+        'handlers': {
+            'console': {
+                'class': 'logging.StreamHandler',
+                'formatter': 'verbose',
+            },
+        },
+        'root': {
+            'handlers': ['console'],
             'level': 'INFO',
-            'propagate': False,
         },
-    },
-}
+        'loggers': {
+            'django': {
+                'handlers': ['console'],
+                'level': 'INFO',
+                'propagate': False,
+            },
+            'django.request': {
+                'handlers': ['console'],
+                'level': 'ERROR',
+                'propagate': False,
+            },
+            'django.server': {
+                'handlers': ['console'],
+                'level': 'INFO',
+                'propagate': False,
+            },
+        },
+    }
