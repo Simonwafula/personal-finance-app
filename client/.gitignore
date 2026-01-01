@@ -8,6 +8,7 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+dist
 dist-ssr
 *.local
 
@@ -53,5 +54,3 @@ pnpm-debug.log*
 .vscode/
 .idea/
 *.iml
-
-PRODUCTION_DEPLOY.md

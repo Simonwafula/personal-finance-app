@@ -1,1 +1,0 @@
-import{i as a}from"./index-HX_wmsfL.js";const e=async()=>(await a.get("/api/savings/goals/")).data,i=async s=>(await a.post("/api/savings/goals/",s)).data,r=async s=>{await a.delete(`/api/savings/goals/${s}/`)},p=async(s,n)=>(await a.post(`/api/savings/goals/${s}/contribute/`,n)).data;export{p as a,i as c,r as d,e as g};

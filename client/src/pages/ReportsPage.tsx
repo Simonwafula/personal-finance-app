@@ -1,6 +1,6 @@
 // src/pages/ReportsPage.tsx - Financial Reports Generation
-import { useState, useEffect } from "react";
-import { HiDocumentReport, HiDownload, HiCalendar, HiChartBar } from "react-icons/hi";
+import { useState, useEffect, useMemo } from "react";
+import { HiDocumentReport, HiDownload, HiCalendar, HiChartBar, HiFilter, HiChevronDown, HiChevronUp, HiDocumentText } from "react-icons/hi";
 import { 
   fetchTransactionsPaged, 
   fetchAccounts, 
@@ -8,13 +8,21 @@ import {
   fetchAggregatedTransactions 
 } from "../api/finance";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar } from "recharts";
-import type { Transaction } from "../api/types";
+import type { Transaction, Account, Category } from "../api/types";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 function formatMoney(value: number) {
   return value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 type ReportPeriod = "month" | "quarter" | "year" | "custom";
+type TransactionFilter = {
+  kind: "ALL" | "INCOME" | "EXPENSE" | "TRANSFER";
+  category: number | null;
+  account: number | null;
+  search: string;
+};
 
 interface ReportData {
   period: { start: string; end: string; label: string };
@@ -29,6 +37,7 @@ interface ReportData {
   accountBalances: { name: string; balance: number; type: string }[];
   trendData: { date: string; income: number; expenses: number }[];
   topExpenses: { description: string; amount: number; category: string; date: string }[];
+  transactions: Transaction[];
 }
 
 const COLORS = ['#10B981', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#6366F1'];
@@ -41,6 +50,19 @@ export default function ReportsPage() {
   const [reportData, setReportData] = useState<ReportData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
+  
+  // Transaction list state
+  const [showTransactions, setShowTransactions] = useState(false);
+  const [txFilter, setTxFilter] = useState<TransactionFilter>({
+    kind: "ALL",
+    category: null,
+    account: null,
+    search: ""
+  });
+  const [txPage, setTxPage] = useState(1);
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const txPerPage = 25;
 
   function getPeriodDates(p: ReportPeriod): { start: string; end: string; label: string } {
     const now = new Date();
@@ -92,12 +114,15 @@ export default function ReportsPage() {
       const dates = getPeriodDates(period);
       
       // Fetch all needed data
-      const [transactionsRes, accounts, categories, trendData] = await Promise.all([
-        fetchTransactionsPaged({ start: dates.start, end: dates.end, limit: 1000 }),
+      const [transactionsRes, accountsData, categoriesData, trendData] = await Promise.all([
+        fetchTransactionsPaged({ start: dates.start, end: dates.end, limit: 5000 }),
         fetchAccounts(),
         fetchCategories(),
         fetchAggregatedTransactions({ start: dates.start, end: dates.end, group_by: period === "year" ? "month" : "day" })
       ]);
+
+      setAccounts(accountsData);
+      setCategories(categoriesData);
 
       const transactions: Transaction[] = transactionsRes.results || transactionsRes;
       
@@ -115,7 +140,7 @@ export default function ReportsPage() {
 
       // Category breakdown for expenses
       const categoryMap = new Map<number, { name: string; amount: number }>();
-      const categoryLookup = new Map(categories.map(c => [c.id, c]));
+      const categoryLookup = new Map(categoriesData.map(c => [c.id, c]));
       
       transactions
         .filter(t => t.kind === "EXPENSE" && t.category)
@@ -140,7 +165,7 @@ export default function ReportsPage() {
         .slice(0, 8);
 
       // Account balances
-      const accountBalances = accounts.map(acc => ({
+      const accountBalances = accountsData.map(acc => ({
         name: acc.name,
         balance: Number(acc.current_balance || acc.opening_balance || 0),
         type: acc.account_type
@@ -174,8 +199,10 @@ export default function ReportsPage() {
         categoryBreakdown,
         accountBalances,
         trendData: trendData.series || [],
-        topExpenses
+        topExpenses,
+        transactions
       });
+      setTxPage(1); // Reset pagination when new report generated
     } catch (err: any) {
       setError(err.message || "Failed to generate report");
     } finally {
@@ -183,7 +210,45 @@ export default function ReportsPage() {
     }
   }
 
-  async function downloadReport() {
+  // Filtered transactions with memoization
+  const filteredTransactions = useMemo(() => {
+    if (!reportData?.transactions) return [];
+    
+    return reportData.transactions.filter(tx => {
+      // Kind filter
+      if (txFilter.kind !== "ALL" && tx.kind !== txFilter.kind) return false;
+      
+      // Category filter
+      if (txFilter.category !== null) {
+        const catObj = tx.category as { id: number } | number | null;
+        const catId = typeof catObj === 'number' ? catObj : catObj?.id;
+        if (catId !== txFilter.category) return false;
+      }
+      
+      // Account filter
+      if (txFilter.account !== null && tx.account !== txFilter.account) return false;
+      
+      // Search filter
+      if (txFilter.search) {
+        const search = txFilter.search.toLowerCase();
+        const desc = (tx.description || "").toLowerCase();
+        const catName = (tx.category_name || "").toLowerCase();
+        const accName = (tx.account_name || "").toLowerCase();
+        if (!desc.includes(search) && !catName.includes(search) && !accName.includes(search)) return false;
+      }
+      
+      return true;
+    });
+  }, [reportData?.transactions, txFilter]);
+
+  const paginatedTransactions = useMemo(() => {
+    const start = (txPage - 1) * txPerPage;
+    return filteredTransactions.slice(start, start + txPerPage);
+  }, [filteredTransactions, txPage]);
+
+  const totalTxPages = Math.ceil(filteredTransactions.length / txPerPage);
+
+  async function downloadCSV() {
     if (!reportData) return;
     
     setGenerating(true);
@@ -217,10 +282,15 @@ export default function ReportsPage() {
       });
       lines.push("");
       
-      lines.push("=== TOP EXPENSES ===");
-      lines.push("Date,Description,Category,Amount");
-      reportData.topExpenses.forEach(exp => {
-        lines.push(`${exp.date},"${exp.description}",${exp.category},${exp.amount.toFixed(2)}`);
+      lines.push("=== ALL TRANSACTIONS ===");
+      lines.push("Date,Account,Description,Category,Type,Amount");
+      // Use filtered transactions if filter is active, otherwise all
+      const txToExport = filteredTransactions.length !== reportData.transactions.length 
+        ? filteredTransactions 
+        : reportData.transactions;
+      txToExport.forEach(tx => {
+        const desc = (tx.description || "").replace(/"/g, '""');
+        lines.push(`${tx.date},"${tx.account_name || ''}","${desc}","${tx.category_name || ''}",${tx.kind},${Number(tx.amount).toFixed(2)}`);
       });
       
       const csv = lines.join("\n");
@@ -231,6 +301,137 @@ export default function ReportsPage() {
       a.download = `financial-report-${reportData.period.start}-to-${reportData.period.end}.csv`;
       a.click();
       URL.revokeObjectURL(url);
+    } finally {
+      setGenerating(false);
+    }
+  }
+
+  async function downloadPDF() {
+    if (!reportData) return;
+    
+    setGenerating(true);
+    try {
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.getWidth();
+      
+      // Header
+      doc.setFontSize(20);
+      doc.setTextColor(16, 185, 129); // emerald-500
+      doc.text("Financial Report", pageWidth / 2, 20, { align: "center" });
+      
+      doc.setFontSize(12);
+      doc.setTextColor(100);
+      doc.text(`Period: ${reportData.period.label}`, pageWidth / 2, 28, { align: "center" });
+      doc.text(`Generated: ${new Date().toLocaleDateString()}`, pageWidth / 2, 34, { align: "center" });
+      
+      // Summary Section
+      doc.setFontSize(14);
+      doc.setTextColor(0);
+      doc.text("Summary", 14, 48);
+      
+      autoTable(doc, {
+        startY: 52,
+        head: [["Metric", "Value"]],
+        body: [
+          ["Total Income", `KES ${formatMoney(reportData.summary.totalIncome)}`],
+          ["Total Expenses", `KES ${formatMoney(reportData.summary.totalExpenses)}`],
+          ["Net Savings", `KES ${formatMoney(reportData.summary.netSavings)}`],
+          ["Savings Rate", `${reportData.summary.savingsRate.toFixed(1)}%`],
+          ["Total Transactions", reportData.summary.transactionCount.toString()],
+        ],
+        theme: "striped",
+        headStyles: { fillColor: [16, 185, 129] },
+        margin: { left: 14, right: 14 },
+      });
+      
+      // Category Breakdown
+      let yPos = (doc as any).lastAutoTable.finalY + 10;
+      doc.setFontSize(14);
+      doc.text("Expenses by Category", 14, yPos);
+      
+      autoTable(doc, {
+        startY: yPos + 4,
+        head: [["Category", "Amount", "Percentage"]],
+        body: reportData.categoryBreakdown.map(cat => [
+          cat.name,
+          `KES ${formatMoney(cat.amount)}`,
+          `${cat.percentage.toFixed(1)}%`
+        ]),
+        theme: "striped",
+        headStyles: { fillColor: [16, 185, 129] },
+        margin: { left: 14, right: 14 },
+      });
+      
+      // Account Balances
+      yPos = (doc as any).lastAutoTable.finalY + 10;
+      if (yPos > 240) {
+        doc.addPage();
+        yPos = 20;
+      }
+      doc.setFontSize(14);
+      doc.text("Account Balances", 14, yPos);
+      
+      autoTable(doc, {
+        startY: yPos + 4,
+        head: [["Account", "Type", "Balance"]],
+        body: reportData.accountBalances.map(acc => [
+          acc.name,
+          acc.type,
+          `KES ${formatMoney(acc.balance)}`
+        ]),
+        theme: "striped",
+        headStyles: { fillColor: [59, 130, 246] },
+        margin: { left: 14, right: 14 },
+      });
+      
+      // Transactions (new page)
+      doc.addPage();
+      doc.setFontSize(14);
+      doc.text("Transactions", 14, 20);
+      
+      // Use filtered transactions if filter is active
+      const txToExport = filteredTransactions.length !== reportData.transactions.length 
+        ? filteredTransactions 
+        : reportData.transactions;
+      
+      if (filteredTransactions.length !== reportData.transactions.length) {
+        doc.setFontSize(10);
+        doc.setTextColor(100);
+        doc.text(`(Filtered: ${filteredTransactions.length} of ${reportData.transactions.length} transactions)`, 14, 26);
+        doc.setTextColor(0);
+      }
+      
+      autoTable(doc, {
+        startY: filteredTransactions.length !== reportData.transactions.length ? 30 : 24,
+        head: [["Date", "Account", "Description", "Category", "Type", "Amount"]],
+        body: txToExport.map(tx => [
+          tx.date,
+          tx.account_name || "",
+          (tx.description || "").substring(0, 30),
+          tx.category_name || "-",
+          tx.kind,
+          `${tx.kind === "EXPENSE" ? "-" : ""}KES ${formatMoney(Number(tx.amount))}`
+        ]),
+        theme: "striped",
+        headStyles: { fillColor: [16, 185, 129] },
+        margin: { left: 14, right: 14 },
+        styles: { fontSize: 8, cellPadding: 2 },
+        columnStyles: {
+          2: { cellWidth: 40 }, // Description
+          5: { halign: "right" }, // Amount
+        },
+      });
+      
+      // Footer with page numbers
+      const pageCount = doc.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(150);
+        doc.text(`Page ${i} of ${pageCount}`, pageWidth / 2, doc.internal.pageSize.getHeight() - 10, { align: "center" });
+      }
+      
+      doc.save(`financial-report-${reportData.period.start}-to-${reportData.period.end}.pdf`);
     } finally {
       setGenerating(false);
     }
@@ -252,14 +453,24 @@ export default function ReportsPage() {
           <p className="text-sm text-[var(--text-muted)] mt-1">Generate detailed financial summaries and insights</p>
         </div>
         {reportData && (
-          <button
-            onClick={downloadReport}
-            disabled={generating}
-            className="btn-primary inline-flex items-center gap-2"
-          >
-            <HiDownload size={18} />
-            {generating ? "Generating..." : "Download Report"}
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={downloadCSV}
+              disabled={generating}
+              className="btn-secondary inline-flex items-center gap-2"
+            >
+              <HiDownload size={18} />
+              {generating ? "..." : "CSV"}
+            </button>
+            <button
+              onClick={downloadPDF}
+              disabled={generating}
+              className="btn-primary inline-flex items-center gap-2"
+            >
+              <HiDocumentText size={18} />
+              {generating ? "..." : "PDF"}
+            </button>
+          </div>
         )}
       </div>
 
@@ -470,6 +681,228 @@ export default function ReportsPage() {
               </div>
             ) : (
               <p className="text-center text-[var(--text-muted)] py-8">No expenses for this period</p>
+            )}
+          </div>
+
+          {/* All Transactions Section - Collapsible */}
+          <div className="card overflow-hidden">
+            <button
+              onClick={() => setShowTransactions(!showTransactions)}
+              className="w-full p-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <HiFilter className="text-emerald-600" size={20} />
+                <div className="text-left">
+                  <h3 className="font-semibold">All Transactions</h3>
+                  <p className="text-sm text-[var(--text-muted)]">
+                    {reportData.transactions.length} transactions in this period
+                    {filteredTransactions.length !== reportData.transactions.length && (
+                      <span className="ml-2 text-emerald-600">({filteredTransactions.length} filtered)</span>
+                    )}
+                  </p>
+                </div>
+              </div>
+              {showTransactions ? <HiChevronUp size={24} /> : <HiChevronDown size={24} />}
+            </button>
+
+            {showTransactions && (
+              <div className="border-t border-[var(--border-subtle)]">
+                {/* Filters */}
+                <div className="p-4 bg-gray-50 dark:bg-gray-800/50 border-b border-[var(--border-subtle)]">
+                  <div className="flex flex-wrap gap-3 items-end">
+                    {/* Search */}
+                    <div className="flex-1 min-w-[200px]">
+                      <label className="block text-xs font-medium mb-1 text-[var(--text-muted)]">Search</label>
+                      <input
+                        type="text"
+                        placeholder="Search description, category, account..."
+                        value={txFilter.search}
+                        onChange={e => {
+                          setTxFilter(f => ({ ...f, search: e.target.value }));
+                          setTxPage(1);
+                        }}
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-sm"
+                      />
+                    </div>
+                    
+                    {/* Type Filter */}
+                    <div>
+                      <label className="block text-xs font-medium mb-1 text-[var(--text-muted)]">Type</label>
+                      <select
+                        value={txFilter.kind}
+                        onChange={e => {
+                          setTxFilter(f => ({ ...f, kind: e.target.value as any }));
+                          setTxPage(1);
+                        }}
+                        className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-sm"
+                      >
+                        <option value="ALL">All Types</option>
+                        <option value="INCOME">Income</option>
+                        <option value="EXPENSE">Expense</option>
+                        <option value="TRANSFER">Transfer</option>
+                      </select>
+                    </div>
+                    
+                    {/* Category Filter */}
+                    <div>
+                      <label className="block text-xs font-medium mb-1 text-[var(--text-muted)]">Category</label>
+                      <select
+                        value={txFilter.category ?? ""}
+                        onChange={e => {
+                          setTxFilter(f => ({ ...f, category: e.target.value ? Number(e.target.value) : null }));
+                          setTxPage(1);
+                        }}
+                        className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-sm"
+                      >
+                        <option value="">All Categories</option>
+                        {categories.map(c => (
+                          <option key={c.id} value={c.id}>{c.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    
+                    {/* Account Filter */}
+                    <div>
+                      <label className="block text-xs font-medium mb-1 text-[var(--text-muted)]">Account</label>
+                      <select
+                        value={txFilter.account ?? ""}
+                        onChange={e => {
+                          setTxFilter(f => ({ ...f, account: e.target.value ? Number(e.target.value) : null }));
+                          setTxPage(1);
+                        }}
+                        className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-sm"
+                      >
+                        <option value="">All Accounts</option>
+                        {accounts.map(a => (
+                          <option key={a.id} value={a.id}>{a.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    
+                    {/* Clear Filters */}
+                    {(txFilter.kind !== "ALL" || txFilter.category !== null || txFilter.account !== null || txFilter.search) && (
+                      <button
+                        onClick={() => {
+                          setTxFilter({ kind: "ALL", category: null, account: null, search: "" });
+                          setTxPage(1);
+                        }}
+                        className="px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                      >
+                        Clear Filters
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Transaction Table */}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-[var(--border-subtle)] bg-gray-50 dark:bg-gray-800/30">
+                        <th className="text-left py-3 px-4 text-[var(--text-muted)] font-medium">Date</th>
+                        <th className="text-left py-3 px-4 text-[var(--text-muted)] font-medium">Account</th>
+                        <th className="text-left py-3 px-4 text-[var(--text-muted)] font-medium">Description</th>
+                        <th className="text-left py-3 px-4 text-[var(--text-muted)] font-medium">Category</th>
+                        <th className="text-center py-3 px-4 text-[var(--text-muted)] font-medium">Type</th>
+                        <th className="text-right py-3 px-4 text-[var(--text-muted)] font-medium">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {paginatedTransactions.length > 0 ? (
+                        paginatedTransactions.map(tx => (
+                          <tr key={tx.id} className="border-b border-[var(--border-subtle)] hover:bg-gray-50 dark:hover:bg-gray-800/30">
+                            <td className="py-3 px-4 whitespace-nowrap">{tx.date}</td>
+                            <td className="py-3 px-4 whitespace-nowrap">{tx.account_name || "-"}</td>
+                            <td className="py-3 px-4 max-w-xs truncate">{tx.description || "-"}</td>
+                            <td className="py-3 px-4 whitespace-nowrap">{tx.category_name || "-"}</td>
+                            <td className="py-3 px-4 text-center">
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                                tx.kind === "INCOME" 
+                                  ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                                  : tx.kind === "EXPENSE"
+                                  ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                                  : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                              }`}>
+                                {tx.kind}
+                              </span>
+                            </td>
+                            <td className={`py-3 px-4 text-right font-medium whitespace-nowrap ${
+                              tx.kind === "INCOME" ? "text-emerald-600" : tx.kind === "EXPENSE" ? "text-red-500" : "text-blue-600"
+                            }`}>
+                              {tx.kind === "EXPENSE" ? "-" : ""}KES {formatMoney(Number(tx.amount))}
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={6} className="py-8 text-center text-[var(--text-muted)]">
+                            No transactions match your filters
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Pagination */}
+                {totalTxPages > 1 && (
+                  <div className="p-4 border-t border-[var(--border-subtle)] flex items-center justify-between">
+                    <p className="text-sm text-[var(--text-muted)]">
+                      Showing {((txPage - 1) * txPerPage) + 1} - {Math.min(txPage * txPerPage, filteredTransactions.length)} of {filteredTransactions.length}
+                    </p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setTxPage(p => Math.max(1, p - 1))}
+                        disabled={txPage === 1}
+                        className="px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-800"
+                      >
+                        Previous
+                      </button>
+                      <span className="px-3 py-1.5 text-sm text-[var(--text-muted)]">
+                        Page {txPage} of {totalTxPages}
+                      </span>
+                      <button
+                        onClick={() => setTxPage(p => Math.min(totalTxPages, p + 1))}
+                        disabled={txPage === totalTxPages}
+                        className="px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-800"
+                      >
+                        Next
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Summary Footer */}
+                <div className="p-4 bg-gray-50 dark:bg-gray-800/50 border-t border-[var(--border-subtle)]">
+                  <div className="flex flex-wrap gap-6 text-sm">
+                    <div>
+                      <span className="text-[var(--text-muted)]">Filtered Income: </span>
+                      <span className="font-semibold text-emerald-600">
+                        KES {formatMoney(filteredTransactions.filter(t => t.kind === "INCOME").reduce((s, t) => s + Number(t.amount), 0))}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[var(--text-muted)]">Filtered Expenses: </span>
+                      <span className="font-semibold text-red-500">
+                        KES {formatMoney(filteredTransactions.filter(t => t.kind === "EXPENSE").reduce((s, t) => s + Number(t.amount), 0))}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[var(--text-muted)]">Net: </span>
+                      <span className={`font-semibold ${
+                        filteredTransactions.filter(t => t.kind === "INCOME").reduce((s, t) => s + Number(t.amount), 0) -
+                        filteredTransactions.filter(t => t.kind === "EXPENSE").reduce((s, t) => s + Number(t.amount), 0) >= 0
+                          ? "text-emerald-600" : "text-red-500"
+                      }`}>
+                        KES {formatMoney(
+                          filteredTransactions.filter(t => t.kind === "INCOME").reduce((s, t) => s + Number(t.amount), 0) -
+                          filteredTransactions.filter(t => t.kind === "EXPENSE").reduce((s, t) => s + Number(t.amount), 0)
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
         </>
