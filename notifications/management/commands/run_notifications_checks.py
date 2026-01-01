@@ -7,7 +7,6 @@ from finance.models import Transaction, RecurringTransaction
 from budgeting.models import Budget
 from notifications.utils import create_notification
 from notifications.models import Notification as NotificationModel
-from profiles.models import UserProfile
 
 
 class Command(BaseCommand):
@@ -43,20 +42,6 @@ class Command(BaseCommand):
                 f"budget: {budget_notifs}, recurring: {recurring_notifs}"
             )
         )
-
-    def _should_send_email(self, user, notification_type: str) -> bool:
-        """Check if user has enabled email notifications for given type."""
-        try:
-            profile = UserProfile.objects.get(user=user)
-            if not profile.email_notifications:
-                return False
-            if notification_type == "budget" and not profile.email_budget_alerts:
-                return False
-            if notification_type == "recurring" and not profile.email_recurring_reminders:
-                return False
-            return True
-        except UserProfile.DoesNotExist:
-            return False
 
     def _check_budgets(self, threshold: float) -> int:
         today = datetime.date.today()
@@ -110,7 +95,7 @@ class Command(BaseCommand):
                         level=NotificationModel.Level.WARNING,
                         category="budget",
                         link_url="/budgets",
-                        send_email_flag=self._should_send_email(user, "budget"),
+                        send_email_flag=True,
                     )
                     created += 1
                 except Exception:
@@ -163,7 +148,7 @@ class Command(BaseCommand):
                     level=NotificationModel.Level.INFO,
                     category="recurring-due",
                     link_url="/subscriptions",
-                    send_email_flag=self._should_send_email(r.user, "recurring"),
+                    send_email_flag=True,
                 )
                 created += 1
             except Exception:

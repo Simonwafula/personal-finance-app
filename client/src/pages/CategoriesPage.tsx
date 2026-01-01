@@ -12,9 +12,8 @@ import {
   updateTag,
   deleteTag,
   fetchTagAnalysis,
-  exportCategoriesCsv,
 } from "../api/finance";
-import { HiPlus, HiPencil, HiTrash, HiX, HiTag, HiFolder, HiDownload } from "react-icons/hi";
+import { HiPlus, HiPencil, HiTrash, HiX, HiTag, HiFolder } from "react-icons/hi";
 import { useTimeRange } from "../contexts/TimeRangeContext";
 import type { Category, Tag, TagAnalysis } from "../api/types";
 
@@ -48,7 +47,6 @@ export default function CategoriesPage() {
   const [tagColor, setTagColor] = useState("#3B82F6");
   const [editingTag, setEditingTag] = useState<Tag | null>(null);
   const [savingTag, setSavingTag] = useState(false);
-  const [exporting, setExporting] = useState(false);
 
   // UI state
   const [showTagAnalysis, setShowTagAnalysis] = useState(false);
@@ -230,16 +228,13 @@ export default function CategoriesPage() {
   return (
     <div className="space-y-6 pb-20 max-w-7xl mx-auto">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-2">
-            <HiFolder className="text-violet-600" />
-            Categories & Tags
-          </h1>
-          <p className="text-sm text-[var(--text-muted)] mt-1">
-            Organize your transactions with custom categories and tags
-          </p>
-        </div>
+      <div>
+        <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          Categories & Tags
+        </h3>
+        <p className="text-base text-[var(--text-muted)] mt-1 font-medium">
+          Organize your transactions with custom categories and tags
+        </p>
       </div>
 
       {error && (
@@ -279,36 +274,10 @@ export default function CategoriesPage() {
         <div className="space-y-6">
           <div className="flex justify-between items-center">
             <h4 className="text-lg font-semibold">Manage Categories</h4>
-            <div className="flex gap-2">
-              <button
-                onClick={async () => {
-                  try {
-                    setExporting(true);
-                    const blob = await exportCategoriesCsv();
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement("a");
-                    a.href = url;
-                    a.download = "categories.csv";
-                    a.click();
-                    URL.revokeObjectURL(url);
-                  } catch (err) {
-                    console.error(err);
-                    setError("Failed to export categories");
-                  } finally {
-                    setExporting(false);
-                  }
-                }}
-                disabled={exporting || categories.length === 0}
-                className="btn-secondary inline-flex items-center gap-2"
-              >
-                <HiDownload size={18} />
-                <span>{exporting ? "Exporting..." : "Export"}</span>
-              </button>
-              <button onClick={openAddCategory} className="btn-primary inline-flex items-center gap-2">
-                <HiPlus size={18} />
-                Add Category
-              </button>
-            </div>
+            <button onClick={openAddCategory} className="btn-primary inline-flex items-center gap-2">
+              <HiPlus size={18} />
+              Add Category
+            </button>
           </div>
 
           {/* Category Type Filter */}
