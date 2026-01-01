@@ -221,12 +221,7 @@ else:
 
 CORS_ALLOW_CREDENTIALS = True
 
-# Development: Since we're using Vite proxy, requests come from same origin
-# Cookies work normally without cross-origin restrictions
-SESSION_COOKIE_SAMESITE = 'Lax'
-CSRF_COOKIE_SAMESITE = 'Lax'
-SESSION_COOKIE_SECURE = False
-CSRF_COOKIE_SECURE = False
+# Cookie settings - will be overridden for production below
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_PATH = '/'
 
@@ -288,14 +283,12 @@ SOCIALACCOUNT_LOGIN_REDIRECT_URL = os.getenv(
 )
 
 if not DEBUG:
-    # Require HTTPS for cookies in production
+    # Production cookie settings - HTTPS required
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-
-    # Prefer Lax for SameSite in production. If you must support
-    # cross-site popups, set these to 'None' and ensure HTTPS.
-    SESSION_COOKIE_SAMESITE = os.getenv('SESSION_COOKIE_SAMESITE', 'Lax')
-    CSRF_COOKIE_SAMESITE = os.getenv('CSRF_COOKIE_SAMESITE', 'Lax')
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    CSRF_COOKIE_SAMESITE = 'Lax'
+    # Do NOT set cookie domain - let browser use current domain automatically
 
     # HSTS and TLS enforcement
     SECURE_HSTS_SECONDS = int(os.getenv('SECURE_HSTS_SECONDS', '3600'))
@@ -307,19 +300,18 @@ if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     USE_X_FORWARDED_HOST = True
     USE_X_FORWARDED_PORT = True
-
-    # Optional: set a cookie domain for cross-subdomain cookies
-    SESSION_COOKIE_DOMAIN = os.getenv('SESSION_COOKIE_DOMAIN', None)
-    CSRF_COOKIE_DOMAIN = os.getenv('CSRF_COOKIE_DOMAIN', None)
+else:
+    # Development cookie settings - no HTTPS
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    CSRF_COOKIE_SAMESITE = 'Lax'
 
 # Email configuration
 if DEBUG:
     # Development: use console email backend (prints to console)
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
     DEFAULT_FROM_EMAIL = 'noreply@finance-dev.local'
-    # Ensure cookies set for the frontend dev host
-    SESSION_COOKIE_DOMAIN = 'localhost'
-    CSRF_COOKIE_DOMAIN = 'localhost'
 else:
     # Production: use SMTP
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
