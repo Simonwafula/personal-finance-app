@@ -284,3 +284,45 @@ def reset_password_view(request: Request):
         {"message": "Password reset successful. You can now log in."},
         status=status.HTTP_200_OK,
     )
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def change_password_view(request: Request):
+    """
+    Change password for authenticated user.
+    Accepts: { current_password, new_password }
+    Returns: { message } or error detail
+    """
+    data = request.data or {}
+    current_password = data.get("current_password")
+    new_password = data.get("new_password")
+
+    if not current_password or not new_password:
+        return Response(
+            {"detail": "current_password and new_password are required"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    user = request.user
+
+    # Verify current password
+    if not user.check_password(current_password):
+        return Response(
+            {"detail": "Current password is incorrect"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Set new password
+    user.set_password(new_password)
+    user.save()
+
+    # Re-login to update session
+    django_req = getattr(request, "_request", request)
+    backend = "django.contrib.auth.backends.ModelBackend"
+    login(django_req, user, backend=backend)
+
+    return Response(
+        {"message": "Password changed successfully"},
+        status=status.HTTP_200_OK,
+    )
