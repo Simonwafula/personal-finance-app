@@ -310,6 +310,7 @@ if not DEBUG:
 
     # Optional: set a cookie domain for cross-subdomain cookies
     SESSION_COOKIE_DOMAIN = os.getenv('SESSION_COOKIE_DOMAIN', None)
+    CSRF_COOKIE_DOMAIN = os.getenv('CSRF_COOKIE_DOMAIN', None)
 
 # Email configuration
 if DEBUG:
