@@ -4,7 +4,7 @@ import type { FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { fetchAccounts, createAccount, updateAccount, deleteAccount } from "../api/finance";
 import type { Account } from "../api/types";
-import { HiPencil, HiTrash, HiX, HiPlus, HiChevronDown, HiExternalLink } from "react-icons/hi";
+import { HiPencil, HiTrash, HiX, HiPlus } from "react-icons/hi";
 
 const ACCOUNT_TYPES = [
   { value: "BANK", label: "Bank Account", icon: "🏦" },

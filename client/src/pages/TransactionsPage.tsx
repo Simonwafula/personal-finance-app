@@ -16,7 +16,7 @@ import {
 } from "../api/finance";
 import { getSavingsGoals, type SavingsGoal } from "../api/savings";
 import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { HiPlus, HiUpload, HiDownload, HiX, HiPencil, HiTrash, HiFilter, HiChevronDown, HiChevronUp } from "react-icons/hi";
+import { HiPlus, HiUpload, HiDownload, HiX, HiPencil, HiTrash, HiFilter, HiChevronDown } from "react-icons/hi";
 import type {
   Transaction,
   Account,

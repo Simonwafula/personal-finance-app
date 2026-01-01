@@ -1,6 +1,6 @@
 // src/pages/SubscriptionsPage.tsx
 import { useEffect, useMemo, useState, useCallback } from "react";
-import { Link } from "react-router-dom";
+
 import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import {
   HiPlus,
