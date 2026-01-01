@@ -1,0 +1,12 @@
+# Docker
+.env.production
+certbot/
+logs/
+media/
+backups/
+
+# Don't ignore these (needed for docker)
+!nginx/
+!nginx/nginx.conf
+!nginx/conf.d/
+!nginx/conf.d/default.conf

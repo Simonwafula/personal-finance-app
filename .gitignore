@@ -53,9 +53,14 @@ media/  # User-uploaded files
 
 # Env files / secrets
 .env
-.env.*
+.env.production
+!.env.production.example
 *.nv
 nv
+
+# Docker
+certbot/
+backups/
 
 # Node
 node_modules/
