@@ -32,7 +32,7 @@ tail -f /home/finance.mstatilitechnologies.com/logs/gunicorn-error.log
 
 # Restart services
 systemctl restart finance-app
-systemctl restart lsws
+/usr/local/lsws/bin/lswsctrl restart
 ```
 
 ---
@@ -135,7 +135,7 @@ RewriteCond %{REQUEST_URI} !^/static/
 RewriteRule ^(.*)$ /client/dist/index.html [L]
 ```
 
-Then restart: `systemctl restart lsws`
+Then restart: `/usr/local/lsws/bin/lswsctrl restart`
 
 ---
 
