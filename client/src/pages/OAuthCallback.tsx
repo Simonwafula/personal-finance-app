@@ -10,7 +10,15 @@ export default function OAuthCallback() {
     } catch (e) {
       // ignore
     }
-    // close after a short pause to allow message to dispatch
+    // If this is not a popup flow, continue into the app.
+    if (!window.opener || window.opener.closed) {
+      const t = setTimeout(() => {
+        window.location.href = '/dashboard';
+      }, 300);
+      return () => clearTimeout(t);
+    }
+
+    // Popup flow: close after a short pause to allow message to dispatch
     const t = setTimeout(() => {
       try { window.close(); } catch (e) {}
     }, 600);

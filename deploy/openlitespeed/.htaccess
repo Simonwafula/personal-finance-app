@@ -1,8 +1,8 @@
 # OpenLiteSpeed .htaccess for React SPA with Django API
-# Place this in: /home/finance.mstatilitechnologies.com/public_html/.htaccess
+# Place this in: /home/mstatilitechnologies.com/public_html/.htaccess
 # 
 # Structure:
-#   /home/finance.mstatilitechnologies.com/
+#   /home/mstatilitechnologies.com/
 #   ├── .env                    # Django environment
 #   ├── .venv/                  # Python virtual environment
 #   ├── logs/                   # Gunicorn logs
@@ -12,10 +12,6 @@
 #       ├── client/
 #       │   └── dist/           # Built React app
 #       └── .htaccess           # This file
-#
-# NOTE: Proxying to Django (/api/, /admin/, /accounts/, /static/) is handled
-# by OLS vhost context blocks, NOT .htaccess rewrite rules.
-# OLS does NOT support the [P] proxy flag in rewrite rules.
 
 # Enable rewrite engine
 RewriteEngine On
@@ -25,13 +21,21 @@ RewriteEngine On
 # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
 
 # ============================================
-# Django Backend Routes - SKIP (handled by OLS contexts)
+# IMPORTANT: Proxy to Django Backend
+# These rules MUST come before the SPA fallback
 # ============================================
-# These paths are proxied to Django via OLS vhost context blocks:
-# - /api/*      -> django extprocessor (127.0.0.1:8001)
-# - /admin/*    -> django extprocessor (127.0.0.1:8001)
-# - /accounts/* -> django extprocessor (127.0.0.1:8001)
-# - /static/*   -> django extprocessor (127.0.0.1:8001)
+
+# Proxy API requests to Django
+RewriteRule ^api/(.*)$ http://127.0.0.1:8000/api/$1 [P,L]
+
+# Proxy Django Admin
+RewriteRule ^admin/(.*)$ http://127.0.0.1:8000/admin/$1 [P,L]
+
+# Proxy Django allauth (Google OAuth) - CRITICAL for OAuth to work
+RewriteRule ^accounts/(.*)$ http://127.0.0.1:8000/accounts/$1 [P,L]
+
+# Proxy Django static files (served by WhiteNoise)
+RewriteRule ^static/(.*)$ http://127.0.0.1:8000/static/$1 [P,L]
 
 # ============================================
 # React SPA - Serve from client/dist/
@@ -45,7 +49,6 @@ RewriteCond %{REQUEST_URI} ^/(favicon\.ico|robots\.txt|manifest\.json)$
 RewriteRule ^(.*)$ client/dist/$1 [L]
 
 # For all other non-file, non-directory requests, serve React's index.html
-# Skip paths handled by OLS contexts (Django backend)
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_URI} !^/api/

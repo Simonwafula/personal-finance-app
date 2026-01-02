@@ -90,6 +90,8 @@ MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    # Must run before Django's CSRF middleware
+    'backend.middleware.NormalizeDuplicateOriginMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     "allauth.account.middleware.AccountMiddleware",
@@ -286,12 +288,15 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
+# Allow initiating social login via GET (SPA-friendly)
+SOCIALACCOUNT_LOGIN_ON_GET = True
+
 LOGIN_REDIRECT_URL = "/"
-LOGOUT_REDIRECT_URL = "/"  # Redirect to React app root, not /login
+LOGOUT_REDIRECT_URL = "/login"
 ACCOUNT_EMAIL_VERIFICATION = "none"
 ACCOUNT_LOGIN_METHOD = "username"
 ACCOUNT_LOGOUT_ON_GET = True
-ACCOUNT_LOGOUT_REDIRECT_URL = "/"  # Redirect to React app root
+ACCOUNT_LOGOUT_REDIRECT_URL = "/login"
 # OAuth callback: use env var in production
 SOCIALACCOUNT_LOGIN_REDIRECT_URL = os.getenv(
     'SOCIALACCOUNT_LOGIN_REDIRECT_URL',
@@ -314,6 +319,12 @@ if not DEBUG:
     SECURE_HSTS_PRELOAD = os.getenv('SECURE_HSTS_PRELOAD', 'True') == 'True'
     SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'False') == 'True'  # Let OLS/nginx handle SSL
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+    # OAuth commonly uses popups; allow opener relationship in modern browsers
+    SECURE_CROSS_ORIGIN_OPENER_POLICY = os.getenv(
+        'SECURE_CROSS_ORIGIN_OPENER_POLICY',
+        'same-origin-allow-popups'
+    )
     
     # Trust X-Forwarded headers from OpenLiteSpeed/nginx proxy
     USE_X_FORWARDED_HOST = True

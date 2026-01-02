@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "./index.css";
+import "./styles/neumorphism.css";
 
 import Layout from "./components/Layout";
 import ErrorBoundary from "./components/ErrorBoundary";

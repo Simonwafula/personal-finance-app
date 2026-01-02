@@ -158,6 +158,30 @@ export default function DashboardPage() {
   const [categorySeries, setCategorySeries] = useState<any[]>([]);
   const [recentTx, setRecentTx] = useState<any[]>([]);
 
+  const netWorthTotals = {
+    netWorth: Number(netWorth?.net_worth ?? 0),
+    assets: Number(netWorth?.total_assets ?? 0),
+    liabilities: Number(netWorth?.total_liabilities ?? 0),
+  };
+
+  const savingsCard = savingsGoals ?? {
+    total_goals: 0,
+    total_target: 0,
+    total_saved: 0,
+    total_remaining: 0,
+    average_progress: 0,
+  };
+
+  const investmentsCard = investmentsSummary ?? {
+    total_invested: 0,
+    total_current_value: 0,
+    total_gain_loss: 0,
+    total_gain_loss_percentage: 0,
+    total_annual_income: 0,
+    investment_count: 0,
+    by_type: {},
+  };
+
   // categorySeries is populated by the backend top categories endpoint
 
   return (
@@ -290,61 +314,55 @@ export default function DashboardPage() {
             </div>
 
             {/* Net Worth Card */}
-            {netWorth && (
-              <div className="kpi-card neu-stat-card cursor-pointer" onClick={() => navigate('/wealth')}>
-                <div className="kpi-label">Net Worth</div>
-                <div className="kpi-value" style={{ color: 'var(--accent-400)' }}>
-                  {formatMoney(netWorth.net_worth)}
-                </div>
-                <div className="text-xs text-[var(--text-muted)] mb-3">KES</div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="kpi-change positive">
-                    ↑ Assets: {formatMoney(netWorth.total_assets)}
-                  </span>
-                  <span className="kpi-change negative">
-                    ↓ Debt: {formatMoney(netWorth.total_liabilities)}
-                  </span>
-                </div>
+            <div className="kpi-card neu-stat-card cursor-pointer" onClick={() => navigate('/wealth')}>
+              <div className="kpi-label">Net Worth</div>
+              <div className="kpi-value" style={{ color: 'var(--accent-400)' }}>
+                {formatMoney(netWorthTotals.netWorth)}
               </div>
-            )}
+              <div className="text-xs text-[var(--text-muted)] mb-3">KES</div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="kpi-change positive">
+                  ↑ Assets: {formatMoney(netWorthTotals.assets)}
+                </span>
+                <span className="kpi-change negative">
+                  ↓ Debt: {formatMoney(netWorthTotals.liabilities)}
+                </span>
+              </div>
+            </div>
 
             {/* Savings Goals Card */}
-            {savingsGoals && savingsGoals.total_goals > 0 && (
-              <div className="kpi-card neu-stat-card cursor-pointer" onClick={() => navigate('/savings')}>
-                <div className="kpi-label">🎯 Savings Goals</div>
-                <div className="kpi-value" style={{ color: 'var(--primary-400)' }}>
-                  {formatMoney(savingsGoals.total_saved)}
-                </div>
-                <div className="text-xs text-[var(--text-muted)] mb-3">KES saved</div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-[var(--text-muted)]">
-                    {savingsGoals.total_goals} goal{savingsGoals.total_goals !== 1 ? 's' : ''}
-                  </span>
-                  <span className="kpi-change positive">
-                    {savingsGoals.average_progress.toFixed(0)}% avg
-                  </span>
-                </div>
+            <div className="kpi-card neu-stat-card cursor-pointer" onClick={() => navigate('/savings')}>
+              <div className="kpi-label">🎯 Savings Goals</div>
+              <div className="kpi-value" style={{ color: 'var(--primary-400)' }}>
+                {formatMoney(savingsCard.total_saved)}
               </div>
-            )}
+              <div className="text-xs text-[var(--text-muted)] mb-3">KES saved</div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-[var(--text-muted)]">
+                  {savingsCard.total_goals} goal{savingsCard.total_goals !== 1 ? 's' : ''}
+                </span>
+                <span className="kpi-change positive">
+                  {Number(savingsCard.average_progress || 0).toFixed(0)}% avg
+                </span>
+              </div>
+            </div>
 
             {/* Investments Card */}
-            {investmentsSummary && investmentsSummary.investment_count > 0 && (
-              <div className="kpi-card neu-stat-card cursor-pointer" onClick={() => navigate('/investments')}>
-                <div className="kpi-label">📈 Investments</div>
-                <div className="kpi-value" style={{ color: 'var(--accent-400)' }}>
-                  {formatMoney(investmentsSummary.total_current_value)}
-                </div>
-                <div className="text-xs text-[var(--text-muted)] mb-3">KES value</div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-[var(--text-muted)]">
-                    {investmentsSummary.investment_count} holding{investmentsSummary.investment_count !== 1 ? 's' : ''}
-                  </span>
-                  <span className={`kpi-change ${investmentsSummary.total_gain_loss >= 0 ? 'positive' : 'negative'}`}>
-                    {investmentsSummary.total_gain_loss >= 0 ? '+' : ''}{investmentsSummary.total_gain_loss_percentage.toFixed(1)}%
-                  </span>
-                </div>
+            <div className="kpi-card neu-stat-card cursor-pointer" onClick={() => navigate('/investments')}>
+              <div className="kpi-label">📈 Investments</div>
+              <div className="kpi-value" style={{ color: 'var(--accent-400)' }}>
+                {formatMoney(investmentsCard.total_current_value)}
               </div>
-            )}
+              <div className="text-xs text-[var(--text-muted)] mb-3">KES value</div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-[var(--text-muted)]">
+                  {investmentsCard.investment_count} holding{investmentsCard.investment_count !== 1 ? 's' : ''}
+                </span>
+                <span className={`kpi-change ${investmentsCard.total_gain_loss >= 0 ? 'positive' : 'negative'}`}>
+                  {investmentsCard.total_gain_loss >= 0 ? '+' : ''}{Number(investmentsCard.total_gain_loss_percentage || 0).toFixed(1)}%
+                </span>
+              </div>
+            </div>
           </div>
 
           {/* Recent Transactions */}
