@@ -1,5 +1,6 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { logout as apiLogout } from '../api/auth';
 
 interface AppHeaderProps {
   pageTitle: string;
@@ -7,7 +8,8 @@ interface AppHeaderProps {
 }
 
 export default function AppHeader({ pageTitle, subtitle }: AppHeaderProps) {
-  const { user } = useAuth();
+  const { user, logoutLocal } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <header className="bg-white shadow-sm px-4 py-3 flex items-center justify-between">
@@ -41,9 +43,13 @@ export default function AppHeader({ pageTitle, subtitle }: AppHeaderProps) {
             {/* Logout Button */}
             <button
               onClick={() => {
-                if (window.sessionStorage) sessionStorage.clear();
-                if (window.localStorage) localStorage.clear();
-                window.location.href = '/accounts/logout/';
+                apiLogout()
+                  .catch(() => {})
+                  .finally(() => {
+                    logoutLocal();
+                    window.dispatchEvent(new Event('authChanged'));
+                    navigate('/');
+                  });
               }}
               className="px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-all"
             >

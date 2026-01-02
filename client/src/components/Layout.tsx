@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { HiMenu, HiSun, HiMoon, HiX, HiHome, HiCreditCard, HiChartBar, HiTrendingUp, HiCalculator, HiBriefcase, HiTag, HiUser, HiBell, HiBookOpen } from "react-icons/hi";
 import Logo from "./Logo";
-import { Outlet, NavLink, Link, useLocation } from "react-router-dom";
+import { Outlet, NavLink, Link, useLocation, useNavigate } from "react-router-dom";
 import TimeRangeSelector from "../components/TimeRangeSelector";
 import { useTimeRange } from "../contexts/TimeRangeContext";
 import { useTheme } from "../contexts/ThemeContext";
@@ -9,6 +9,7 @@ import { useAuth } from "../contexts/AuthContext";
 import Toast from "./Toast";
 import NotificationsBell from "./NotificationsBell";
 import BlogSidebar from "./BlogSidebar";
+import { logout as apiLogout } from "../api/auth";
 
 function fmtDate(d: Date) {
   return d.toISOString().slice(0, 10);
@@ -34,7 +35,8 @@ function applyPresetRange(setRange: (r: { startDate: string; endDate: string }) 
 }
 
 export default function Layout() {
-  const { user, refresh } = useAuth();
+  const { user, refresh, logoutLocal } = useAuth();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const { range, setRange } = useTimeRange();
   const { theme, toggleTheme } = useTheme();
@@ -264,11 +266,14 @@ export default function Layout() {
                 <button
                   className="btn-secondary"
                   onClick={() => {
-                    // Clear local state and storage
-                    if (window.sessionStorage) sessionStorage.clear();
-                    if (window.localStorage) localStorage.clear();
-                    // Force full page reload to logout URL
-                    window.location.href = '/accounts/logout/';
+                    // SPA-safe logout: invalidate session, clear auth state, and route to landing.
+                    apiLogout()
+                      .catch(() => {})
+                      .finally(() => {
+                        logoutLocal();
+                        window.dispatchEvent(new Event('authChanged'));
+                        navigate('/');
+                      });
                   }}
                 >
                   Logout
