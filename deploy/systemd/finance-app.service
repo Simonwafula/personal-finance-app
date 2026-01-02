@@ -1,0 +1,32 @@
+[Unit]
+Description=Personal Finance App - Gunicorn
+After=network.target postgresql.service
+
+[Service]
+Type=notify
+User=www-data
+Group=www-data
+WorkingDirectory=/home/finance.mstatilitechnologies.com/personal-finance-app
+Environment="PATH=/home/finance.mstatilitechnologies.com/personal-finance-app/.venv/bin"
+EnvironmentFile=/home/finance.mstatilitechnologies.com/personal-finance-app/.env.production
+ExecStart=/home/finance.mstatilitechnologies.com/personal-finance-app/.venv/bin/gunicorn \
+    --bind 127.0.0.1:8000 \
+    --workers 3 \
+    --timeout 120 \
+    --access-logfile /home/finance.mstatilitechnologies.com/personal-finance-app/logs/access.log \
+    --error-logfile /home/finance.mstatilitechnologies.com/personal-finance-app/logs/error.log \
+    --capture-output \
+    backend.wsgi:application
+
+# Restart policy
+Restart=always
+RestartSec=10
+StartLimitInterval=5min
+StartLimitBurst=10
+
+# Security
+PrivateTmp=true
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target
