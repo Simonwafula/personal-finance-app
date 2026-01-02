@@ -6,15 +6,15 @@ After=network.target postgresql.service
 Type=notify
 User=www-data
 Group=www-data
-WorkingDirectory=/home/finance.mstatilitechnologies.com/personal-finance-app
-Environment="PATH=/home/finance.mstatilitechnologies.com/personal-finance-app/.venv/bin"
-EnvironmentFile=/home/finance.mstatilitechnologies.com/personal-finance-app/.env.production
-ExecStart=/home/finance.mstatilitechnologies.com/personal-finance-app/.venv/bin/gunicorn \
+WorkingDirectory=/home/finance.mstatilitechnologies.com/public_html
+Environment="PATH=/home/finance.mstatilitechnologies.com/public_html/.venv/bin"
+EnvironmentFile=/home/finance.mstatilitechnologies.com/public_html/.env.production
+ExecStart=/home/finance.mstatilitechnologies.com/public_html/.venv/bin/gunicorn \
     --bind 127.0.0.1:8000 \
     --workers 3 \
     --timeout 120 \
-    --access-logfile /home/finance.mstatilitechnologies.com/personal-finance-app/logs/access.log \
-    --error-logfile /home/finance.mstatilitechnologies.com/personal-finance-app/logs/error.log \
+    --access-logfile /home/finance.mstatilitechnologies.com/public_html/logs/access.log \
+    --error-logfile /home/finance.mstatilitechnologies.com/public_html/logs/error.log \
     --capture-output \
     backend.wsgi:application
 

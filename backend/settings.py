@@ -224,6 +224,8 @@ CORS_ALLOW_CREDENTIALS = True
 # Cookie settings - will be overridden for production below
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_PATH = '/'
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'Lax'
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -296,8 +298,12 @@ if not DEBUG:
         os.getenv('SECURE_HSTS_INCLUDE_SUBDOMAINS', 'True') == 'True'
     )
     SECURE_HSTS_PRELOAD = os.getenv('SECURE_HSTS_PRELOAD', 'True') == 'True'
-    SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'True') == 'True'
+    SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'False') == 'True'  # Let nginx handle SSL
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    
+    # Trust X-Forwarded headers from nginx
+    USE_X_FORWARDED_HOST = True
+    USE_X_FORWARDED_PORT = True
     USE_X_FORWARDED_HOST = True
     USE_X_FORWARDED_PORT = True
 else:
