@@ -1,5 +1,9 @@
 import { useState, useEffect } from "react";
-import { fetchProfile, updateProfile, type UserProfile } from "../api/auth";
+import { useNavigate } from "react-router-dom";
+import { fetchProfile, updateProfile, changePassword, logout, type UserProfile } from "../api/auth";
+import { useAuth } from "../contexts/AuthContext";
+import { exportTransactionsCsv } from "../api/finance";
+import { useTimeRange } from "../contexts/TimeRangeContext";
 
 interface ProfileFormData extends UserProfile {
   username: string;
@@ -7,11 +11,26 @@ interface ProfileFormData extends UserProfile {
 }
 
 export default function ProfilePage() {
+  const navigate = useNavigate();
+  const { logoutLocal } = useAuth();
+  const { range } = useTimeRange();
+
+  const [activeTab, setActiveTab] = useState<
+    "profile" | "security" | "notifications" | "backup" | "sessions"
+  >("profile");
+
   const [profile, setProfile] = useState<ProfileFormData | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  const [pwCurrent, setPwCurrent] = useState("");
+  const [pwNext, setPwNext] = useState("");
+  const [pwConfirm, setPwConfirm] = useState("");
+  const [pwSaving, setPwSaving] = useState(false);
+  const [pwError, setPwError] = useState<string | null>(null);
+  const [pwSuccess, setPwSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     loadProfile();
@@ -50,6 +69,67 @@ export default function ProfilePage() {
     }
   }
 
+  async function handleChangePassword(e: React.FormEvent) {
+    e.preventDefault();
+    setPwError(null);
+    setPwSuccess(null);
+
+    if (!pwCurrent || !pwNext) {
+      setPwError("Please enter your current and new password.");
+      return;
+    }
+    if (pwNext !== pwConfirm) {
+      setPwError("New password and confirmation do not match.");
+      return;
+    }
+
+    try {
+      setPwSaving(true);
+      const res = await changePassword({ currentPassword: pwCurrent, newPassword: pwNext });
+      setPwSuccess(res.message || "Password changed successfully.");
+      setPwCurrent("");
+      setPwNext("");
+      setPwConfirm("");
+    } catch (err: any) {
+      setPwError(err?.message || "Failed to change password");
+    } finally {
+      setPwSaving(false);
+    }
+  }
+
+  async function handleLogout() {
+    try {
+      await logout();
+    } catch {
+      // Even if the server call fails, clear local auth state.
+    } finally {
+      logoutLocal();
+      window.dispatchEvent(new Event('authChanged'));
+      navigate('/login');
+    }
+  }
+
+  async function handleExportTransactions() {
+    try {
+      const blob = await exportTransactionsCsv({
+        start: range.startDate,
+        end: range.endDate,
+      });
+
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `transactions_${range.startDate}_to_${range.endDate}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err: any) {
+      setError(err?.message || "Failed to export transactions");
+      setActiveTab("backup");
+    }
+  }
+
   function handleChange(field: keyof ProfileFormData, value: string) {
     if (!profile) return;
     setProfile({ ...profile, [field]: value });
@@ -80,6 +160,68 @@ export default function ProfilePage() {
           <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Your Profile</h2>
           <p className="text-base text-[var(--text-muted)] mt-1 font-medium">Manage your personal info and account preferences</p>
         </div>
+
+        <button
+          type="button"
+          className="neu-button"
+          onClick={handleLogout}
+        >
+          Sign Out
+        </button>
+      </div>
+
+      {/* Tabs */}
+      <div className="card p-1 flex gap-1 bg-[var(--surface)]">
+        <button
+          onClick={() => setActiveTab("profile")}
+          className={`flex-1 px-4 py-3 font-semibold rounded-lg transition-all text-sm md:text-base ${
+            activeTab === "profile"
+              ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
+              : "text-[var(--text-muted)] hover:bg-[var(--glass-bg)]"
+          }`}
+        >
+          👤 Profile Info
+        </button>
+        <button
+          onClick={() => setActiveTab("security")}
+          className={`flex-1 px-4 py-3 font-semibold rounded-lg transition-all text-sm md:text-base ${
+            activeTab === "security"
+              ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
+              : "text-[var(--text-muted)] hover:bg-[var(--glass-bg)]"
+          }`}
+        >
+          🛡️ Security
+        </button>
+        <button
+          onClick={() => setActiveTab("notifications")}
+          className={`flex-1 px-4 py-3 font-semibold rounded-lg transition-all text-sm md:text-base ${
+            activeTab === "notifications"
+              ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
+              : "text-[var(--text-muted)] hover:bg-[var(--glass-bg)]"
+          }`}
+        >
+          🔔 Notifications
+        </button>
+        <button
+          onClick={() => setActiveTab("backup")}
+          className={`flex-1 px-4 py-3 font-semibold rounded-lg transition-all text-sm md:text-base ${
+            activeTab === "backup"
+              ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
+              : "text-[var(--text-muted)] hover:bg-[var(--glass-bg)]"
+          }`}
+        >
+          💾 Backup
+        </button>
+        <button
+          onClick={() => setActiveTab("sessions")}
+          className={`flex-1 px-4 py-3 font-semibold rounded-lg transition-all text-sm md:text-base ${
+            activeTab === "sessions"
+              ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
+              : "text-[var(--text-muted)] hover:bg-[var(--glass-bg)]"
+          }`}
+        >
+          🕒 Sessions
+        </button>
       </div>
 
       {error && (
@@ -108,44 +250,46 @@ export default function ProfilePage() {
         </div>
       )}
 
-      <div className="grid lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-1">
-          <div className="card flex flex-col items-center text-center">
-            <div className="w-28 h-28 rounded-full overflow-hidden ring-4 ring-[var(--surface)] shadow-md mb-3">
-              {profile.avatar_url ? (
-                <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-[var(--surface)] text-3xl">🧑</div>
-              )}
-            </div>
-            <div className="font-semibold text-lg">{profile.username}</div>
-            <div className="text-sm text-[var(--text-muted)]">{profile.email}</div>
-            <div className="w-full mt-4">
-              <label className="block text-sm font-medium mb-2">Avatar URL</label>
-              <div className="neu-input">
-                <input
-                  type="url"
-                  id="avatar_url"
-                  value={profile.avatar_url}
-                  onChange={(e) => handleChange('avatar_url', e.target.value)}
-                  placeholder=" "
-                />
-                <label htmlFor="avatar_url">https://example.com/avatar.jpg</label>
-                <div className="neu-input-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                    <circle cx="8.5" cy="8.5" r="1.5"/>
-                    <polyline points="21 15 16 10 5 21"/>
-                  </svg>
+      {/* Profile Info */}
+      {activeTab === "profile" && (
+        <div className="grid lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-1">
+            <div className="card flex flex-col items-center text-center">
+              <div className="w-28 h-28 rounded-full overflow-hidden ring-4 ring-[var(--surface)] shadow-md mb-3">
+                {profile.avatar_url ? (
+                  <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-[var(--surface)] text-3xl">🧑</div>
+                )}
+              </div>
+              <div className="font-semibold text-lg">{profile.username}</div>
+              <div className="text-sm text-[var(--text-muted)]">{profile.email}</div>
+              <div className="w-full mt-4">
+                <label className="block text-sm font-medium mb-2">Avatar URL</label>
+                <div className="neu-input">
+                  <input
+                    type="url"
+                    id="avatar_url"
+                    value={profile.avatar_url}
+                    onChange={(e) => handleChange('avatar_url', e.target.value)}
+                    placeholder=" "
+                  />
+                  <label htmlFor="avatar_url">https://example.com/avatar.jpg</label>
+                  <div className="neu-input-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                      <circle cx="8.5" cy="8.5" r="1.5"/>
+                      <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="lg:col-span-2">
-          <div className="card">
-            <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="lg:col-span-2">
+            <div className="card">
+              <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">Username</label>
@@ -297,10 +441,139 @@ export default function ProfilePage() {
                   )}
                 </button>
               </div>
-            </form>
+              </form>
+            </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Security */}
+      {activeTab === "security" && (
+        <div className="card">
+          <h3 className="text-lg font-semibold mb-4">Security</h3>
+
+          {pwError && (
+            <div className="neu-error" style={{ marginBottom: '16px' }}>
+              <span>⚠️</span>
+              <span>{pwError}</span>
+            </div>
+          )}
+          {pwSuccess && (
+            <div className="neu-success" style={{ marginBottom: '16px' }}>
+              <span>✓</span>
+              <span>{pwSuccess}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleChangePassword} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Current password</label>
+              <div className="neu-input">
+                <input
+                  type="password"
+                  id="current_password"
+                  value={pwCurrent}
+                  onChange={(e) => setPwCurrent(e.target.value)}
+                  placeholder=" "
+                  autoComplete="current-password"
+                />
+                <label htmlFor="current_password">••••••••</label>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">New password</label>
+              <div className="neu-input">
+                <input
+                  type="password"
+                  id="new_password"
+                  value={pwNext}
+                  onChange={(e) => setPwNext(e.target.value)}
+                  placeholder=" "
+                  autoComplete="new-password"
+                />
+                <label htmlFor="new_password">••••••••</label>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Confirm new password</label>
+              <div className="neu-input">
+                <input
+                  type="password"
+                  id="confirm_new_password"
+                  value={pwConfirm}
+                  onChange={(e) => setPwConfirm(e.target.value)}
+                  placeholder=" "
+                  autoComplete="new-password"
+                />
+                <label htmlFor="confirm_new_password">••••••••</label>
+              </div>
+            </div>
+
+            <div className="pt-2 border-t border-[var(--border-subtle)]">
+              <button type="submit" className="neu-button" disabled={pwSaving}>
+                {pwSaving ? (
+                  <>
+                    <span className="neu-spinner"></span>
+                    <span>Updating...</span>
+                  </>
+                ) : (
+                  'Change Password'
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Notifications */}
+      {activeTab === "notifications" && (
+        <div className="card">
+          <h3 className="text-lg font-semibold mb-2">Notifications</h3>
+          <p className="text-sm text-[var(--text-muted)] mb-4">
+            View and manage your notifications.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button className="btn-primary" onClick={() => navigate('/notifications')}>
+              Open Notifications
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Backup */}
+      {activeTab === "backup" && (
+        <div className="card">
+          <h3 className="text-lg font-semibold mb-2">Backup</h3>
+          <p className="text-sm text-[var(--text-muted)] mb-4">
+            Export your data for offline storage. Export uses your currently selected date range.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button className="btn-primary" onClick={handleExportTransactions}>
+              Export Transactions CSV
+            </button>
+            <button className="btn-secondary" onClick={() => navigate('/reports')}>
+              Open Reports
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Sessions */}
+      {activeTab === "sessions" && (
+        <div className="card">
+          <h3 className="text-lg font-semibold mb-2">Sessions</h3>
+          <p className="text-sm text-[var(--text-muted)] mb-4">
+            You are signed in using secure session cookies. Use “Sign Out” to end your session.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button className="neu-button" onClick={handleLogout}>
+              Sign Out
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

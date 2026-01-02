@@ -65,3 +65,16 @@ export async function resetPassword(uid: string, token: string, newPassword: str
   });
   return res.data;
 }
+
+export async function changePassword(payload: { currentPassword: string; newPassword: string }): Promise<{ message: string }> {
+  const res = await api.post('/api/auth/change-password/', {
+    current_password: payload.currentPassword,
+    new_password: payload.newPassword,
+  });
+  return res.data;
+}
+
+export async function logout(): Promise<{ message: string }> {
+  const res = await api.post('/api/auth/logout/');
+  return res.data;
+}

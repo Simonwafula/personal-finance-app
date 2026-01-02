@@ -11,6 +11,7 @@ from backend.auth_views import (
     forgot_password_view,
     reset_password_view,
     change_password_view,
+    logout_view,
 )
 import os
 
@@ -71,6 +72,7 @@ urlpatterns = [
     path("api/auth/forgot-password/", forgot_password_view),
     path("api/auth/reset-password/", reset_password_view),
     path("api/auth/change-password/", change_password_view),
+    path("api/auth/logout/", logout_view),
     path("api/auth/profile/", include("profiles.urls")),
     
     # API endpoints

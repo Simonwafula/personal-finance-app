@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework import status
 from django.contrib.auth import get_user_model, authenticate, login
+from django.contrib.auth import logout as django_logout
 from rest_framework.decorators import (
     api_view,
     permission_classes,
@@ -326,3 +327,17 @@ def change_password_view(request: Request):
         {"message": "Password changed successfully"},
         status=status.HTTP_200_OK,
     )
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def logout_view(request: Request):
+    """Log out the current user and clear the session."""
+    django_req = getattr(request, "_request", request)
+    django_logout(django_req)
+    try:
+        django_req.session.flush()
+    except Exception:
+        # If session is already cleared, ignore.
+        pass
+    return Response({"message": "Logged out"}, status=status.HTTP_200_OK)
