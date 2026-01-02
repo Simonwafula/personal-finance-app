@@ -274,6 +274,13 @@ AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',  # for allauth
 ]
 
+# Allauth / Sites: prefer https in production when generating absolute URLs.
+# This does not replace proper proxy headers, but helps avoid accidental http URLs.
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = os.getenv(
+    'ACCOUNT_DEFAULT_HTTP_PROTOCOL',
+    'https' if not DEBUG else 'http'
+)
+
 # Google OAuth Configuration
 SOCIALACCOUNT_PROVIDERS = {
     'google': {

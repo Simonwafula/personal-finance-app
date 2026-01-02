@@ -101,6 +101,10 @@ export default function Layout() {
                 <HiHome className="nav-icon" />
                 <span>Dashboard</span>
               </NavLink>
+              <NavLink to="/reports" className={({isActive}) => isActive ? 'active' : ''}>
+                <HiChartBar className="nav-icon" />
+                <span>Reports</span>
+              </NavLink>
               <NavLink to="/transactions" className={({isActive}) => isActive ? 'active' : ''}>
                 <HiCreditCard className="nav-icon" />
                 <span>Transactions</span>

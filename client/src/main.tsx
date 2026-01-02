@@ -30,6 +30,7 @@ const InvestmentsPage = React.lazy(() => import("./pages/InvestmentsPage"));
 const CategoriesPage = React.lazy(() => import("./pages/CategoriesPage"));
 const SubscriptionsPage = React.lazy(() => import("./pages/SubscriptionsPage"));
 const NotificationsPage = React.lazy(() => import("./pages/NotificationsPage"));
+const ReportsPage = React.lazy(() => import("./pages/ReportsPage"));
 const BlogPage = React.lazy(() => import("./pages/BlogPage"));
 const BlogArticle = React.lazy(() => import("./pages/blog/BlogArticle"));
 const NotFoundPage = React.lazy(() => import("./pages/NotFoundPage"));
@@ -66,6 +67,7 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
                 <Route path="categories" element={<RequireAuth><CategoriesPage /></RequireAuth>} />
                 <Route path="subscriptions" element={<RequireAuth><SubscriptionsPage /></RequireAuth>} />
                 <Route path="notifications" element={<RequireAuth><NotificationsPage /></RequireAuth>} />
+                <Route path="reports" element={<RequireAuth><ReportsPage /></RequireAuth>} />
                 <Route path="blog" element={<RequireAuth><BlogPage /></RequireAuth>} />
                 <Route path="blog/:slug" element={<RequireAuth><BlogArticle /></RequireAuth>} />
                 <Route path="*" element={<NotFoundPage />} />
