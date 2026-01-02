@@ -9,11 +9,11 @@ Deploy Django + React on OpenLiteSpeed/CyberPanel.
 | **Domain** | `finance.mstatilitechnologies.com` |
 | **Server IP** | `67.217.62.77` |
 | **CyberPanel User** | `finan1713` |
-| **Home Directory** | `/home/mstatilitechnologies.com` |
-| **App Directory** | `/home/mstatilitechnologies.com/public_html` |
-| **Virtual Environment** | `/home/mstatilitechnologies.com/.venv` |
-| **Environment File** | `/home/mstatilitechnologies.com/.env` |
-| **Logs** | `/home/mstatilitechnologies.com/logs` |
+| **Home Directory** | `/home/finance.mstatilitechnologies.com` |
+| **App Directory** | `/home/finance.mstatilitechnologies.com/public_html` |
+| **Virtual Environment** | `/home/finance.mstatilitechnologies.com/.venv` |
+| **Environment File** | `/home/finance.mstatilitechnologies.com/.env` |
+| **Logs** | `/home/finance.mstatilitechnologies.com/logs` |
 
 ---
 
@@ -24,11 +24,11 @@ Deploy Django + React on OpenLiteSpeed/CyberPanel.
 ssh root@67.217.62.77
 
 # Quick update after code changes
-cd /home/mstatilitechnologies.com/public_html && ./deploy-direct.sh
+cd /home/finance.mstatilitechnologies.com/public_html && ./deploy-direct.sh
 
 # View logs
 journalctl -u finance-app -f
-tail -f /home/mstatilitechnologies.com/logs/gunicorn-error.log
+tail -f /home/finance.mstatilitechnologies.com/logs/gunicorn-error.log
 
 # Restart services
 systemctl restart finance-app
@@ -43,7 +43,7 @@ systemctl restart lsws
 
 ```bash
 # Copy the service file
-cp /home/mstatilitechnologies.com/public_html/deploy/systemd/finance-app.service /etc/systemd/system/
+cp /home/finance.mstatilitechnologies.com/public_html/deploy/systemd/finance-app.service /etc/systemd/system/
 
 # Reload, enable, and start
 systemctl daemon-reload
@@ -53,7 +53,7 @@ systemctl start finance-app
 
 ### 1.2 Verify Environment File
 
-Ensure `/home/mstatilitechnologies.com/.env` contains:
+Ensure `/home/finance.mstatilitechnologies.com/.env` contains:
 
 ```bash
 # Django
@@ -82,7 +82,7 @@ SOCIALACCOUNT_LOGIN_REDIRECT_URL=https://finance.mstatilitechnologies.com/oauth-
 ### 1.3 Build Frontend
 
 ```bash
-cd /home/mstatilitechnologies.com/public_html/client
+cd /home/finance.mstatilitechnologies.com/public_html/client
 
 # Create production env
 cat > .env.production << EOF
@@ -96,9 +96,9 @@ npm install && npm run build
 ### 1.4 Django Setup
 
 ```bash
-cd /home/mstatilitechnologies.com/public_html
-source /home/mstatilitechnologies.com/.venv/bin/activate
-set -a && source /home/mstatilitechnologies.com/.env && set +a
+cd /home/finance.mstatilitechnologies.com/public_html
+source /home/finance.mstatilitechnologies.com/.venv/bin/activate
+set -a && source /home/finance.mstatilitechnologies.com/.env && set +a
 
 python manage.py migrate
 python manage.py collectstatic --noinput
@@ -186,8 +186,8 @@ Verify `CSRF_TRUSTED_ORIGINS` in `.env` includes `https://` prefix.
 
 ### Static Files Not Loading
 ```bash
-cd /home/mstatilitechnologies.com/public_html
-source /home/mstatilitechnologies.com/.venv/bin/activate
+cd /home/finance.mstatilitechnologies.com/public_html
+source /home/finance.mstatilitechnologies.com/.venv/bin/activate
 python manage.py collectstatic --noinput
 ```
 
@@ -197,7 +197,7 @@ python manage.py collectstatic --noinput
 
 ### Update Code
 ```bash
-cd /home/mstatilitechnologies.com/public_html
+cd /home/finance.mstatilitechnologies.com/public_html
 ./deploy-direct.sh
 ```
 
@@ -212,7 +212,7 @@ pg_dump -U finance_user finance_db > backup_$(date +%Y%m%d).sql
 journalctl -u finance-app -f
 
 # Error log
-tail -f /home/mstatilitechnologies.com/logs/gunicorn-error.log
+tail -f /home/finance.mstatilitechnologies.com/logs/gunicorn-error.log
 
 # OLS
 tail -f /usr/local/lsws/logs/error.log
@@ -223,7 +223,7 @@ tail -f /usr/local/lsws/logs/error.log
 ## File Structure
 
 ```
-/home/mstatilitechnologies.com/
+/home/finance.mstatilitechnologies.com/
 ├── .env                          # Django environment variables
 ├── .venv/                        # Python virtual environment
 ├── logs/                         # Gunicorn logs

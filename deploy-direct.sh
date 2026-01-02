@@ -13,7 +13,7 @@ echo "Personal Finance App - Quick Update"
 echo "========================================="
 
 # Configuration - matches your CyberPanel setup
-HOME_DIR="/home/mstatilitechnologies.com"
+HOME_DIR="/home/finance.mstatilitechnologies.com"
 APP_DIR="${HOME_DIR}/public_html"
 VENV_DIR="${HOME_DIR}/.venv"
 ENV_FILE="${HOME_DIR}/.env"

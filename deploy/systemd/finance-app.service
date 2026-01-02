@@ -17,18 +17,18 @@ User=finan1713
 Group=finan1713
 
 # Working directory - where manage.py is located (public_html is git root)
-WorkingDirectory=/home/mstatilitechnologies.com/public_html
+WorkingDirectory=/home/finance.mstatilitechnologies.com/public_html
 
 # Environment file location (outside public_html for security)
-EnvironmentFile=/home/mstatilitechnologies.com/.env
+EnvironmentFile=/home/finance.mstatilitechnologies.com/.env
 
 # Gunicorn command
-ExecStart=/home/mstatilitechnologies.com/.venv/bin/gunicorn \
+ExecStart=/home/finance.mstatilitechnologies.com/.venv/bin/gunicorn \
     --bind 127.0.0.1:8000 \
     --workers 3 \
     --timeout 120 \
-    --access-logfile /home/mstatilitechnologies.com/logs/gunicorn-access.log \
-    --error-logfile /home/mstatilitechnologies.com/logs/gunicorn-error.log \
+    --access-logfile /home/finance.mstatilitechnologies.com/logs/gunicorn-access.log \
+    --error-logfile /home/finance.mstatilitechnologies.com/logs/gunicorn-error.log \
     --capture-output \
     backend.wsgi:application
 

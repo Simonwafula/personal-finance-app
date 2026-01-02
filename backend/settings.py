@@ -18,10 +18,10 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Load .env file - check multiple locations for flexibility
-# Production (CyberPanel): /home/mstatilitechnologies.com/.env
+# Production (CyberPanel): /home/finance.mstatilitechnologies.com/.env
 # Development: project root .env
 _env_locations = [
-    Path('/home/mstatilitechnologies.com/.env'),  # CyberPanel production
+    Path('/home/finance.mstatilitechnologies.com/.env'),  # CyberPanel production
     BASE_DIR.parent / '.env',  # Parent of project dir
     BASE_DIR / '.env',          # Project root (for local dev)
 ]

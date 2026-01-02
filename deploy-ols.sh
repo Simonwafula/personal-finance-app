@@ -17,7 +17,7 @@ set -e  # Exit on any error
 # =============================================================================
 DOMAIN="finance.mstatilitechnologies.com"   # Your domain name
 APP_USER="finan1713"                         # CyberPanel assigned user
-HOME_DIR="/home/mstatilitechnologies.com"   # Home directory
+HOME_DIR="/home/finance.mstatilitechnologies.com"   # Home directory
 APP_DIR="${HOME_DIR}/public_html"           # Git root / app directory
 PUBLIC_HTML="${HOME_DIR}/public_html"       # Frontend deployment (same as APP_DIR)
 VENV_PATH="${HOME_DIR}/.venv"               # Virtual environment
