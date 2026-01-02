@@ -147,7 +147,7 @@ export default function LandingPage() {
           <section className="py-14 md:py-20">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div className="space-y-6 text-center lg:text-left">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 dark:bg-white/10 text-sm font-semibold text-blue-800 dark:text-blue-100 border border-white/50 dark:border-white/10 shadow-sm backdrop-blur mx-auto lg:mx-0">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 dark:bg-white/10 text-sm font-semibold text-blue-800 dark:text-blue-100 border border-white/50 dark:border-transparent shadow-sm backdrop-blur mx-auto lg:mx-0">
                   <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
                   Built for Kenya · M-Pesa first
                 </div>
@@ -166,7 +166,7 @@ export default function LandingPage() {
                     onClick={() => {
                       document.querySelector("[data-section='demo']")?.scrollIntoView({ behavior: "smooth" });
                     }}
-                    className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl border border-slate-200/80 dark:border-white/10 text-slate-900 dark:text-white font-semibold bg-white/80 dark:bg-white/10 hover:bg-white dark:hover:bg-white/15 shadow-sm backdrop-blur transition-all"
+                    className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl border border-slate-200/80 dark:border-transparent text-slate-900 dark:text-white font-semibold bg-white/80 dark:bg-white/10 hover:bg-white dark:hover:bg-white/15 shadow-sm backdrop-blur transition-all"
                   >
                     Try a live demo (no login)
                   </button>
@@ -176,7 +176,7 @@ export default function LandingPage() {
                   {highlights.map((item) => (
                     <div
                       key={item.label}
-                      className="rounded-2xl border border-white/50 dark:border-white/10 bg-white/80 dark:bg-white/10 backdrop-blur px-4 py-4 shadow-sm text-center"
+                      className="rounded-2xl border border-white/50 dark:border-transparent bg-white/80 dark:bg-white/10 backdrop-blur px-4 py-4 shadow-sm text-center"
                     >
                       <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
                         {item.label}
@@ -188,7 +188,7 @@ export default function LandingPage() {
               </div>
 
               <div className="relative max-w-xl w-full mx-auto lg:mx-0">
-                <div className="rounded-3xl border border-white/60 dark:border-white/10 bg-white/85 dark:bg-white/10 shadow-2xl shadow-blue-900/20 backdrop-blur-xl p-6 space-y-5">
+                <div className="rounded-3xl border border-white/60 dark:border-transparent bg-white/85 dark:bg-white/10 shadow-2xl shadow-blue-900/20 backdrop-blur-xl p-6 space-y-5">
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="text-sm font-semibold text-slate-700 dark:text-slate-200">Net worth</div>
@@ -199,7 +199,7 @@ export default function LandingPage() {
                     </span>
                   </div>
 
-                  <div className="rounded-2xl border border-white/50 dark:border-white/10 bg-white/80 dark:bg-white/10 backdrop-blur p-4 shadow-sm">
+                  <div className="rounded-2xl border border-white/50 dark:border-transparent bg-white/80 dark:bg-white/10 backdrop-blur p-4 shadow-sm">
                     <div className="flex items-center justify-between mb-3">
                       <div className="text-sm font-semibold text-slate-800 dark:text-white">Income vs Expenses</div>
                       <div className="text-xs text-emerald-600 dark:text-emerald-300 font-semibold">+12% vs last month</div>
@@ -249,7 +249,7 @@ export default function LandingPage() {
                       ].map((tx) => (
                         <div
                           key={tx.title}
-                          className="flex items-center justify-between rounded-xl border border-white/40 dark:border-white/10 bg-white/80 dark:bg-white/10 backdrop-blur px-3 py-2"
+                          className="flex items-center justify-between rounded-xl border border-white/40 dark:border-transparent bg-white/80 dark:bg-white/10 backdrop-blur px-3 py-2"
                         >
                           <div className="text-sm text-slate-800 dark:text-white">{tx.title}</div>
                           <div className={`text-sm font-semibold ${tx.tone}`}>{tx.amount}</div>
@@ -262,7 +262,7 @@ export default function LandingPage() {
             </div>
           </section>
 
-          <section data-section="demo" className="py-16 md:py-20 border-t border-white/50 dark:border-white/10">
+          <section data-section="demo" className="py-16 md:py-20 border-t border-white/50 dark:border-transparent">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-10">
               <div>
                 <p className="text-sm font-semibold text-blue-600 dark:text-blue-300 mb-1">Live snapshot</p>
@@ -271,13 +271,13 @@ export default function LandingPage() {
                   Real-time view of all your finances in one place.
                 </p>
               </div>
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 dark:bg-white/10 border border-white/60 dark:border-white/10 text-sm text-slate-700 dark:text-white/80 backdrop-blur">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 dark:bg-white/10 border border-white/60 dark:border-transparent text-sm text-slate-700 dark:text-white/80 backdrop-blur">
                 Live demo · No sign-up needed
               </div>
             </div>
 
             <div className="grid gap-6 lg:grid-cols-3">
-              <div className="lg:col-span-2 rounded-3xl bg-white/80 dark:bg-white/10 border border-white/60 dark:border-white/10 p-6 shadow-xl shadow-blue-900/15 backdrop-blur-md">
+              <div className="lg:col-span-2 rounded-3xl bg-white/80 dark:bg-white/10 border border-white/60 dark:border-transparent p-6 shadow-xl shadow-blue-900/15 backdrop-blur-md">
                 <div className="mb-4 flex items-center justify-between">
                   <h3 className="text-lg font-semibold text-slate-900 dark:text-white">30-Day Overview</h3>
                   <span className="text-xs px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200 font-semibold">
@@ -314,7 +314,7 @@ export default function LandingPage() {
               </div>
 
               <div className="space-y-4">
-                <div className="rounded-3xl bg-white/80 dark:bg-white/10 border border-white/60 dark:border-white/10 p-6 shadow-xl shadow-blue-900/15 backdrop-blur-md">
+                <div className="rounded-3xl bg-white/80 dark:bg-white/10 border border-white/60 dark:border-transparent p-6 shadow-xl shadow-blue-900/15 backdrop-blur-md">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200 uppercase tracking-wide">
                       Accounts
@@ -327,7 +327,7 @@ export default function LandingPage() {
                     {accounts.map((acc) => (
                       <div
                         key={acc.name}
-                        className="flex items-center justify-between p-3 rounded-xl bg-white/90 dark:bg-white/10 border border-white/60 dark:border-white/10 shadow-sm"
+                        className="flex items-center justify-between p-3 rounded-xl bg-white/90 dark:bg-white/10 border border-white/60 dark:border-transparent shadow-sm"
                       >
                         <div>
                           <div className="text-sm font-semibold text-slate-900 dark:text-white">
@@ -346,7 +346,7 @@ export default function LandingPage() {
             </div>
           </section>
 
-          <section className="py-16 md:py-20 border-t border-white/50 dark:border-white/10">
+          <section className="py-16 md:py-20 border-t border-white/50 dark:border-transparent">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-10">
               <div>
                 <p className="text-sm font-semibold text-blue-600 dark:text-blue-300 mb-1">Guided tools</p>
@@ -375,7 +375,7 @@ export default function LandingPage() {
             </div>
           </section>
 
-          <section className="py-16 md:py-20 border-t border-white/50 dark:border-white/10">
+          <section className="py-16 md:py-20 border-t border-white/50 dark:border-transparent">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-10">
               <div>
                 <p className="text-sm font-semibold text-blue-600 dark:text-blue-300 mb-1">Calm control</p>
@@ -384,7 +384,7 @@ export default function LandingPage() {
                   One workspace for income, spend, debt, and goals.
                 </p>
               </div>
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 dark:bg-white/10 border border-white/60 dark:border-white/10 text-sm text-slate-700 dark:text-white/80 backdrop-blur">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 dark:bg-white/10 border border-white/60 dark:border-transparent text-sm text-slate-700 dark:text-white/80 backdrop-blur">
                 Built for Kenya · M-Pesa first
               </div>
             </div>
@@ -393,7 +393,7 @@ export default function LandingPage() {
               {features.map((feature) => (
                 <div
                   key={feature.title}
-                  className="rounded-2xl border border-white/60 dark:border-white/10 bg-white/85 dark:bg-white/10 backdrop-blur p-4 shadow-lg shadow-blue-900/10 hover:-translate-y-1 transition-transform"
+                  className="rounded-2xl border border-white/60 dark:border-transparent bg-white/85 dark:bg-white/10 backdrop-blur p-4 shadow-lg shadow-blue-900/10 hover:-translate-y-1 transition-transform"
                 >
                   <div className="text-2xl mb-2">{feature.icon}</div>
                   <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-1">{feature.title}</h3>
@@ -403,7 +403,7 @@ export default function LandingPage() {
             </div>
           </section>
 
-          <section className="py-16 md:py-20 border-t border-white/50 dark:border-white/10">
+          <section className="py-16 md:py-20 border-t border-white/50 dark:border-transparent">
             <div className="max-w-3xl mx-auto">
               <div className="mb-10 text-center">
                 <p className="text-sm font-semibold text-blue-600 dark:text-blue-300 mb-2">Answers</p>
@@ -415,7 +415,7 @@ export default function LandingPage() {
                 {faqs.map((faq) => (
                   <details
                     key={faq.q}
-                    className="group rounded-2xl border border-white/60 dark:border-white/10 p-5 bg-white/85 dark:bg-white/10 backdrop-blur shadow-sm"
+                    className="group rounded-2xl border border-white/60 dark:border-transparent p-5 bg-white/85 dark:bg-white/10 backdrop-blur shadow-sm"
                   >
                     <summary className="flex items-center justify-between font-semibold text-slate-900 dark:text-white cursor-pointer select-none">
                       {faq.q}
@@ -428,7 +428,7 @@ export default function LandingPage() {
             </div>
           </section>
 
-          <section className="py-16 md:py-20 border-t border-white/50 dark:border-white/10">
+          <section className="py-16 md:py-20 border-t border-white/50 dark:border-transparent">
             <div className="rounded-3xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 dark:from-blue-700 dark:via-indigo-700 dark:to-purple-700 p-12 md:p-16 text-center shadow-2xl shadow-blue-900/30">
               <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Ready to control your money?</h2>
               <p className="text-lg md:text-xl text-blue-50/90 mb-8 max-w-2xl mx-auto">
