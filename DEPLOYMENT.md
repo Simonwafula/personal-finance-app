@@ -1,64 +1,67 @@
 # Deployment Guide - Personal Finance App
 
-This guide covers deploying the Django + React application to production.
+Deploy Django + React on OpenLiteSpeed/CyberPanel.
+
+## Your Server Configuration
+
+| Setting | Value |
+|---------|-------|
+| **Domain** | `finance.mstatilitechnologies.com` |
+| **Server IP** | `67.217.62.77` |
+| **CyberPanel User** | `finan1713` |
+| **Home Directory** | `/home/mstatilitechnologies.com` |
+| **App Directory** | `/home/mstatilitechnologies.com/public_html` |
+| **Virtual Environment** | `/home/mstatilitechnologies.com/.venv` |
+| **Environment File** | `/home/mstatilitechnologies.com/.env` |
+| **Logs** | `/home/mstatilitechnologies.com/logs` |
 
 ---
 
-## Table of Contents
-1. [Pre-Deployment Checklist](#1-pre-deployment-checklist)
-2. [Environment Configuration](#2-environment-configuration)
-3. [VPS Setup (CyberPanel)](#3-vps-setup-cyberpanel)
-4. [Backend Deployment](#4-backend-deployment)
-5. [Frontend Deployment](#5-frontend-deployment)
-6. [OpenLiteSpeed Proxy Configuration](#6-openlitespeed-proxy-configuration)
-7. [SSL & Security](#7-ssl--security)
-8. [Troubleshooting](#8-troubleshooting)
-9. [Maintenance Commands](#9-maintenance-commands)
+## Quick Commands
 
----
-
-## 1. Pre-Deployment Checklist
-
-### Rotate All Secrets
-Before deploying, generate new production credentials:
-
-**Django Secret Key:**
 ```bash
-python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'
+# SSH into server
+ssh root@67.217.62.77
+
+# Quick update after code changes
+cd /home/mstatilitechnologies.com/public_html && ./deploy-direct.sh
+
+# View logs
+journalctl -u finance-app -f
+tail -f /home/mstatilitechnologies.com/logs/gunicorn-error.log
+
+# Restart services
+systemctl restart finance-app
+systemctl restart lsws
 ```
 
-**Google OAuth (New Production Credentials):**
-1. Go to Google Cloud Console → APIs & Services → Credentials
-2. Create a NEW OAuth 2.0 Client ID:
-   - Application type: Web application
-   - Authorized JavaScript origins: `https://your-domain.com`
-   - Authorized redirect URIs:
-     - `https://your-domain.com/accounts/google/login/callback/`
-     - `https://your-domain.com/oauth-callback`
-3. Copy new client ID + secret
-4. Remove any localhost URIs from production credentials
-
-### Backend Security Settings
-- `DEBUG=False` in production
-- `ALLOWED_HOSTS` set to your domain(s)
-- HTTPS enabled with `SECURE_SSL_REDIRECT=True`
-- `SESSION_COOKIE_SECURE=True` and `CSRF_COOKIE_SECURE=True`
-
 ---
 
-## 2. Environment Configuration
+## 1. Initial Setup (First Time Only)
 
-Create `.env` file in your home directory (NOT in public_html):
-
-**Location:** `/home/your-domain/.env`
+### 1.1 Install Systemd Service
 
 ```bash
-# Django Core
-DJANGO_SECRET_KEY=your-generated-secret-key
-DJANGO_DEBUG=False
-DJANGO_ALLOWED_HOSTS=your-domain.com,www.your-domain.com
+# Copy the service file
+cp /home/mstatilitechnologies.com/public_html/deploy/systemd/finance-app.service /etc/systemd/system/
 
-# Database (PostgreSQL recommended)
+# Reload, enable, and start
+systemctl daemon-reload
+systemctl enable finance-app
+systemctl start finance-app
+```
+
+### 1.2 Verify Environment File
+
+Ensure `/home/mstatilitechnologies.com/.env` contains:
+
+```bash
+# Django
+DJANGO_SECRET_KEY=your-secret-key
+DJANGO_DEBUG=False
+DJANGO_ALLOWED_HOSTS=finance.mstatilitechnologies.com,www.finance.mstatilitechnologies.com
+
+# Database
 DATABASE_ENGINE=django.db.backends.postgresql
 DATABASE_NAME=finance_db
 DATABASE_USER=finance_user
@@ -66,320 +69,175 @@ DATABASE_PASSWORD=your-db-password
 DATABASE_HOST=localhost
 DATABASE_PORT=5432
 
-# CORS & CSRF
-CORS_ALLOWED_ORIGINS=https://your-domain.com,https://www.your-domain.com
-CSRF_TRUSTED_ORIGINS=https://your-domain.com,https://www.your-domain.com
+# Security
+CORS_ALLOWED_ORIGINS=https://finance.mstatilitechnologies.com
+CSRF_TRUSTED_ORIGINS=https://finance.mstatilitechnologies.com
 
 # Google OAuth
-GOOGLE_CLIENT_ID=your-prod-client-id.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=your-prod-oauth-secret
-SOCIALACCOUNT_LOGIN_REDIRECT_URL=https://your-domain.com/oauth-callback
-
-# Email (Optional)
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USE_TLS=True
-EMAIL_HOST_USER=your-email@domain.com
-EMAIL_HOST_PASSWORD=your-app-password
-DEFAULT_FROM_EMAIL=noreply@domain.com
-
-# Session/Cookie Security
-SESSION_COOKIE_DOMAIN=.your-domain.com
-SECURE_SSL_REDIRECT=True
+GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your-secret
+SOCIALACCOUNT_LOGIN_REDIRECT_URL=https://finance.mstatilitechnologies.com/oauth-callback
 ```
 
-**Set correct permissions:**
+### 1.3 Build Frontend
+
 ```bash
-sudo chown your-domain:your-domain /home/your-domain/.env
-sudo chmod 600 /home/your-domain/.env
-```
+cd /home/mstatilitechnologies.com/public_html/client
 
----
-
-## 3. VPS Setup (CyberPanel)
-
-### Create PostgreSQL Database
-```bash
-sudo -u postgres psql
-CREATE DATABASE finance_db;
-CREATE USER finance_user WITH PASSWORD 'your-strong-password';
-ALTER ROLE finance_user SET client_encoding TO 'utf8';
-ALTER ROLE finance_user SET default_transaction_isolation TO 'read committed';
-ALTER ROLE finance_user SET timezone TO 'UTC';
-GRANT ALL PRIVILEGES ON DATABASE finance_db TO finance_user;
-\q
-```
-
-### Create Log Directory
-```bash
-mkdir -p /home/your-domain/logs
-chown -R your-domain:your-domain /home/your-domain/logs
-```
-
----
-
-## 4. Backend Deployment
-
-### Install Dependencies
-```bash
-cd /home/your-domain/personal-finance-app
-pip install -r requirements.txt
-```
-
-### Run Migrations
-```bash
-python manage.py migrate
-python manage.py createsuperuser
-python manage.py collectstatic --noinput
-```
-
-### Configure Gunicorn Service
-Create `/etc/systemd/system/finance-app.service`:
-```ini
-[Unit]
-Description=Finance App Gunicorn
-After=network.target
-
-[Service]
-User=your-domain
-Group=your-domain
-WorkingDirectory=/home/your-domain/personal-finance-app
-EnvironmentFile=/home/your-domain/.env
-ExecStart=/home/your-domain/.venv/bin/gunicorn \
-    --workers 3 \
-    --bind 127.0.0.1:8000 \
-    --timeout 120 \
-    --access-logfile /home/your-domain/logs/gunicorn-access.log \
-    --error-logfile /home/your-domain/logs/gunicorn-error.log \
-    backend.wsgi:application
-
-Restart=always
-RestartSec=3
-
-[Install]
-WantedBy=multi-user.target
-```
-
-**Enable and start:**
-```bash
-sudo systemctl daemon-reload
-sudo systemctl enable finance-app
-sudo systemctl start finance-app
-sudo systemctl status finance-app
-```
-
----
-
-## 5. Frontend Deployment
-
-### Build Frontend
-```bash
-cd /home/your-domain/personal-finance-app/client
-
-# Create production environment
+# Create production env
 cat > .env.production << EOF
-VITE_API_BASE_URL=https://your-domain.com/api
-VITE_GOOGLE_CLIENT_ID=your-prod-client-id.apps.googleusercontent.com
+VITE_API_BASE_URL=https://finance.mstatilitechnologies.com/api
+VITE_GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
 EOF
 
-# Build
-npm install
-npm run build
+npm install && npm run build
+```
 
-# Deploy to document root
-cp -r dist/* /home/your-domain/public_html/
+### 1.4 Django Setup
+
+```bash
+cd /home/mstatilitechnologies.com/public_html
+source /home/mstatilitechnologies.com/.venv/bin/activate
+set -a && source /home/mstatilitechnologies.com/.env && set +a
+
+python manage.py migrate
+python manage.py collectstatic --noinput
+python manage.py createsuperuser
 ```
 
 ---
 
-## 6. OpenLiteSpeed Proxy Configuration
+## 2. CyberPanel Rewrite Rules (Critical!)
 
-**IMPORTANT:** The `/accounts/` path must proxy to Django for Google OAuth to work!
+Go to **CyberPanel → Websites → finance.mstatilitechnologies.com → Manage → Rewrite Rules**
 
-### Using CyberPanel GUI
-1. Go to CyberPanel → Websites → List Websites
-2. Select your domain → Manage → Rewrite Rules
-3. Add these rules (ORDER MATTERS):
+Add these rules:
 
 ```apache
 RewriteEngine On
 
-# Proxy /accounts/ to Django (for Google OAuth)
-RewriteRule ^/accounts/(.*)$ http://127.0.0.1:8000/accounts/$1 [P,L]
-
-# Proxy API requests to Django
+# Proxy to Django
 RewriteRule ^/api/(.*)$ http://127.0.0.1:8000/api/$1 [P,L]
-
-# Proxy admin to Django
 RewriteRule ^/admin/(.*)$ http://127.0.0.1:8000/admin/$1 [P,L]
+RewriteRule ^/accounts/(.*)$ http://127.0.0.1:8000/accounts/$1 [P,L]
+RewriteRule ^/static/(.*)$ http://127.0.0.1:8000/static/$1 [P,L]
 
-# Serve React frontend for everything else
+# Serve React assets
+RewriteRule ^/assets/(.*)$ /client/dist/assets/$1 [L]
+
+# React SPA fallback
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ /index.html [L]
+RewriteCond %{REQUEST_URI} !^/api/
+RewriteCond %{REQUEST_URI} !^/admin/
+RewriteCond %{REQUEST_URI} !^/accounts/
+RewriteCond %{REQUEST_URI} !^/static/
+RewriteRule ^(.*)$ /client/dist/index.html [L]
 ```
 
-**Restart OpenLiteSpeed:**
-```bash
-sudo systemctl restart lsws
-```
-
-### Verify Proxy
-```bash
-# Should reach Django (not LiteSpeed error)
-curl -I https://your-domain.com/accounts/login/
-curl https://your-domain.com/api/auth/me/
-```
+Then restart: `systemctl restart lsws`
 
 ---
 
-## 7. SSL & Security
+## 3. SSL Certificate
 
-### Enable SSL (CyberPanel)
-- Websites → List Websites → Manage SSL
-- Issue Let's Encrypt certificate
-
-### Security Hardening Checklist
-- [ ] Firewall: Allow only 80, 443, 22
-- [ ] Set strong SSH keys, disable password auth
-- [ ] Enable fail2ban
-- [ ] Set up monitoring (Sentry, UptimeRobot)
-- [ ] Configure database backups
-- [ ] Review ALLOWED_HOSTS, CORS, CSRF origins
+In CyberPanel:
+1. Go to **SSL → Manage SSL**
+2. Select `finance.mstatilitechnologies.com`
+3. Click **Issue SSL**
 
 ---
 
-## 8. Troubleshooting
+## 4. Google OAuth Setup
+
+### Google Cloud Console
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. **APIs & Services → Credentials → Create OAuth 2.0 Client ID**
+3. Set:
+   - Authorized JavaScript origins: `https://finance.mstatilitechnologies.com`
+   - Authorized redirect URIs: `https://finance.mstatilitechnologies.com/accounts/google/login/callback/`
+
+### Django Admin
+1. Go to `https://finance.mstatilitechnologies.com/admin/`
+2. **Social Applications → Add**
+3. Provider: Google, add Client ID and Secret
+
+---
+
+## 5. Troubleshooting
 
 ### Service Won't Start
-
-**Check status:**
 ```bash
-sudo systemctl status finance-app
-sudo journalctl -u finance-app -f
+systemctl status finance-app
+journalctl -u finance-app -n 50
 ```
 
-**Common issues:**
-
-1. **`.env` file in wrong location:**
-   ```bash
-   # Move to correct location
-   sudo mv /home/your-domain/public_html/.env /home/your-domain/.env
-   sudo chown your-domain:your-domain /home/your-domain/.env
-   sudo chmod 600 /home/your-domain/.env
-   ```
-
-2. **User doesn't exist (status=217/USER):**
-   ```bash
-   # Check file ownership
-   ls -la /home/your-domain/
-   # Update service file with correct user
-   ```
-
-3. **Database connection error:**
-   ```bash
-   sudo systemctl status postgresql
-   sudo systemctl start postgresql
-   ```
-
-### CSRF Token Errors
-
-**Symptom:** `{"detail":"CSRF Failed: CSRF token missing"}`
-
-**Fix:** Check `.env` has correct origins:
+### 502 Bad Gateway
 ```bash
-CSRF_TRUSTED_ORIGINS=https://your-domain.com
-CORS_ALLOWED_ORIGINS=https://your-domain.com
-```
-Then restart: `sudo systemctl restart finance-app`
+# Check Gunicorn
+curl http://127.0.0.1:8000/api/
 
-### OAuth 403 Error
-
-**Symptom:** Google OAuth returns 403 or doesn't redirect properly.
-
-**Fix:**
-1. Ensure `/accounts/` is proxied to Django (see Section 6)
-2. Verify Google Cloud Console has correct redirect URIs
-3. In Django Admin → Social Applications, ensure Google app is configured
-4. Check `SOCIALACCOUNT_LOGIN_REDIRECT_URL` in `.env`
-
-### Bad Request (400) Error
-
-**Symptom:** Direct curl returns 400 Bad Request
-
-**Fix:** Add Host header (this is normal behavior):
-```bash
-curl -H "Host: your-domain.com" http://127.0.0.1:8000/api/auth/me/
+# Restart
+systemctl restart finance-app
 ```
 
-### Check Django Logs
+### CSRF Errors
+Verify `CSRF_TRUSTED_ORIGINS` in `.env` includes `https://` prefix.
+
+### Static Files Not Loading
 ```bash
-tail -f /home/your-domain/logs/gunicorn-error.log
-```
-
-### Test API Endpoints
-```bash
-# Test registration
-curl -X POST https://your-domain.com/api/auth/register/ \
-  -H "Content-Type: application/json" \
-  -d '{"email": "test@example.com", "username": "testuser", "password": "TestPass123!"}'
-
-# Test login
-curl -X POST https://your-domain.com/api/auth/login/ \
-  -H "Content-Type: application/json" \
-  -d '{"email": "test@example.com", "password": "TestPass123!"}'
-```
-
----
-
-## 9. Maintenance Commands
-
-```bash
-# View logs
-sudo journalctl -u finance-app -f
-tail -f /home/your-domain/logs/gunicorn-error.log
-
-# Restart service
-sudo systemctl restart finance-app
-
-# Apply migrations
-cd /home/your-domain/personal-finance-app
-source /home/your-domain/.venv/bin/activate
-python manage.py migrate
-
-# Update frontend
-cd client && npm run build && cp -r dist/* ../public_html/
-
-# Collect static files
+cd /home/mstatilitechnologies.com/public_html
+source /home/mstatilitechnologies.com/.venv/bin/activate
 python manage.py collectstatic --noinput
 ```
 
-### Rollback Plan
+---
+
+## 6. Maintenance
+
+### Update Code
 ```bash
-# Stop service
-sudo systemctl stop finance-app
+cd /home/mstatilitechnologies.com/public_html
+./deploy-direct.sh
+```
 
-# Revert to previous version
-git checkout <previous-commit>
+### Backup Database
+```bash
+pg_dump -U finance_user finance_db > backup_$(date +%Y%m%d).sql
+```
 
-# Restart
-sudo systemctl start finance-app
+### View Logs
+```bash
+# Gunicorn
+journalctl -u finance-app -f
+
+# Error log
+tail -f /home/mstatilitechnologies.com/logs/gunicorn-error.log
+
+# OLS
+tail -f /usr/local/lsws/logs/error.log
 ```
 
 ---
 
-## Static Files
+## File Structure
 
-Django static files are managed with WhiteNoise:
-- `python manage.py collectstatic` collects files to `staticfiles/`
-- WhiteNoise middleware serves them efficiently in production
-- No separate web server needed for static files
-
----
-
-## Post-Deployment Tests
-
-1. **Health Check:** `curl https://your-domain.com/api/health`
-2. **OAuth Flow:** Sign in with Google from login page
-3. **Password Reset:** Test forgot password flow
-4. **API Auth:** Verify protected endpoints require authentication
+```
+/home/mstatilitechnologies.com/
+├── .env                          # Django environment variables
+├── .venv/                        # Python virtual environment
+├── logs/                         # Gunicorn logs
+└── public_html/                  # Git root / Document root
+    ├── manage.py
+    ├── backend/                  # Django settings
+    ├── finance/                  # Django apps...
+    ├── client/
+    │   ├── src/                  # React source
+    │   └── dist/                 # Built React app (index.html)
+    ├── staticfiles/              # Django collected static
+    ├── deploy/
+    │   ├── openlitespeed/        # OLS config files
+    │   └── systemd/              # Service file
+    ├── deploy-ols.sh             # Full deployment script
+    └── deploy-direct.sh          # Quick update script
+```

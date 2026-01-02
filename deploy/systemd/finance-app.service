@@ -1,30 +1,44 @@
+# Personal Finance App - Gunicorn Service for OpenLiteSpeed/CyberPanel
+# =======================================================================
+# Copy to: /etc/systemd/system/finance-app.service
+# Domain: finance.mstatilitechnologies.com
+# CyberPanel User: finan1713
+# =======================================================================
+
 [Unit]
 Description=Personal Finance App - Gunicorn
 After=network.target postgresql.service
+Wants=postgresql.service
 
 [Service]
 Type=notify
-User=www-data
-Group=www-data
-WorkingDirectory=/home/finance.mstatilitechnologies.com/public_html
-Environment="PATH=/home/finance.mstatilitechnologies.com/public_html/.venv/bin"
-EnvironmentFile=/home/finance.mstatilitechnologies.com/public_html/.env.production
-ExecStart=/home/finance.mstatilitechnologies.com/public_html/.venv/bin/gunicorn \
+# CyberPanel assigned user for finance.mstatilitechnologies.com
+User=finan1713
+Group=finan1713
+
+# Working directory - where manage.py is located (public_html is git root)
+WorkingDirectory=/home/mstatilitechnologies.com/public_html
+
+# Environment file location (outside public_html for security)
+EnvironmentFile=/home/mstatilitechnologies.com/.env
+
+# Gunicorn command
+ExecStart=/home/mstatilitechnologies.com/.venv/bin/gunicorn \
     --bind 127.0.0.1:8000 \
     --workers 3 \
     --timeout 120 \
-    --access-logfile /home/finance.mstatilitechnologies.com/public_html/logs/access.log \
-    --error-logfile /home/finance.mstatilitechnologies.com/public_html/logs/error.log \
+    --access-logfile /home/mstatilitechnologies.com/logs/gunicorn-access.log \
+    --error-logfile /home/mstatilitechnologies.com/logs/gunicorn-error.log \
     --capture-output \
     backend.wsgi:application
 
 # Restart policy
 Restart=always
-RestartSec=10
+RestartSec=5
 StartLimitInterval=5min
 StartLimitBurst=10
 
-# Security
+# Security hardening
 PrivateTmp=true
 NoNewPrivileges=true
 

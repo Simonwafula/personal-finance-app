@@ -24,6 +24,12 @@ Thumbs.db
 *.sln
 *.sw?
 
+# Environment files (keep examples)
+.env.production
+.env.local
+!.env.production.example
+!.env.development
+
 # Python
 __pycache__/
 *.py[cod]

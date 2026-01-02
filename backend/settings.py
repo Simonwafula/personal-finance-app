@@ -17,8 +17,22 @@ from dotenv import load_dotenv
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Load .env file from parent directory: Specify full path directly
-load_dotenv('/home/finance.mstatilitechnologies.com/.env')
+# Load .env file - check multiple locations for flexibility
+# Production (CyberPanel): /home/mstatilitechnologies.com/.env
+# Development: project root .env
+_env_locations = [
+    Path('/home/mstatilitechnologies.com/.env'),  # CyberPanel production
+    BASE_DIR.parent / '.env',  # Parent of project dir
+    BASE_DIR / '.env',          # Project root (for local dev)
+]
+
+for _env_path in _env_locations:
+    if _env_path.exists():
+        load_dotenv(_env_path)
+        break
+else:
+    # Fallback: try to load from environment or dotenv default
+    load_dotenv()
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -298,12 +312,10 @@ if not DEBUG:
         os.getenv('SECURE_HSTS_INCLUDE_SUBDOMAINS', 'True') == 'True'
     )
     SECURE_HSTS_PRELOAD = os.getenv('SECURE_HSTS_PRELOAD', 'True') == 'True'
-    SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'False') == 'True'  # Let nginx handle SSL
+    SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'False') == 'True'  # Let OLS/nginx handle SSL
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     
-    # Trust X-Forwarded headers from nginx
-    USE_X_FORWARDED_HOST = True
-    USE_X_FORWARDED_PORT = True
+    # Trust X-Forwarded headers from OpenLiteSpeed/nginx proxy
     USE_X_FORWARDED_HOST = True
     USE_X_FORWARDED_PORT = True
 else:
