@@ -287,11 +287,11 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 LOGIN_REDIRECT_URL = "/"
-LOGOUT_REDIRECT_URL = "/login"
+LOGOUT_REDIRECT_URL = "/"  # Redirect to React app root, not /login
 ACCOUNT_EMAIL_VERIFICATION = "none"
 ACCOUNT_LOGIN_METHOD = "username"
 ACCOUNT_LOGOUT_ON_GET = True
-ACCOUNT_LOGOUT_REDIRECT_URL = "/login"
+ACCOUNT_LOGOUT_REDIRECT_URL = "/"  # Redirect to React app root
 # OAuth callback: use env var in production
 SOCIALACCOUNT_LOGIN_REDIRECT_URL = os.getenv(
     'SOCIALACCOUNT_LOGIN_REDIRECT_URL',
