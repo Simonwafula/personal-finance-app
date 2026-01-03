@@ -1,15 +1,24 @@
 {
-  "name": "client",
+  "name": "personal-finance",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "cap:sync": "npx cap sync android",
+    "cap:open": "npx cap open android",
+    "cap:build": "npm run build && npx cap sync android",
+    "android:debug": "npm run cap:build && cd android && ./gradlew assembleDebug",
+    "android:release": "npm run cap:build && cd android && ./gradlew assembleRelease",
+    "android:bundle": "npm run cap:build && cd android && ./gradlew bundleRelease"
   },
   "dependencies": {
+    "@capacitor/android": "^8.0.0",
+    "@capacitor/cli": "^8.0.0",
+    "@capacitor/core": "^8.0.0",
     "axios": "^1.13.2",
     "jspdf": "^3.0.4",
     "jspdf-autotable": "^5.0.2",
