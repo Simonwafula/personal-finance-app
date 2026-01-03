@@ -88,6 +88,80 @@ class TransactionViewSet(viewsets.ModelViewSet):
             # Don't block transaction creation on notifications
             pass
 
+    @action(detail=False, methods=["post"], url_path="sync")
+    def sync(self, request):
+        """
+        Sync transactions from client. Accepts JSON payload with 'items': list of transactions.
+        Each item may include 'external_id' to deduplicate. Returns list of results.
+        """
+        items = request.data.get("items") or []
+        results = []
+
+        for item in items:
+            try:
+                ext_id = item.get("external_id")
+                kind = item.get("kind", "EXPENSE")
+                date = item.get("date")
+                amount = item.get("amount")
+                description = item.get("description", "")
+                category_id = item.get("category")
+                account_id = item.get("account")
+                from_account_id = item.get("from_account")
+                to_account_id = item.get("to_account")
+
+                # Validate accounts belong to user
+                account = None
+                from_account = None
+                to_account = None
+                if account_id:
+                    account = Account.objects.filter(id=account_id, user=request.user).first()
+                    if not account:
+                        raise ValueError("account not found")
+                if from_account_id:
+                    from_account = Account.objects.filter(id=from_account_id, user=request.user).first()
+                    if not from_account:
+                        raise ValueError("from_account not found")
+                if to_account_id:
+                    to_account = Account.objects.filter(id=to_account_id, user=request.user).first()
+                    if not to_account:
+                        raise ValueError("to_account not found")
+
+                defaults = {
+                    "date": date,
+                    "amount": amount,
+                    "kind": kind,
+                    "description": description,
+                    "category_id": category_id,
+                    "account": account or from_account or to_account,
+                    "from_account": from_account,
+                    "to_account": to_account,
+                    "external_id": ext_id,
+                }
+
+                if ext_id:
+                    tx, created = Transaction.objects.update_or_create(
+                        user=request.user, external_id=ext_id, defaults=defaults
+                    )
+                else:
+                    # Try to find duplicate by unique tuple (date, amount, account, description)
+                    tx = Transaction.objects.filter(
+                        user=request.user,
+                        date=date,
+                        amount=amount,
+                        description=description,
+                    ).first()
+                    if tx:
+                        created = False
+                    else:
+                        tx = Transaction.objects.create(user=request.user, **defaults)
+                        created = True
+
+                results.append({"external_id": ext_id, "id": tx.id, "created": created})
+            except Exception as e:
+                results.append({"error": str(e), "item": item})
+
+        return Response({"results": results})
+
     @action(detail=False, methods=["get"])
     def aggregated(self, request):
         """

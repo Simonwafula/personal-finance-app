@@ -46,6 +46,8 @@ class TransactionSerializer(serializers.ModelSerializer):
     category_name = serializers.ReadOnlyField(source="category.name")
     savings_goal_name = serializers.ReadOnlyField(source="savings_goal.name")
     savings_goal_emoji = serializers.ReadOnlyField(source="savings_goal.emoji")
+    from_account_name = serializers.ReadOnlyField(source="from_account.name")
+    to_account_name = serializers.ReadOnlyField(source="to_account.name")
 
     class Meta:
         model = Transaction
@@ -53,6 +55,11 @@ class TransactionSerializer(serializers.ModelSerializer):
             "id",
             "account",
             "account_name",
+            "from_account",
+            "from_account_name",
+            "to_account",
+            "to_account_name",
+            "external_id",
             "date",
             "amount",
             "kind",

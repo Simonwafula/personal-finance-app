@@ -46,25 +46,26 @@ class Account(TimeStampedModel):
     def calculate_current_balance(self):
         """Calculate current balance: opening_balance + sum of all transactions"""
         from django.db.models import Sum, Q
-        
-        # Sum income transactions (positive)
+        # Sum income transactions (positive) where this account is the transaction.account
         income = self.transactions.filter(kind='INCOME').aggregate(
             total=Sum('amount')
         )['total'] or 0
-        
-        # Sum expense transactions (negative)
+
+        # Sum expense transactions (negative) where this account is the transaction.account
         expenses = self.transactions.filter(kind='EXPENSE').aggregate(
             total=Sum('amount')
         )['total'] or 0
-        
-        # For transfers, we need to check if this account is the source or destination
-        # Transfers out reduce balance (negative), transfers in increase balance (positive)
-        # Assuming transfer amounts are stored as positive and we need to subtract them
-        transfers_out = self.transactions.filter(kind='TRANSFER').aggregate(
+
+        # Transfers: incoming (to_account == self) increase balance, outgoing (from_account == self) decrease
+        transfers_in = Transaction.objects.filter(kind=Transaction.Kind.TRANSFER, to_account=self).aggregate(
             total=Sum('amount')
         )['total'] or 0
-        
-        return self.opening_balance + income - expenses - transfers_out
+
+        transfers_out = Transaction.objects.filter(kind=Transaction.Kind.TRANSFER, from_account=self).aggregate(
+            total=Sum('amount')
+        )['total'] or 0
+
+        return self.opening_balance + income - expenses + transfers_in - transfers_out
 
 
 class Category(TimeStampedModel):
@@ -102,9 +103,27 @@ class Transaction(TimeStampedModel):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="transactions"
     )
+    # Primary account for this transaction (legacy & ui-facing)
     account = models.ForeignKey(
         Account, on_delete=models.CASCADE, related_name="transactions"
     )
+    # Optional double-entry accounts. For transfers, set `from_account` and `to_account`.
+    from_account = models.ForeignKey(
+        Account,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="transactions_from",
+    )
+    to_account = models.ForeignKey(
+        Account,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="transactions_to",
+    )
+    # External ID for client-side deduplication / sync
+    external_id = models.CharField(max_length=255, null=True, blank=True, db_index=True)
     date = models.DateField()
     amount = models.DecimalField(max_digits=14, decimal_places=2)
     kind = models.CharField(max_length=10, choices=Kind.choices)
