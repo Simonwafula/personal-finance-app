@@ -2,6 +2,34 @@
 
 This guide covers building the Personal Finance app for Android and publishing to the Google Play Store.
 
+## Features
+
+### SMS Transaction Detection 📱
+
+The mobile app can automatically detect financial transactions from SMS messages:
+
+- **Supported Sources**: M-PESA, KCB, Equity, Co-op, ABSA, Stanbic, DTB, NCBA, Family Bank, I&M Bank, GTBank, FirstBank, Access Bank, UBA, Zenith, FNB, Standard Bank, Capitec, Nedbank
+- **Auto-parsing**: Extracts amount, date, recipient/sender, reference number, and balance
+- **Smart Categorization**: Suggests categories based on transaction keywords
+- **Privacy**: All SMS processing happens locally on device - no data sent to servers
+- **Configurable**: Users can enable/disable specific senders
+
+**Usage:**
+```tsx
+import { SmsTransactionPrompt } from './components/SmsTransactionPrompt';
+import { SmsSettings } from './components/SmsSettings';
+
+// In your dashboard or transactions page
+<SmsTransactionPrompt 
+  categories={categories}
+  accounts={accounts}
+  onSaveTransaction={handleSave}
+/>
+
+// In settings page
+<SmsSettings onSettingsChange={handleSendersChange} />
+```
+
 ## Prerequisites
 
 1. **Android Studio** - Download from [developer.android.com](https://developer.android.com/studio)
