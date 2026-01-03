@@ -92,39 +92,57 @@ class TransactionViewSet(viewsets.ModelViewSet):
     def sync(self, request):
         """
         Sync transactions from client. Accepts JSON payload with 'items': list of transactions.
-        Each item may include 'external_id' to deduplicate. Returns list of results.
+        Supports these fields on each item: `external_id`, `date`, `amount`, `kind`, `description`,
+        `category`, `account`, `from_account`, `to_account`, `updated_at`, `deleted`.
+
+        Conflict handling rules implemented here:
+        - If `external_id` provided and a server record exists, compare `updated_at` (if client provided).
+          If client's `updated_at` is older or equal to server `updated_at`, skip update (no-op).
+          If client's `updated_at` is newer (or not provided), apply update.
+        - If `external_id` not provided, attempt to match by (date, amount, description). If found, treat
+          it as an update and apply the same `updated_at` check.
+        - If `deleted: true` is provided, attempt to delete matching record (by external_id or tuple). If not found,
+          return `not_found` code.
+
+        The response returns structured per-item results with optional error codes.
         """
+        from django.utils.dateparse import parse_datetime
+
         items = request.data.get("items") or []
         results = []
 
         for item in items:
-            try:
-                ext_id = item.get("external_id")
-                kind = item.get("kind", "EXPENSE")
-                date = item.get("date")
-                amount = item.get("amount")
-                description = item.get("description", "")
-                category_id = item.get("category")
-                account_id = item.get("account")
-                from_account_id = item.get("from_account")
-                to_account_id = item.get("to_account")
+            ext_id = item.get("external_id")
+            kind = item.get("kind", "EXPENSE")
+            date = item.get("date")
+            amount = item.get("amount")
+            description = item.get("description", "")
+            category_id = item.get("category")
+            account_id = item.get("account")
+            from_account_id = item.get("from_account")
+            to_account_id = item.get("to_account")
+            client_updated_at = item.get("updated_at")
+            deleted = bool(item.get("deleted", False))
 
-                # Validate accounts belong to user
+            result = {"external_id": ext_id, "id": None, "created": False}
+
+            # Resolve accounts and validate ownership
+            try:
                 account = None
                 from_account = None
                 to_account = None
                 if account_id:
                     account = Account.objects.filter(id=account_id, user=request.user).first()
                     if not account:
-                        raise ValueError("account not found")
+                        raise ValueError("ACCOUNT_NOT_FOUND")
                 if from_account_id:
                     from_account = Account.objects.filter(id=from_account_id, user=request.user).first()
                     if not from_account:
-                        raise ValueError("from_account not found")
+                        raise ValueError("FROM_ACCOUNT_NOT_FOUND")
                 if to_account_id:
                     to_account = Account.objects.filter(id=to_account_id, user=request.user).first()
                     if not to_account:
-                        raise ValueError("to_account not found")
+                        raise ValueError("TO_ACCOUNT_NOT_FOUND")
 
                 defaults = {
                     "date": date,
@@ -138,27 +156,67 @@ class TransactionViewSet(viewsets.ModelViewSet):
                     "external_id": ext_id,
                 }
 
+                # Parse client_updated_at if present
+                client_dt = None
+                if client_updated_at:
+                    client_dt = parse_datetime(client_updated_at)
+
+                tx = None
+                created = False
+
+                # Find existing by external_id first
                 if ext_id:
-                    tx, created = Transaction.objects.update_or_create(
-                        user=request.user, external_id=ext_id, defaults=defaults
-                    )
-                else:
-                    # Try to find duplicate by unique tuple (date, amount, account, description)
+                    tx = Transaction.objects.filter(user=request.user, external_id=ext_id).first()
+
+                # If not by external_id, try tuple match
+                if not tx:
                     tx = Transaction.objects.filter(
                         user=request.user,
                         date=date,
                         amount=amount,
                         description=description,
                     ).first()
-                    if tx:
-                        created = False
-                    else:
-                        tx = Transaction.objects.create(user=request.user, **defaults)
-                        created = True
 
-                results.append({"external_id": ext_id, "id": tx.id, "created": created})
+                # Handle deletion request
+                if deleted:
+                    if tx:
+                        tx_id = tx.id
+                        tx.delete()
+                        result.update({"id": tx_id, "deleted": True, "created": False})
+                    else:
+                        result.update({"error": {"code": "NOT_FOUND", "message": "transaction not found for deletion"}})
+                    results.append(result)
+                    continue
+
+                # Create if not exists
+                if not tx:
+                    tx = Transaction.objects.create(user=request.user, **defaults)
+                    created = True
+                    result.update({"id": tx.id, "created": True, "server_updated_at": tx.updated_at.isoformat()})
+                    results.append(result)
+                    continue
+
+                # Existing record - check updated_at
+                # If client provided updated_at, and it's older or equal to server, skip update
+                if client_dt and tx.updated_at and client_dt <= tx.updated_at:
+                    result.update({"id": tx.id, "created": False, "skipped": True, "server_updated_at": tx.updated_at.isoformat()})
+                    results.append(result)
+                    continue
+
+                # Otherwise apply update
+                for k, v in defaults.items():
+                    setattr(tx, k, v)
+                tx.save()
+                result.update({"id": tx.id, "created": False, "server_updated_at": tx.updated_at.isoformat()})
+                results.append(result)
+
+            except ValueError as ve:
+                code = str(ve)
+                result.update({"error": {"code": code, "message": code.replace("_", " ").lower()}})
+                results.append(result)
             except Exception as e:
-                results.append({"error": str(e), "item": item})
+                result.update({"error": {"code": "UNKNOWN_ERROR", "message": str(e)}})
+                results.append(result)
 
         return Response({"results": results})
 
