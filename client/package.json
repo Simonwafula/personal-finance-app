@@ -19,6 +19,7 @@
     "@capacitor/android": "^8.0.0",
     "@capacitor/cli": "^8.0.0",
     "@capacitor/core": "^8.0.0",
+    "@capawesome-team/capacitor-android-foreground-service": "^8.0.0",
     "axios": "^1.13.2",
     "jspdf": "^3.0.4",
     "jspdf-autotable": "^5.0.2",

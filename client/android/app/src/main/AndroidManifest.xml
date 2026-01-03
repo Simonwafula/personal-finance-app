@@ -38,4 +38,11 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    
+    <!-- SMS Permissions for transaction tracking -->
+    <uses-permission android:name="android.permission.READ_SMS" />
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+    
+    <!-- Optional: for background SMS monitoring -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 </manifest>
