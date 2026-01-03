@@ -1,56 +1,31 @@
 // Capacitor plugin wrapper for SMS Reader
 import { registerPlugin } from '@capacitor/core';
+import type { SmsReaderPlugin } from './smsReaderTypes';
 
-export interface SmsMessage {
-  id: string;
-  address: string;
-  body: string;
-  date: number;
-  read: boolean;
-}
+export type { 
+  SmsMessage, 
+  PermissionStatus, 
+  GetMessagesOptions, 
+  GetMessagesResult,
+  StartListeningOptions,
+  StartListeningResult,
+  StopListeningResult,
+  SmsReaderPlugin 
+} from './smsReaderTypes';
 
-export interface PermissionStatus {
-  sms: 'granted' | 'denied' | 'prompt';
-}
-
-export interface GetMessagesOptions {
-  senders: string[];
-  limit?: number;
-  since?: number;
-}
-
-export interface GetMessagesResult {
-  messages: SmsMessage[];
-}
-
-export interface StartListeningOptions {
-  senders: string[];
-}
-
-export interface StartListeningResult {
-  listening: boolean;
-  senders: string[];
-}
-
-export interface StopListeningResult {
-  listening: boolean;
-}
-
-export interface SmsReaderPlugin {
-  checkPermissions(): Promise<PermissionStatus>;
-  requestPermissions(): Promise<PermissionStatus>;
-  getMessages(options: GetMessagesOptions): Promise<GetMessagesResult>;
-  startListening(options: StartListeningOptions): Promise<StartListeningResult>;
-  stopListening(): Promise<StopListeningResult>;
-  addListener(
-    eventName: 'smsReceived',
-    listenerFunc: (message: SmsMessage) => void
-  ): Promise<{ remove: () => void }>;
-  removeAllListeners(): Promise<void>;
-}
+// Web fallback implementation
+const webFallback: SmsReaderPlugin = {
+  checkPermissions: async () => ({ sms: 'denied' as const }),
+  requestPermissions: async () => ({ sms: 'denied' as const }),
+  getMessages: async () => ({ messages: [] }),
+  startListening: async () => ({ listening: false, senders: [] }),
+  stopListening: async () => ({ listening: false }),
+  addListener: async () => ({ remove: () => {} }),
+  removeAllListeners: async () => {},
+};
 
 const SmsReader = registerPlugin<SmsReaderPlugin>('SmsReader', {
-  web: () => import('./smsReaderWeb').then(m => new m.SmsReaderWeb()),
+  web: () => Promise.resolve(webFallback),
 });
 
 export default SmsReader;

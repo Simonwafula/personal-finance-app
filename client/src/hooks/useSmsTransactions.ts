@@ -50,18 +50,6 @@ export function useSmsTransactions(options: UseSmsTransactionsOptions = {}) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Check permissions on mount
-  useEffect(() => {
-    checkPermissions();
-  }, []);
-
-  // Auto-start if enabled and permission granted
-  useEffect(() => {
-    if (autoStart && hasPermission === true && !isListening) {
-      startListening();
-    }
-  }, [autoStart, hasPermission]);
-
   const checkPermissions = useCallback(async () => {
     try {
       const status = await SmsReader.checkPermissions();
@@ -156,7 +144,7 @@ export function useSmsTransactions(options: UseSmsTransactionsOptions = {}) {
       setError(null);
       
       // Set up listener for new messages
-      const listener = await SmsReader.addListener('smsReceived', (message) => {
+      await SmsReader.addListener('smsReceived', (message) => {
         const pending = processMessage(message);
         if (pending) {
           setPendingTransactions(prev => [pending, ...prev]);
@@ -205,6 +193,18 @@ export function useSmsTransactions(options: UseSmsTransactionsOptions = {}) {
   const clearSaved = useCallback(() => {
     setPendingTransactions(prev => prev.filter(t => !t.saved));
   }, []);
+
+  // Check permissions on mount
+  useEffect(() => {
+    checkPermissions();
+  }, [checkPermissions]);
+
+  // Auto-start if enabled and permission granted
+  useEffect(() => {
+    if (autoStart && hasPermission === true && !isListening) {
+      startListening();
+    }
+  }, [autoStart, hasPermission, isListening, startListening]);
 
   // Cleanup on unmount
   useEffect(() => {

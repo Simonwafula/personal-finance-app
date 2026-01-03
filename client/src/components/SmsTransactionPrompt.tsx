@@ -1,5 +1,5 @@
 // SMS Transaction Detection UI Component
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { 
   MessageSquare, 
   Check, 
@@ -188,7 +188,11 @@ export function SmsTransactionPrompt({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              isListening ? stopListening() : startListening();
+              if (isListening) {
+                stopListening();
+              } else {
+                startListening();
+              }
             }}
             className={`p-2 rounded-lg ${
               isListening ? 'text-green-500' : 'text-secondary'

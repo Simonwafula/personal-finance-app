@@ -5,7 +5,7 @@ export interface ParsedTransaction {
   type: 'income' | 'expense' | 'transfer';
   amount: number;
   currency: string;
-  sender: string;
+  sender?: string;
   recipient?: string;
   reference?: string;
   balance?: number;
@@ -203,7 +203,7 @@ function parseMpesaDate(dateStr: string, timeStr: string): Date {
 /**
  * Parse M-PESA SMS message
  */
-function parseMpesaMessage(body: string, timestamp: number): ParsedTransaction | null {
+function parseMpesaMessage(body: string, _timestamp: number): ParsedTransaction | null {
   // Try received pattern
   let match = body.match(MPESA_PATTERNS.received);
   if (match) {

@@ -21,25 +21,30 @@ interface SmsSettingsProps {
 
 const STORAGE_KEY = 'sms_monitored_senders';
 
-export function SmsSettings({ onSettingsChange }: SmsSettingsProps) {
-  const [senders, setSenders] = useState<SmsSetting[]>([]);
-  const [customSender, setCustomSender] = useState('');
-  const [showInfo, setShowInfo] = useState(false);
+const getDefaultSenders = (): SmsSetting[] => {
+  return Object.entries(FINANCIAL_SENDERS).map(([id, config]) => ({
+    id,
+    name: config.name,
+    enabled: ['MPESA', 'KCB', 'EQUITY', 'COOP', 'ABSA'].includes(id), // Enable common ones by default
+  }));
+};
 
-  // Load settings from localStorage
-  useEffect(() => {
+export function SmsSettings({ onSettingsChange }: SmsSettingsProps) {
+  const [senders, setSenders] = useState<SmsSetting[]>(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       try {
-        const parsed = JSON.parse(stored);
-        setSenders(parsed);
+        return JSON.parse(stored);
       } catch {
-        initializeDefaults();
+        return getDefaultSenders();
       }
-    } else {
-      initializeDefaults();
     }
-  }, []);
+    return getDefaultSenders();
+  });
+  const [customSender, setCustomSender] = useState('');
+  const [showInfo, setShowInfo] = useState(false);
+
+
 
   // Save settings when changed
   useEffect(() => {
@@ -49,15 +54,6 @@ export function SmsSettings({ onSettingsChange }: SmsSettingsProps) {
       onSettingsChange?.(enabled);
     }
   }, [senders, onSettingsChange]);
-
-  const initializeDefaults = () => {
-    const defaults: SmsSetting[] = Object.entries(FINANCIAL_SENDERS).map(([id, config]) => ({
-      id,
-      name: config.name,
-      enabled: ['MPESA', 'KCB', 'EQUITY', 'COOP', 'ABSA'].includes(id), // Enable common ones by default
-    }));
-    setSenders(defaults);
-  };
 
   const toggleSender = (id: string) => {
     setSenders(prev => 
