@@ -274,7 +274,7 @@ export default function CategoriesPage() {
         <div className="space-y-6">
           <div className="flex justify-between items-center">
             <h4 className="text-lg font-semibold">Manage Categories</h4>
-            <button onClick={openAddCategory} className="btn-primary inline-flex items-center gap-2">
+            <button type="button" onClick={openAddCategory} className="btn-primary inline-flex items-center gap-2">
               <HiPlus size={18} />
               Add Category
             </button>
@@ -460,7 +460,7 @@ export default function CategoriesPage() {
         <div className="space-y-6">
           <div className="flex justify-between items-center">
             <h4 className="text-lg font-semibold">Manage Tags</h4>
-            <button onClick={openAddTag} className="btn-primary inline-flex items-center gap-2">
+            <button type="button" onClick={openAddTag} className="btn-primary inline-flex items-center gap-2">
               <HiPlus size={18} />
               Add Tag
             </button>
