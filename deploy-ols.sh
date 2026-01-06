@@ -240,13 +240,12 @@ else
         fi
 
         sudo -u postgres psql <<-SQL
-        DO $$ BEGIN
-            IF NOT EXISTS (SELECT FROM pg_database WHERE datname = 'finance_db') THEN
-                PERFORM pg_catalog.pg_create_db('finance_db');
-            END IF;
-        END$$;
-
-        "" >/dev/null
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT FROM pg_database WHERE datname = 'finance_db') THEN
+        PERFORM pg_catalog.pg_create_db('finance_db');
+    END IF;
+END$$;
+SQL
 
         if [ -n "$DB_PASSWORD" ]; then
             sudo -u postgres psql <<-SQL
