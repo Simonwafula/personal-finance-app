@@ -192,27 +192,85 @@ fi
 
 print_header "Step 4: Database Setup"
 
-echo "Do you want to create the PostgreSQL database? (y/n)"
-read -r CREATE_DB
+# Behavior:
+# - If SKIP_DB_CREATION is set to "1" or AUTO_DB="n", skip creation.
+# - If AUTO_DB="y" or CREATE_DB is answered "y", create if missing.
+# - If DB or user already exists, skip creation for that object.
 
-if [ "$CREATE_DB" = "y" ]; then
-    echo "Enter database password for finance_user:"
-    read -rs DB_PASSWORD
-    
-    sudo -u postgres psql << EOF
-CREATE DATABASE finance_db;
-CREATE USER finance_user WITH PASSWORD '$DB_PASSWORD';
-ALTER ROLE finance_user SET client_encoding TO 'utf8';
-ALTER ROLE finance_user SET default_transaction_isolation TO 'read committed';
-ALTER ROLE finance_user SET timezone TO 'UTC';
-GRANT ALL PRIVILEGES ON DATABASE finance_db TO finance_user;
-GRANT ALL ON SCHEMA public TO finance_user;
-\c finance_db
-GRANT ALL ON SCHEMA public TO finance_user;
-EOF
+SKIP_DB_CREATION=${SKIP_DB_CREATION:-}
+AUTO_DB=${AUTO_DB:-}
 
-    print_success "PostgreSQL database created"
-    print_warning "Update DATABASE_PASSWORD in $ENV_FILE with: $DB_PASSWORD"
+if [ "$SKIP_DB_CREATION" = "1" ] || [ "$AUTO_DB" = "n" ]; then
+    print_warning "Skipping database creation due to SKIP_DB_CREATION/AUTO_DB setting"
+else
+    # Detect if DB exists
+    DB_EXISTS=$(sudo -u postgres psql -tAc "SELECT 1 FROM pg_database WHERE datname='finance_db'" || echo "")
+    USER_EXISTS=$(sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='finance_user'" || echo "")
+
+    if [ "${AUTO_DB}" = "y" ]; then
+        WANT_CREATE="y"
+    else
+        # Only prompt if running interactively
+        if [ -t 0 ]; then
+            echo "Do you want to create the PostgreSQL database/user if missing? (y/n) [n]"
+            read -r CREATE_DB || CREATE_DB="n"
+            CREATE_DB=${CREATE_DB:-n}
+            WANT_CREATE=$(echo "$CREATE_DB" | tr '[:upper:]' '[:lower:]')
+        else
+            WANT_CREATE="n"
+        fi
+    fi
+
+    if [ "$DB_EXISTS" = "1" ]; then
+        print_success "Database 'finance_db' already exists, skipping database creation"
+    fi
+
+    if [ "$USER_EXISTS" = "1" ]; then
+        print_success "User 'finance_user' already exists, skipping user creation"
+    fi
+
+    if [ "$WANT_CREATE" = "y" ]; then
+        # Ask for password only if user is missing
+        if [ "$USER_EXISTS" != "1" ]; then
+            echo "Enter database password for finance_user (will not be shown):"
+            read -rs DB_PASSWORD
+            echo
+        else
+            DB_PASSWORD=""
+        fi
+
+        sudo -u postgres psql <<-SQL
+        DO $$ BEGIN
+            IF NOT EXISTS (SELECT FROM pg_database WHERE datname = 'finance_db') THEN
+                PERFORM pg_catalog.pg_create_db('finance_db');
+            END IF;
+        END$$;
+
+        "" >/dev/null
+
+        if [ -n "$DB_PASSWORD" ]; then
+            sudo -u postgres psql <<-SQL
+            CREATE USER IF NOT EXISTS finance_user WITH PASSWORD '$DB_PASSWORD';
+            ALTER ROLE finance_user SET client_encoding TO 'utf8';
+            ALTER ROLE finance_user SET default_transaction_isolation TO 'read committed';
+            ALTER ROLE finance_user SET timezone TO 'UTC';
+            GRANT ALL PRIVILEGES ON DATABASE finance_db TO finance_user;
+            \c finance_db
+            GRANT ALL ON SCHEMA public TO finance_user;
+            SQL
+        else
+            # User exists, ensure grants are present
+            sudo -u postgres psql -d finance_db -c "GRANT ALL PRIVILEGES ON DATABASE finance_db TO finance_user;" || true
+            sudo -u postgres psql -d finance_db -c "GRANT ALL ON SCHEMA public TO finance_user;" || true
+        fi
+
+        print_success "PostgreSQL database/user creation step completed (if they were missing)"
+        if [ -n "$DB_PASSWORD" ]; then
+            print_warning "Update DATABASE_PASSWORD in $ENV_FILE with: $DB_PASSWORD"
+        fi
+    else
+        print_warning "Database/user creation skipped by user choice"
+    fi
 fi
 
 # =============================================================================
