@@ -281,10 +281,29 @@ print_header "Step 5: Django Setup"
 cd "$APP_DIR"
 source "$VENV_PATH/bin/activate"
 
-# Export environment variables
-set -a
-source "$ENV_FILE"
-set +a
+# Export environment variables safely (handle special chars in values)
+if [ -f "$ENV_FILE" ]; then
+    TMP_ENV_EXPORTS="$(mktemp)"
+    # Create a temporary script that exports each VAR with proper single-quote escaping
+    while IFS= read -r _line || [ -n "$_line" ]; do
+        line="$_line"
+        # skip empty lines and comments
+        case "$line" in
+            ''|\#*) continue ;;
+        esac
+        key="${line%%=*}"
+        val="${line#*=}"
+        # escape single quotes in the value
+        esc_val="$(printf "%s" "$val" | sed "s/'/'\\''/g")"
+        printf "export %s='%s'\n" "$key" "$esc_val" >> "$TMP_ENV_EXPORTS"
+    done < "$ENV_FILE"
+
+    set -a
+    # shellcheck disable=SC1090
+    . "$TMP_ENV_EXPORTS"
+    set +a
+    rm -f "$TMP_ENV_EXPORTS"
+fi
 
 # Run migrations
 python manage.py migrate --noinput
