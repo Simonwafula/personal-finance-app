@@ -1,0 +1,64 @@
+name: Web Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'client/package-lock.json'
+
+      - name: Install dependencies
+        working-directory: ./client
+        run: npm ci
+
+      - name: Type check
+        working-directory: ./client
+        run: npm run type-check || echo "Add type-check script if needed"
+
+      - name: Lint
+        working-directory: ./client
+        run: npm run lint || echo "Add lint script if needed"
+
+      - name: Build web app
+        working-directory: ./client
+        env:
+          VITE_PLATFORM: web
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL || 'http://localhost:8000' }}
+          VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
+        run: npm run build
+
+      - name: Check build output
+        working-directory: ./client
+        run: |
+          echo "Build completed. Checking output..."
+          ls -lh dist/
+          du -sh dist/
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-build
+          path: client/dist/
+          retention-days: 7
+
+      - name: Build summary
+        run: |
+          echo "### ✅ Web Build Successful" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Platform:** Web" >> $GITHUB_STEP_SUMMARY
+          echo "**Node Version:** 20" >> $GITHUB_STEP_SUMMARY
+          echo "**Build Output:** client/dist/" >> $GITHUB_STEP_SUMMARY

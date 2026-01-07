@@ -1,0 +1,11 @@
+# SMS Feature Directory
+
+This directory will contain SMS transaction detection components after merging the mobile-app branch.
+
+Files to be added from mobile-app branch:
+- SmsTransactionPrompt.tsx
+- SmsSettings.tsx
+- useSmsTransactions.ts
+- smsTransactionService.ts
+
+These files will be moved here during the branch merge process.

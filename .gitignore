@@ -95,3 +95,34 @@ desktop.ini
 # Temporary files / backups
 *.swp
 *~
+
+# Mobile / Capacitor build artifacts (DO NOT COMMIT)
+client/android/app/build/
+client/android/app/release/
+client/android/.gradle/
+client/android/local.properties
+client/android/gradle/
+client/ios/App/build/
+client/ios/App/Pods/
+client/.capacitor/
+*.apk
+*.aab
+*.ipa
+
+# Mobile signing keys (NEVER COMMIT)
+*.jks
+*.keystore
+keystore.properties
+client/android/app/google-services.json
+client/ios/App/GoogleService-Info.plist
+
+# Database backups (DO NOT COMMIT)
+*.sql
+*.sql.gz
+*.dump
+*.backup
+backups/
+
+# Client build output
+client/dist/
+client/build/

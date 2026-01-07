@@ -37,6 +37,8 @@ export interface Category {
 
 export type TransactionKind = "INCOME" | "EXPENSE" | "TRANSFER";
 
+export type TransactionSource = "MANUAL" | "SMS" | "IMPORT";
+
 export interface Transaction {
   id: number;
   account: number;
@@ -53,6 +55,10 @@ export interface Transaction {
   savings_goal: number | null;
   savings_goal_name: string | null;
   savings_goal_emoji: string | null;
+  // SMS tracking fields (Mobile-only feature)
+  source?: TransactionSource;
+  sms_reference?: string | null;
+  sms_detected_at?: string | null;
   created_at: string;
   updated_at: string;
 }

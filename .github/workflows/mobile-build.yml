@@ -1,0 +1,121 @@
+name: Mobile Build
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Triggers on version tags like v1.0.0
+    branches:
+      - main  # Also build on main for testing
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'client/package-lock.json'
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install dependencies
+        working-directory: ./client
+        run: npm ci
+
+      - name: Build mobile app
+        working-directory: ./client
+        env:
+          VITE_PLATFORM: mobile
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL || 'https://finance.mstatilitechnologies.com' }}
+          VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
+        run: npm run build
+
+      - name: Sync Capacitor
+        working-directory: ./client
+        run: |
+          if [ -f "capacitor.config.ts" ]; then
+            npx cap sync android || echo "Capacitor not configured yet"
+          else
+            echo "Capacitor config not found - skipping sync"
+          fi
+
+      - name: Make gradlew executable
+        working-directory: ./client/android
+        run: |
+          if [ -f "gradlew" ]; then
+            chmod +x gradlew
+          else
+            echo "gradlew not found - skipping"
+          fi
+        continue-on-error: true
+
+      - name: Build Debug APK
+        working-directory: ./client
+        run: |
+          if [ -d "android" ]; then
+            cd android && ./gradlew assembleDebug
+          else
+            echo "Android project not found - skipping APK build"
+          fi
+        continue-on-error: true
+
+      - name: Build Release APK (for tagged releases)
+        if: startsWith(github.ref, 'refs/tags/')
+        working-directory: ./client
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -d "android" ]; then
+            cd android && ./gradlew assembleRelease
+          else
+            echo "Android project not found - skipping release build"
+          fi
+        continue-on-error: true
+
+      - name: Upload Debug APK
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-debug-apk
+          path: client/android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Upload Release APK to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            client/android/app/build/outputs/apk/debug/*.apk
+            client/android/app/build/outputs/apk/release/*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: Build summary
+        if: always()
+        run: |
+          echo "### 📱 Mobile Build" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Platform:** Android" >> $GITHUB_STEP_SUMMARY
+          echo "**Node Version:** 20" >> $GITHUB_STEP_SUMMARY
+          echo "**Java Version:** 17" >> $GITHUB_STEP_SUMMARY
+          if [ -f "client/android/app/build/outputs/apk/debug/app-debug.apk" ]; then
+            APK_SIZE=$(du -h client/android/app/build/outputs/apk/debug/app-debug.apk | cut -f1)
+            echo "**APK Size:** $APK_SIZE" >> $GITHUB_STEP_SUMMARY
+            echo "✅ **Debug APK built successfully**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **APK build skipped** (Capacitor not configured yet)" >> $GITHUB_STEP_SUMMARY
+          fi

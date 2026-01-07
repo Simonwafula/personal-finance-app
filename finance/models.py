@@ -99,6 +99,11 @@ class Transaction(TimeStampedModel):
         EXPENSE = "EXPENSE", "Expense"
         TRANSFER = "TRANSFER", "Transfer"
 
+    class Source(models.TextChoices):
+        MANUAL = "MANUAL", "Manual Entry"
+        SMS = "SMS", "SMS Auto-Detection"
+        IMPORT = "IMPORT", "CSV Import"
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="transactions"
     )
@@ -122,6 +127,25 @@ class Transaction(TimeStampedModel):
         null=True,
         blank=True,
         related_name="transactions"
+    )
+
+    # SMS Auto-Detection Fields (Mobile-only feature)
+    source = models.CharField(
+        max_length=10,
+        choices=Source.choices,
+        default=Source.MANUAL,
+        help_text="How this transaction was created"
+    )
+    sms_reference = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        help_text="SMS reference number if source is SMS"
+    )
+    sms_detected_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        help_text="When SMS was detected and parsed"
     )
 
     class Meta:

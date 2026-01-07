@@ -65,10 +65,26 @@ class TransactionSerializer(serializers.ModelSerializer):
             "savings_goal",
             "savings_goal_name",
             "savings_goal_emoji",
+            # SMS tracking fields (Mobile-only feature)
+            "source",
+            "sms_reference",
+            "sms_detected_at",
             "created_at",
             "updated_at",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
+
+    def validate(self, attrs):
+        """Validate SMS fields if source is SMS"""
+        source = attrs.get('source', 'MANUAL')
+
+        # If source is SMS, sms_reference should be provided
+        if source == 'SMS' and not attrs.get('sms_reference'):
+            raise serializers.ValidationError({
+                'sms_reference': 'SMS reference is required when source is SMS'
+            })
+
+        return attrs
 
 
 class AggregatedPointSerializer(serializers.Serializer):
