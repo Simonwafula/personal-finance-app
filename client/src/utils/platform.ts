@@ -18,20 +18,33 @@
  * ```
  */
 
-// Safely import Capacitor (may not be installed in web-only builds)
-let Capacitor: any;
-try {
-  // Dynamic import to prevent build errors when @capacitor/core is not installed
-  const capacitorModule = require('@capacitor/core');
-  Capacitor = capacitorModule.Capacitor;
-} catch (error) {
-  // Capacitor not installed - create mock for web environment
-  Capacitor = {
-    isNativePlatform: () => false,
-    getPlatform: () => 'web',
-    isPluginAvailable: () => false,
-  };
-}
+// Create a mock Capacitor for web environments
+const mockCapacitor = {
+  isNativePlatform: () => false,
+  getPlatform: () => 'web' as const,
+  isPluginAvailable: () => false,
+};
+
+// For web builds, always use mock
+// For mobile builds, Capacitor will be available at runtime
+const getCapacitor = () => {
+  // Check if we're in a web build (VITE_PLATFORM not set or set to 'web')
+  const platform = import.meta.env.VITE_PLATFORM;
+
+  if (!platform || platform === 'web') {
+    // Web build - use mock
+    return mockCapacitor;
+  }
+
+  // Mobile build - Capacitor should be available
+  // We can't use require() or top-level await, so we check window object
+  if (typeof window !== 'undefined' && (window as any).Capacitor) {
+    return (window as any).Capacitor;
+  }
+
+  // Fallback to mock if not available
+  return mockCapacitor;
+};
 
 /**
  * Platform detection singleton
@@ -43,7 +56,8 @@ export const Platform = {
    */
   isMobile: (): boolean => {
     try {
-      return Capacitor.isNativePlatform();
+      const cap = getCapacitor();
+      return cap.isNativePlatform?.() ?? false;
     } catch {
       return false;
     }
@@ -55,9 +69,11 @@ export const Platform = {
    */
   isWeb: (): boolean => {
     try {
-      return !Capacitor.isNativePlatform();
+      const cap = getCapacitor();
+      const isNative = cap.isNativePlatform?.() ?? false;
+      return !isNative;
     } catch {
-      return true; // Fallback to web if Capacitor errors
+      return true; // Fallback to web if errors
     }
   },
 
@@ -67,7 +83,8 @@ export const Platform = {
    */
   isAndroid: (): boolean => {
     try {
-      return Capacitor.getPlatform() === 'android';
+      const cap = getCapacitor();
+      return cap.getPlatform?.() === 'android';
     } catch {
       return false;
     }
@@ -79,7 +96,8 @@ export const Platform = {
    */
   isIOS: (): boolean => {
     try {
-      return Capacitor.getPlatform() === 'ios';
+      const cap = getCapacitor();
+      return cap.getPlatform?.() === 'ios';
     } catch {
       return false;
     }
@@ -91,7 +109,8 @@ export const Platform = {
    */
   getPlatform: (): 'web' | 'android' | 'ios' => {
     try {
-      const platform = Capacitor.getPlatform();
+      const cap = getCapacitor();
+      const platform = cap.getPlatform?.();
       if (platform === 'android' || platform === 'ios') {
         return platform;
       }
@@ -157,7 +176,8 @@ export const Platform = {
    */
   isPluginAvailable: (pluginName: string): boolean => {
     try {
-      return Capacitor.isPluginAvailable(pluginName);
+      const cap = getCapacitor();
+      return cap.isPluginAvailable?.(pluginName) ?? false;
     } catch {
       return false;
     }
