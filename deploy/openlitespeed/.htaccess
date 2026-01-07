@@ -25,17 +25,17 @@ RewriteEngine On
 # These rules MUST come before the SPA fallback
 # ============================================
 
-# Proxy API requests to Django
-RewriteRule ^api/(.*)$ http://127.0.0.1:8001/api/$1 [P,L]
+# Proxy API requests to Django (Gunicorn on port 8000)
+RewriteRule ^api/(.*)$ http://127.0.0.1:8000/api/$1 [P,L]
 
 # Proxy Django Admin
-RewriteRule ^admin/(.*)$ http://127.0.0.1:8001/admin/$1 [P,L]
+RewriteRule ^admin/(.*)$ http://127.0.0.1:8000/admin/$1 [P,L]
 
 # Proxy Django allauth (Google OAuth) - CRITICAL for OAuth to work
-RewriteRule ^accounts/(.*)$ http://127.0.0.1:8001/accounts/$1 [P,L]
+RewriteRule ^accounts/(.*)$ http://127.0.0.1:8000/accounts/$1 [P,L]
 
 # Proxy Django static files (served by WhiteNoise)
-RewriteRule ^static/(.*)$ http://127.0.0.1:8001/static/$1 [P,L]
+RewriteRule ^static/(.*)$ http://127.0.0.1:8000/static/$1 [P,L]
 
 # ============================================
 # React SPA - Serve from client/dist/
