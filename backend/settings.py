@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
 
     'rest_framework',
+    'drf_spectacular',
     'corsheaders',
     'finance',
     'budgeting',
@@ -250,6 +251,15 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+# drf-spectacular settings for OpenAPI generation
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Personal Finance API',
+    'DESCRIPTION': 'API schema for personal-finance-app',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
 }
 
 # CSRF: Read from env in production, default to localhost in dev

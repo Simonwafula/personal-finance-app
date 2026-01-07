@@ -13,6 +13,7 @@ from backend.auth_views import (
     change_password_view,
     logout_view,
 )
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 import os
 
 
@@ -60,6 +61,10 @@ urlpatterns = [
     
     # Health check for monitoring
     path("api/health/", health_check, name="health_check"),
+    # OpenAPI schema and UI
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/schema/swagger/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
     
     # Google OAuth - custom check before allauth handles it
     path("accounts/google/login/", google_login_check, name="google_login_check"),

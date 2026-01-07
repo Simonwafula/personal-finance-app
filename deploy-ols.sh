@@ -186,91 +186,102 @@ else
     print_success "Environment file already exists"
 fi
 
-# # =============================================================================
-# # STEP 4: SETUP DATABASE
-# # =============================================================================
+# =============================================================================
+# STEP 4: SETUP DATABASE
+# =============================================================================
 
-# print_header "Step 4: Database Setup"
+print_header "Step 4: Database Setup"
 
-# # Behavior:
-# # - If SKIP_DB_CREATION is set to "1" or AUTO_DB="n", skip creation.
-# # - If AUTO_DB="y" or CREATE_DB is answered "y", create if missing.
-# # - If DB or user already exists, skip creation for that object.
+# Behavior:
+# - If SKIP_DB_CREATION is set to "1" or AUTO_DB="n", skip creation.
+# - If AUTO_DB="y" or CREATE_DB is answered "y", create if missing.
+# - If DB or user already exists, skip creation for that object.
 
-# SKIP_DB_CREATION=${SKIP_DB_CREATION:-}
-# AUTO_DB=${AUTO_DB:-}
+SKIP_DB_CREATION=${SKIP_DB_CREATION:-}
+AUTO_DB=${AUTO_DB:-}
 
-# if [ "$SKIP_DB_CREATION" = "1" ] || [ "$AUTO_DB" = "n" ]; then
-#     print_warning "Skipping database creation due to SKIP_DB_CREATION/AUTO_DB setting"
-# else
-#     # Detect if DB exists
-#     DB_EXISTS=$(sudo -u postgres psql -tAc "SELECT 1 FROM pg_database WHERE datname='finance_db'" || echo "")
-#     USER_EXISTS=$(sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='finance_user'" || echo "")
+if [ "$SKIP_DB_CREATION" = "1" ] || [ "$AUTO_DB" = "n" ]; then
+    print_warning "Skipping database creation due to SKIP_DB_CREATION/AUTO_DB setting"
+else
+    # Detect if DB exists
+    DB_EXISTS=$(sudo -u postgres psql -tAc "SELECT 1 FROM pg_database WHERE datname='finance_db'" 2>/dev/null || echo "")
+    USER_EXISTS=$(sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='finance_user'" 2>/dev/null || echo "")
 
-#     if [ "${AUTO_DB}" = "y" ]; then
-#         WANT_CREATE="y"
-#     else
-#         # Only prompt if running interactively
-#         if [ -t 0 ]; then
-#             echo "Do you want to create the PostgreSQL database/user if missing? (y/n) [n]"
-#             read -r CREATE_DB || CREATE_DB="n"
-#             CREATE_DB=${CREATE_DB:-n}
-#             WANT_CREATE=$(echo "$CREATE_DB" | tr '[:upper:]' '[:lower:]')
-#         else
-#             WANT_CREATE="n"
-#         fi
-#     fi
+    if [ "${AUTO_DB}" = "y" ]; then
+        WANT_CREATE="y"
+    else
+        # Only prompt if running interactively
+        if [ -t 0 ]; then
+            echo "Do you want to create the PostgreSQL database/user if missing? (y/n) [n]"
+            read -r CREATE_DB || CREATE_DB="n"
+            CREATE_DB=${CREATE_DB:-n}
+            WANT_CREATE=$(echo "$CREATE_DB" | tr '[:upper:]' '[:lower:]')
+        else
+            WANT_CREATE="n"
+        fi
+    fi
 
-#     if [ "$DB_EXISTS" = "1" ]; then
-#         print_success "Database 'finance_db' already exists, skipping database creation"
-#     fi
+    if [ "$DB_EXISTS" = "1" ]; then
+        print_success "Database 'finance_db' already exists, skipping database creation"
+    fi
 
-#     if [ "$USER_EXISTS" = "1" ]; then
-#         print_success "User 'finance_user' already exists, skipping user creation"
-#     fi
+    if [ "$USER_EXISTS" = "1" ]; then
+        print_success "User 'finance_user' already exists, skipping user creation"
+    fi
 
-#     if [ "$WANT_CREATE" = "y" ]; then
-#         # Ask for password only if user is missing
-#         if [ "$USER_EXISTS" != "1" ]; then
-#             echo "Enter database password for finance_user (will not be shown):"
-#             read -rs DB_PASSWORD
-#             echo
-#         else
-#             DB_PASSWORD=""
-#         fi
+    if [ "$WANT_CREATE" = "y" ]; then
+        # Ask for password only if user is missing
+        if [ "$USER_EXISTS" != "1" ]; then
+            echo "Enter database password for finance_user (will not be shown):"
+            read -rs DB_PASSWORD
+            echo
+        else
+            DB_PASSWORD=""
+        fi
 
-#         sudo -u postgres psql <<-SQL
-# DO $$ BEGIN
-#     IF NOT EXISTS (SELECT FROM pg_database WHERE datname = 'finance_db') THEN
-#         PERFORM pg_catalog.pg_create_db('finance_db');
-#     END IF;
-# END$$;
-# SQL
+        # Create database if it doesn't exist
+        if [ "$DB_EXISTS" != "1" ]; then
+            sudo -u postgres createdb finance_db 2>/dev/null || print_warning "Database creation failed or already exists"
+        fi
 
-#         if [ -n "$DB_PASSWORD" ]; then
-#             sudo -u postgres psql <<-SQL
-#             CREATE USER IF NOT EXISTS finance_user WITH PASSWORD '$DB_PASSWORD';
-#             ALTER ROLE finance_user SET client_encoding TO 'utf8';
-#             ALTER ROLE finance_user SET default_transaction_isolation TO 'read committed';
-#             ALTER ROLE finance_user SET timezone TO 'UTC';
-#             GRANT ALL PRIVILEGES ON DATABASE finance_db TO finance_user;
-#             \c finance_db
-#             GRANT ALL ON SCHEMA public TO finance_user;
-# SQL
-#         else
-#             # User exists, ensure grants are present
-#             sudo -u postgres psql -d finance_db -c "GRANT ALL PRIVILEGES ON DATABASE finance_db TO finance_user;" || true
-#             sudo -u postgres psql -d finance_db -c "GRANT ALL ON SCHEMA public TO finance_user;" || true
-#         fi
+        # Create user and set privileges
+        if [ -n "$DB_PASSWORD" ]; then
+            sudo -u postgres psql <<-SQL
+            DO \$\$
+            BEGIN
+                IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'finance_user') THEN
+                    CREATE USER finance_user WITH PASSWORD '$DB_PASSWORD';
+                END IF;
+            END
+            \$\$;
+            ALTER ROLE finance_user SET client_encoding TO 'utf8';
+            ALTER ROLE finance_user SET default_transaction_isolation TO 'read committed';
+            ALTER ROLE finance_user SET timezone TO 'UTC';
+            GRANT ALL PRIVILEGES ON DATABASE finance_db TO finance_user;
+SQL
+            # Connect to database and grant schema permissions
+            sudo -u postgres psql -d finance_db <<-SQL
+            GRANT ALL ON SCHEMA public TO finance_user;
+            ALTER SCHEMA public OWNER TO finance_user;
+SQL
+        else
+            # User exists, ensure grants are present
+            sudo -u postgres psql <<-SQL
+            GRANT ALL PRIVILEGES ON DATABASE finance_db TO finance_user;
+SQL
+            sudo -u postgres psql -d finance_db <<-SQL
+            GRANT ALL ON SCHEMA public TO finance_user;
+SQL
+        fi
 
-#         print_success "PostgreSQL database/user creation step completed (if they were missing)"
-#         if [ -n "$DB_PASSWORD" ]; then
-#             print_warning "Update DATABASE_PASSWORD in $ENV_FILE with: $DB_PASSWORD"
-#         fi
-#     else
-#         print_warning "Database/user creation skipped by user choice"
-#     fi
-# fi
+        print_success "PostgreSQL database/user setup completed"
+        if [ -n "$DB_PASSWORD" ]; then
+            print_warning "Update DATABASE_PASSWORD in $ENV_FILE with the password you entered"
+        fi
+    else
+        print_warning "Database/user creation skipped by user choice"
+    fi
+fi
 
 # =============================================================================
 # STEP 5: DJANGO SETUP
@@ -329,24 +340,74 @@ print_header "Step 6: Building Frontend"
 
 cd "$APP_DIR/client"
 
-# Create production environment
-cat > .env.production << EOF
+# Check if .env.production exists, if not create from backend .env
+if [ ! -f .env.production ]; then
+    print_warning ".env.production not found, creating from backend .env..."
+
+    # Try to get Google Client ID from backend .env
+    if [ -f "$ENV_FILE" ]; then
+        GOOGLE_CLIENT_ID=$(grep "^GOOGLE_CLIENT_ID=" "$ENV_FILE" | cut -d '=' -f2)
+        if [ -n "$GOOGLE_CLIENT_ID" ] && [ "$GOOGLE_CLIENT_ID" != "your-client-id.apps.googleusercontent.com" ]; then
+            cat > .env.production << EOF
+VITE_API_BASE_URL=https://$DOMAIN/api
+VITE_GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID
+EOF
+            print_success "Created .env.production with Google Client ID from backend"
+        else
+            cat > .env.production << EOF
 VITE_API_BASE_URL=https://$DOMAIN/api
 VITE_GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
 EOF
+            print_error "GOOGLE_CLIENT_ID not found in backend .env!"
+            print_warning "Edit client/.env.production with your actual Google Client ID before continuing"
+            echo "Press Enter after editing the file..."
+            read -r
+        fi
+    else
+        cat > .env.production << EOF
+VITE_API_BASE_URL=https://$DOMAIN/api
+VITE_GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
+EOF
+        print_error "Backend .env not found!"
+        print_warning "Edit client/.env.production with your actual Google Client ID before continuing"
+        echo "Press Enter after editing the file..."
+        read -r
+    fi
+else
+    print_success ".env.production already exists"
+fi
 
-print_warning "Edit client/.env.production with your actual Google Client ID"
+# Validate .env.production has real values
+if grep -q "your-client-id.apps.googleusercontent.com" .env.production; then
+    print_error ".env.production still has placeholder values!"
+    print_warning "Edit client/.env.production with your actual Google Client ID before continuing"
+    echo "Press Enter after editing the file..."
+    read -r
+fi
 
 # Install and build
 npm install
 npm run build
 print_success "Frontend built"
 
-# Since public_html IS the git root, we copy frontend files to the root
-# The React app's index.html goes to public_html/index.html
-# Assets go to public_html/assets/
-print_success "Frontend built in client/dist/"
-print_warning "Frontend files are in client/dist/ - OLS will serve index.html from there or copy manually"
+# Copy built frontend to templates directory for Django to serve
+# This is CRITICAL - Django's TemplateView serves from templates/, not client/dist/
+if [ -f "$APP_DIR/client/dist/index.html" ]; then
+    cp "$APP_DIR/client/dist/index.html" "$APP_DIR/templates/index.html"
+    print_success "Frontend index.html copied to templates/ for Django"
+else
+    print_error "Build failed: client/dist/index.html not found"
+    exit 1
+fi
+
+# Verify asset hashes match
+TEMPLATE_HASH=$(grep -o 'index-[a-zA-Z0-9_-]*\.js' "$APP_DIR/templates/index.html" | head -1)
+DIST_HASH=$(grep -o 'index-[a-zA-Z0-9_-]*\.js' "$APP_DIR/client/dist/index.html" | head -1)
+if [ "$TEMPLATE_HASH" = "$DIST_HASH" ]; then
+    print_success "Asset hashes verified: $TEMPLATE_HASH"
+else
+    print_warning "Asset hash mismatch detected (this is unusual but may be OK)"
+fi
 
 # Copy .htaccess for OLS to public_html root
 cp "$APP_DIR/deploy/openlitespeed/.htaccess" "$PUBLIC_HTML/.htaccess" 2>/dev/null || true
