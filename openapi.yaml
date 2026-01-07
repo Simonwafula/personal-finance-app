@@ -1,0 +1,3958 @@
+openapi: 3.0.2
+info:
+  title: ''
+  version: ''
+paths:
+  /api/auth/me/:
+    get:
+      operationId: listCurrentUsers
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+      tags:
+      - api
+  /api/auth/profile/:
+    get:
+      operationId: listprofile_views
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+      tags:
+      - api
+    put:
+      operationId: updateprofile_view
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+          application/x-www-form-urlencoded:
+            schema: {}
+          multipart/form-data:
+            schema: {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+      tags:
+      - api
+    patch:
+      operationId: partialUpdateprofile_view
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+          application/x-www-form-urlencoded:
+            schema: {}
+          multipart/form-data:
+            schema: {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+      tags:
+      - api
+  /api/finance/accounts/:
+    get:
+      operationId: listAccounts
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Account'
+          description: ''
+      tags:
+      - api
+    post:
+      operationId: createAccount
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Account'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Account'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Account'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+          description: ''
+      tags:
+      - api
+  /api/finance/accounts/{id}/:
+    get:
+      operationId: retrieveAccount
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+          description: ''
+      tags:
+      - api
+    put:
+      operationId: updateAccount
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Account'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Account'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Account'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+          description: ''
+      tags:
+      - api
+    patch:
+      operationId: partialUpdateAccount
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Account'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Account'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Account'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+          description: ''
+      tags:
+      - api
+    delete:
+      operationId: destroyAccount
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+      tags:
+      - api
+  /api/finance/categories/:
+    get:
+      operationId: listCategories
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+          description: ''
+      tags:
+      - api
+    post:
+      operationId: createCategory
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Category'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Category'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Category'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+      tags:
+      - api
+  /api/finance/categories/{id}/:
+    get:
+      operationId: retrieveCategory
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+      tags:
+      - api
+    put:
+      operationId: updateCategory
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Category'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Category'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Category'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+      tags:
+      - api
+    patch:
+      operationId: partialUpdateCategory
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Category'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Category'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Category'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+      tags:
+      - api
+    delete:
+      operationId: destroyCategory
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+      tags:
+      - api
+  /api/finance/transactions/:
+    get:
+      operationId: listTransactions
+      description: ''
+      parameters:
+      - name: limit
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: offset
+        required: false
+        in: query
+        description: The initial index from which to return the results.
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - count
+                - results
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?offset=400&limit=100
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?offset=200&limit=100
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Transaction'
+          description: ''
+      tags:
+      - api
+    post:
+      operationId: createTransaction
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Transaction'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Transaction'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Transaction'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+          description: ''
+      tags:
+      - api
+  /api/finance/transactions/aggregated/:
+    get:
+      operationId: aggregatedTransaction
+      description: Aggregated transactions by date/month/week/quarter.
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+          description: ''
+      tags:
+      - api
+  /api/finance/transactions/export-csv/:
+    get:
+      operationId: exportCsvTransaction
+      description: Export filtered transactions as CSV.
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+          description: ''
+      tags:
+      - api
+  /api/finance/transactions/top_categories/:
+    get:
+      operationId: topCategoriesTransaction
+      description: 'Top expense categories. Params: start, end (YYYY-MM-DD), limit'
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+          description: ''
+      tags:
+      - api
+  /api/finance/transactions/{id}/:
+    get:
+      operationId: retrieveTransaction
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+          description: ''
+      tags:
+      - api
+    put:
+      operationId: updateTransaction
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Transaction'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Transaction'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Transaction'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+          description: ''
+      tags:
+      - api
+    patch:
+      operationId: partialUpdateTransaction
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Transaction'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Transaction'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Transaction'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+          description: ''
+      tags:
+      - api
+    delete:
+      operationId: destroyTransaction
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+      tags:
+      - api
+  /api/finance/recurring/:
+    get:
+      operationId: listRecurringTransactions
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RecurringTransaction'
+          description: ''
+      tags:
+      - api
+    post:
+      operationId: createRecurringTransaction
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecurringTransaction'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RecurringTransaction'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RecurringTransaction'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecurringTransaction'
+          description: ''
+      tags:
+      - api
+  /api/finance/recurring/{id}/:
+    get:
+      operationId: retrieveRecurringTransaction
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecurringTransaction'
+          description: ''
+      tags:
+      - api
+    put:
+      operationId: updateRecurringTransaction
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecurringTransaction'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RecurringTransaction'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RecurringTransaction'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecurringTransaction'
+          description: ''
+      tags:
+      - api
+    patch:
+      operationId: partialUpdateRecurringTransaction
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecurringTransaction'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RecurringTransaction'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RecurringTransaction'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecurringTransaction'
+          description: ''
+      tags:
+      - api
+    delete:
+      operationId: destroyRecurringTransaction
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+      tags:
+      - api
+  /api/finance/recurring/{id}/preview/:
+    get:
+      operationId: previewRecurringTransaction
+      description: Return the next few scheduled dates for this recurring transaction.
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecurringTransaction'
+          description: ''
+      tags:
+      - api
+  /api/finance/tags/:
+    get:
+      operationId: listTags
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tag'
+          description: ''
+      tags:
+      - api
+    post:
+      operationId: createTag
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Tag'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Tag'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Tag'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tag'
+          description: ''
+      tags:
+      - api
+  /api/finance/tags/analysis/:
+    get:
+      operationId: analysisTag
+      description: Analyze spending by tags across transactions
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tag'
+          description: ''
+      tags:
+      - api
+  /api/finance/tags/{id}/:
+    get:
+      operationId: retrieveTag
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tag'
+          description: ''
+      tags:
+      - api
+    put:
+      operationId: updateTag
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Tag'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Tag'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Tag'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tag'
+          description: ''
+      tags:
+      - api
+    patch:
+      operationId: partialUpdateTag
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Tag'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Tag'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Tag'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tag'
+          description: ''
+      tags:
+      - api
+    delete:
+      operationId: destroyTag
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+      tags:
+      - api
+  /api/budgeting/budgets/:
+    get:
+      operationId: listBudgets
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Budget'
+          description: ''
+      tags:
+      - api
+    post:
+      operationId: createBudget
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Budget'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Budget'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Budget'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Budget'
+          description: ''
+      tags:
+      - api
+  /api/budgeting/budgets/{id}/:
+    get:
+      operationId: retrieveBudget
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Budget'
+          description: ''
+      tags:
+      - api
+    put:
+      operationId: updateBudget
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Budget'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Budget'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Budget'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Budget'
+          description: ''
+      tags:
+      - api
+    patch:
+      operationId: partialUpdateBudget
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Budget'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Budget'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Budget'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Budget'
+          description: ''
+      tags:
+      - api
+    delete:
+      operationId: destroyBudget
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+      tags:
+      - api
+  /api/budgeting/budgets/{id}/summary/:
+    get:
+      operationId: summaryBudget
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Budget'
+          description: ''
+      tags:
+      - api
+  /api/budgeting/budget-lines/:
+    get:
+      operationId: listBudgetLines
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BudgetLine'
+          description: ''
+      tags:
+      - api
+    post:
+      operationId: createBudgetLine
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BudgetLine'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BudgetLine'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BudgetLine'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BudgetLine'
+          description: ''
+      tags:
+      - api
+  /api/budgeting/budget-lines/{id}/:
+    get:
+      operationId: retrieveBudgetLine
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BudgetLine'
+          description: ''
+      tags:
+      - api
+    put:
+      operationId: updateBudgetLine
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BudgetLine'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BudgetLine'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BudgetLine'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BudgetLine'
+          description: ''
+      tags:
+      - api
+    patch:
+      operationId: partialUpdateBudgetLine
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BudgetLine'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BudgetLine'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BudgetLine'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BudgetLine'
+          description: ''
+      tags:
+      - api
+    delete:
+      operationId: destroyBudgetLine
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+      tags:
+      - api
+  /api/wealth/assets/:
+    get:
+      operationId: listAssets
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Asset'
+          description: ''
+      tags:
+      - api
+    post:
+      operationId: createAsset
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Asset'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Asset'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Asset'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Asset'
+          description: ''
+      tags:
+      - api
+  /api/wealth/assets/{id}/:
+    get:
+      operationId: retrieveAsset
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Asset'
+          description: ''
+      tags:
+      - api
+    put:
+      operationId: updateAsset
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Asset'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Asset'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Asset'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Asset'
+          description: ''
+      tags:
+      - api
+    patch:
+      operationId: partialUpdateAsset
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Asset'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Asset'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Asset'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Asset'
+          description: ''
+      tags:
+      - api
+    delete:
+      operationId: destroyAsset
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+      tags:
+      - api
+  /api/wealth/liabilities/:
+    get:
+      operationId: listLiabilities
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Liability'
+          description: ''
+      tags:
+      - api
+    post:
+      operationId: createLiability
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Liability'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Liability'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Liability'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Liability'
+          description: ''
+      tags:
+      - api
+  /api/wealth/liabilities/{id}/:
+    get:
+      operationId: retrieveLiability
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Liability'
+          description: ''
+      tags:
+      - api
+    put:
+      operationId: updateLiability
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Liability'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Liability'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Liability'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Liability'
+          description: ''
+      tags:
+      - api
+    patch:
+      operationId: partialUpdateLiability
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Liability'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Liability'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Liability'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Liability'
+          description: ''
+      tags:
+      - api
+    delete:
+      operationId: destroyLiability
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+      tags:
+      - api
+  /api/wealth/net-worth-snapshots/:
+    get:
+      operationId: listNetWorthSnapshots
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NetWorthSnapshot'
+          description: ''
+      tags:
+      - api
+    post:
+      operationId: createNetWorthSnapshot
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NetWorthSnapshot'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/NetWorthSnapshot'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/NetWorthSnapshot'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetWorthSnapshot'
+          description: ''
+      tags:
+      - api
+  /api/wealth/net-worth-snapshots/current/:
+    get:
+      operationId: currentNetWorthSnapshot
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetWorthSnapshot'
+          description: ''
+      tags:
+      - api
+  /api/wealth/net-worth-snapshots/{id}/:
+    get:
+      operationId: retrieveNetWorthSnapshot
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetWorthSnapshot'
+          description: ''
+      tags:
+      - api
+    put:
+      operationId: updateNetWorthSnapshot
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NetWorthSnapshot'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/NetWorthSnapshot'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/NetWorthSnapshot'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetWorthSnapshot'
+          description: ''
+      tags:
+      - api
+    patch:
+      operationId: partialUpdateNetWorthSnapshot
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NetWorthSnapshot'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/NetWorthSnapshot'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/NetWorthSnapshot'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetWorthSnapshot'
+          description: ''
+      tags:
+      - api
+    delete:
+      operationId: destroyNetWorthSnapshot
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+      tags:
+      - api
+  /api/debt/debt-plans/:
+    get:
+      operationId: listDebtPlans
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DebtPlan'
+          description: ''
+      tags:
+      - api
+    post:
+      operationId: createDebtPlan
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DebtPlan'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DebtPlan'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DebtPlan'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DebtPlan'
+          description: ''
+      tags:
+      - api
+  /api/debt/debt-plans/{id}/:
+    get:
+      operationId: retrieveDebtPlan
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DebtPlan'
+          description: ''
+      tags:
+      - api
+    put:
+      operationId: updateDebtPlan
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DebtPlan'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DebtPlan'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DebtPlan'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DebtPlan'
+          description: ''
+      tags:
+      - api
+    patch:
+      operationId: partialUpdateDebtPlan
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DebtPlan'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DebtPlan'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DebtPlan'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DebtPlan'
+          description: ''
+      tags:
+      - api
+    delete:
+      operationId: destroyDebtPlan
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+      tags:
+      - api
+  /api/debt/debt-plans/{id}/schedule/:
+    get:
+      operationId: scheduleDebtPlan
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DebtPlan'
+          description: ''
+      tags:
+      - api
+  /api/savings/goals/:
+    get:
+      operationId: listSavingsGoals
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SavingsGoal'
+          description: ''
+      tags:
+      - api
+    post:
+      operationId: createSavingsGoal
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SavingsGoal'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SavingsGoal'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SavingsGoal'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SavingsGoal'
+          description: ''
+      tags:
+      - api
+  /api/savings/goals/summary/:
+    get:
+      operationId: summarySavingsGoal
+      description: Get savings summary statistics
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SavingsGoal'
+          description: ''
+      tags:
+      - api
+  /api/savings/goals/{id}/:
+    get:
+      operationId: retrieveSavingsGoal
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SavingsGoal'
+          description: ''
+      tags:
+      - api
+    put:
+      operationId: updateSavingsGoal
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SavingsGoal'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SavingsGoal'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SavingsGoal'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SavingsGoal'
+          description: ''
+      tags:
+      - api
+    patch:
+      operationId: partialUpdateSavingsGoal
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SavingsGoal'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SavingsGoal'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SavingsGoal'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SavingsGoal'
+          description: ''
+      tags:
+      - api
+    delete:
+      operationId: destroySavingsGoal
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+      tags:
+      - api
+  /api/savings/contributions/:
+    get:
+      operationId: listGoalContributions
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GoalContribution'
+          description: ''
+      tags:
+      - api
+    post:
+      operationId: createGoalContribution
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoalContribution'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GoalContribution'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GoalContribution'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GoalContribution'
+          description: ''
+      tags:
+      - api
+  /api/savings/contributions/{id}/:
+    get:
+      operationId: retrieveGoalContribution
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GoalContribution'
+          description: ''
+      tags:
+      - api
+    put:
+      operationId: updateGoalContribution
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoalContribution'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GoalContribution'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GoalContribution'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GoalContribution'
+          description: ''
+      tags:
+      - api
+    patch:
+      operationId: partialUpdateGoalContribution
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoalContribution'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GoalContribution'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GoalContribution'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GoalContribution'
+          description: ''
+      tags:
+      - api
+    delete:
+      operationId: destroyGoalContribution
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+      tags:
+      - api
+  /api/investments/investments/:
+    get:
+      operationId: listInvestments
+      description: ViewSet for managing investments
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Investment'
+          description: ''
+      tags:
+      - api
+    post:
+      operationId: createInvestment
+      description: ViewSet for managing investments
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Investment'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Investment'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Investment'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Investment'
+          description: ''
+      tags:
+      - api
+  /api/investments/investments/summary/:
+    get:
+      operationId: summaryInvestment
+      description: Get summary statistics for all investments
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Investment'
+          description: ''
+      tags:
+      - api
+  /api/investments/investments/{id}/:
+    get:
+      operationId: retrieveInvestment
+      description: ViewSet for managing investments
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Investment'
+          description: ''
+      tags:
+      - api
+    put:
+      operationId: updateInvestment
+      description: ViewSet for managing investments
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Investment'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Investment'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Investment'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Investment'
+          description: ''
+      tags:
+      - api
+    patch:
+      operationId: partialUpdateInvestment
+      description: ViewSet for managing investments
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Investment'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Investment'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Investment'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Investment'
+          description: ''
+      tags:
+      - api
+    delete:
+      operationId: destroyInvestment
+      description: ViewSet for managing investments
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+      tags:
+      - api
+  /api/investments/transactions/:
+    get:
+      operationId: listInvestmentTransactions
+      description: ViewSet for managing investment transactions
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InvestmentTransaction'
+          description: ''
+      tags:
+      - api
+    post:
+      operationId: createInvestmentTransaction
+      description: ViewSet for managing investment transactions
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvestmentTransaction'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/InvestmentTransaction'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/InvestmentTransaction'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvestmentTransaction'
+          description: ''
+      tags:
+      - api
+  /api/investments/transactions/{id}/:
+    get:
+      operationId: retrieveInvestmentTransaction
+      description: ViewSet for managing investment transactions
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvestmentTransaction'
+          description: ''
+      tags:
+      - api
+    put:
+      operationId: updateInvestmentTransaction
+      description: ViewSet for managing investment transactions
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvestmentTransaction'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/InvestmentTransaction'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/InvestmentTransaction'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvestmentTransaction'
+          description: ''
+      tags:
+      - api
+    patch:
+      operationId: partialUpdateInvestmentTransaction
+      description: ViewSet for managing investment transactions
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvestmentTransaction'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/InvestmentTransaction'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/InvestmentTransaction'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvestmentTransaction'
+          description: ''
+      tags:
+      - api
+    delete:
+      operationId: destroyInvestmentTransaction
+      description: ViewSet for managing investment transactions
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+      tags:
+      - api
+  /api/notifications/:
+    get:
+      operationId: listNotifications
+      description: ''
+      parameters:
+      - name: limit
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: offset
+        required: false
+        in: query
+        description: The initial index from which to return the results.
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - count
+                - results
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?offset=400&limit=100
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?offset=200&limit=100
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Notification'
+          description: ''
+      tags:
+      - api
+    post:
+      operationId: createNotification
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Notification'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Notification'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Notification'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+      tags:
+      - api
+  /api/notifications/unread-count/:
+    get:
+      operationId: unreadCountNotification
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+      tags:
+      - api
+  /api/notifications/{id}/:
+    get:
+      operationId: retrieveNotification
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+      tags:
+      - api
+    put:
+      operationId: updateNotification
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Notification'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Notification'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Notification'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+      tags:
+      - api
+    patch:
+      operationId: partialUpdateNotification
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Notification'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Notification'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Notification'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+      tags:
+      - api
+    delete:
+      operationId: destroyNotification
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '204':
+          description: ''
+      tags:
+      - api
+  /api/auth/register/:
+    post:
+      operationId: createregister_view
+      description: 'Registration endpoint: accepts email, password, optional username.'
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+          application/x-www-form-urlencoded:
+            schema: {}
+          multipart/form-data:
+            schema: {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+      tags:
+      - api
+  /api/auth/login/:
+    post:
+      operationId: createlogin_view
+      description: 'Login endpoint: accepts email/username + password and sets session.'
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+          application/x-www-form-urlencoded:
+            schema: {}
+          multipart/form-data:
+            schema: {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+      tags:
+      - api
+  /api/auth/forgot-password/:
+    post:
+      operationId: createforgot_password_view
+      description: Request a password reset token via email.
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+          application/x-www-form-urlencoded:
+            schema: {}
+          multipart/form-data:
+            schema: {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+      tags:
+      - api
+  /api/auth/reset-password/:
+    post:
+      operationId: createreset_password_view
+      description: Reset password using token sent to email.
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+          application/x-www-form-urlencoded:
+            schema: {}
+          multipart/form-data:
+            schema: {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+      tags:
+      - api
+  /api/auth/change-password/:
+    post:
+      operationId: createchange_password_view
+      description: Change password for authenticated user.
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+          application/x-www-form-urlencoded:
+            schema: {}
+          multipart/form-data:
+            schema: {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+      tags:
+      - api
+  /api/auth/logout/:
+    post:
+      operationId: createlogout_view
+      description: Log out the current user and clear the session.
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+          application/x-www-form-urlencoded:
+            schema: {}
+          multipart/form-data:
+            schema: {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+      tags:
+      - api
+  /api/finance/transactions/import-csv/:
+    post:
+      operationId: importCsvTransaction
+      description: 'Import transactions from an uploaded CSV file.
+
+        Expects ''file'' in files.'
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Transaction'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Transaction'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Transaction'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+          description: ''
+      tags:
+      - api
+  /api/finance/recurring/materialize/:
+    post:
+      operationId: materializeRecurringTransaction
+      description: 'Materialize recurring transactions into Transaction rows for
+
+        the current user. Optional body/query: days (default 30).'
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecurringTransaction'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RecurringTransaction'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RecurringTransaction'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecurringTransaction'
+          description: ''
+      tags:
+      - api
+  /api/finance/recurring/notify-due/:
+    post:
+      operationId: notifyDueRecurringTransaction
+      description: 'Create notifications for recurring transactions with the next
+
+        occurrence due within the next N days (default 3).'
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecurringTransaction'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RecurringTransaction'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RecurringTransaction'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecurringTransaction'
+          description: ''
+      tags:
+      - api
+  /api/wealth/assets/sync_from_accounts/:
+    post:
+      operationId: syncFromAccountsAsset
+      description: Sync bank accounts as assets - creates or updates assets based
+        on account current balances
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Asset'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Asset'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Asset'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Asset'
+          description: ''
+      tags:
+      - api
+  /api/wealth/net-worth-snapshots/snapshot/:
+    post:
+      operationId: snapshotNetWorthSnapshot
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NetWorthSnapshot'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/NetWorthSnapshot'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/NetWorthSnapshot'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NetWorthSnapshot'
+          description: ''
+      tags:
+      - api
+  /api/savings/goals/{id}/contribute/:
+    post:
+      operationId: contributeSavingsGoal
+      description: Add a contribution to a savings goal
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SavingsGoal'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SavingsGoal'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SavingsGoal'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SavingsGoal'
+          description: ''
+      tags:
+      - api
+  /api/investments/investments/{id}/add_transaction/:
+    post:
+      operationId: addTransactionInvestment
+      description: Add a transaction to an investment
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Investment'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Investment'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Investment'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Investment'
+          description: ''
+      tags:
+      - api
+  /api/investments/investments/{id}/update_price/:
+    post:
+      operationId: updatePriceInvestment
+      description: Update the current price of an investment
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Investment'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Investment'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Investment'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Investment'
+          description: ''
+      tags:
+      - api
+  /api/notifications/mark-all-read/:
+    post:
+      operationId: markAllReadNotification
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Notification'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Notification'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Notification'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+      tags:
+      - api
+  /api/notifications/{id}/mark-read/:
+    post:
+      operationId: markReadNotification
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Notification'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Notification'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Notification'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+      tags:
+      - api
+components:
+  schemas:
+    Account:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        account_type:
+          enum:
+          - BANK
+          - MOBILE_MONEY
+          - CASH
+          - SACCO
+          - INVESTMENT
+          - LOAN
+          - CREDIT_CARD
+          - OTHER
+          type: string
+        currency:
+          type: string
+          maxLength: 10
+        opening_balance:
+          type: string
+          format: decimal
+          multipleOf: 0.01
+          maximum: 1000000000000
+          minimum: -1000000000000
+        current_balance:
+          type: string
+          readOnly: true
+        status:
+          enum:
+          - ACTIVE
+          - CLOSED
+          type: string
+        institution:
+          type: string
+          maxLength: 100
+        notes:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - name
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        kind:
+          enum:
+          - INCOME
+          - EXPENSE
+          - TRANSFER
+          type: string
+        parent:
+          type: integer
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - name
+      - kind
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        account:
+          type: integer
+        account_name:
+          type: string
+          readOnly: true
+        date:
+          type: string
+          format: date
+        amount:
+          type: string
+          format: decimal
+          multipleOf: 0.01
+          maximum: 1000000000000
+          minimum: -1000000000000
+        kind:
+          enum:
+          - INCOME
+          - EXPENSE
+          - TRANSFER
+          type: string
+        category:
+          type: integer
+          nullable: true
+        category_name:
+          type: string
+          readOnly: true
+        description:
+          type: string
+          maxLength: 255
+        tags:
+          type: string
+          maxLength: 255
+        is_recurring:
+          type: boolean
+        recurring_rule:
+          type: object
+          nullable: true
+        savings_goal:
+          type: integer
+          nullable: true
+        savings_goal_name:
+          type: string
+          readOnly: true
+        savings_goal_emoji:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - account
+      - date
+      - amount
+      - kind
+    RecurringTransaction:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        account:
+          type: integer
+        account_name:
+          type: string
+          readOnly: true
+        date:
+          type: string
+          format: date
+          description: Next due date
+        amount:
+          type: string
+          format: decimal
+          multipleOf: 0.01
+          maximum: 1000000000000
+          minimum: -1000000000000
+        kind:
+          enum:
+          - INCOME
+          - EXPENSE
+          - TRANSFER
+          type: string
+        category:
+          type: integer
+          nullable: true
+        category_name:
+          type: string
+          readOnly: true
+        description:
+          type: string
+          maxLength: 255
+        frequency:
+          enum:
+          - DAILY
+          - WEEKLY
+          - MONTHLY
+          - YEARLY
+          type: string
+        end_date:
+          type: string
+          format: date
+          nullable: true
+        last_executed:
+          type: string
+          format: date
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - account
+      - date
+      - amount
+      - kind
+    Tag:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 50
+        color:
+          type: string
+          description: Hex color code
+          maxLength: 7
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - name
+    Budget:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        period_type:
+          enum:
+          - MONTHLY
+          - ANNUAL
+          - CUSTOM
+          type: string
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        notes:
+          type: string
+        lines:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                readOnly: true
+              budget:
+                type: integer
+              category:
+                type: integer
+              category_name:
+                type: string
+                readOnly: true
+              planned_amount:
+                type: string
+                format: decimal
+                multipleOf: 0.01
+                maximum: 1000000000000
+                minimum: -1000000000000
+              created_at:
+                type: string
+                format: date-time
+                readOnly: true
+              updated_at:
+                type: string
+                format: date-time
+                readOnly: true
+            required:
+            - budget
+            - category
+            - planned_amount
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - name
+      - start_date
+      - end_date
+    BudgetLine:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        budget:
+          type: integer
+        category:
+          type: integer
+        category_name:
+          type: string
+          readOnly: true
+        planned_amount:
+          type: string
+          format: decimal
+          multipleOf: 0.01
+          maximum: 1000000000000
+          minimum: -1000000000000
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - budget
+      - category
+      - planned_amount
+    Asset:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        asset_type:
+          enum:
+          - MMF
+          - STOCK
+          - BOND
+          - LAND
+          - VEHICLE
+          - BUSINESS
+          - PENSION
+          - INSURANCE
+          - OTHER
+          type: string
+        current_value:
+          type: string
+          format: decimal
+          multipleOf: 0.01
+          maximum: 100000000000000
+          minimum: -100000000000000
+        acquisition_date:
+          type: string
+          format: date
+          nullable: true
+        cost_basis:
+          type: string
+          format: decimal
+          multipleOf: 0.01
+          maximum: 100000000000000
+          minimum: -100000000000000
+          nullable: true
+        currency:
+          type: string
+          maxLength: 10
+        linked_account:
+          type: integer
+          nullable: true
+        notes:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - name
+      - current_value
+    Liability:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        liability_type:
+          enum:
+          - MORTGAGE
+          - LOAN
+          - CREDIT_CARD
+          - OTHER
+          type: string
+        principal_balance:
+          type: string
+          format: decimal
+          multipleOf: 0.01
+          maximum: 100000000000000
+          minimum: -100000000000000
+        interest_rate:
+          type: string
+          format: decimal
+          multipleOf: 0.01
+          maximum: 1000
+          minimum: -1000
+          description: Annual interest rate in %
+        minimum_payment:
+          type: string
+          format: decimal
+          multipleOf: 0.01
+          maximum: 1000000000000
+          minimum: -1000000000000
+        tenure_months:
+          type: integer
+          maximum: 2147483647
+          nullable: true
+          description: Total loan tenure in months
+          minimum: 0
+        start_date:
+          type: string
+          format: date
+          nullable: true
+          description: Date when the loan started
+        remaining_tenure:
+          type: integer
+          readOnly: true
+        due_day_of_month:
+          type: integer
+          maximum: 32767
+          nullable: true
+          minimum: 0
+        linked_account:
+          type: integer
+          nullable: true
+        notes:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - name
+      - principal_balance
+      - interest_rate
+      - minimum_payment
+    NetWorthSnapshot:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        date:
+          type: string
+          format: date
+        total_assets:
+          type: string
+          format: decimal
+          multipleOf: 0.01
+          maximum: 100000000000000
+          minimum: -100000000000000
+        total_liabilities:
+          type: string
+          format: decimal
+          multipleOf: 0.01
+          maximum: 100000000000000
+          minimum: -100000000000000
+        net_worth:
+          type: string
+          format: decimal
+          multipleOf: 0.01
+          maximum: 100000000000000
+          minimum: -100000000000000
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - date
+      - total_assets
+      - total_liabilities
+      - net_worth
+    DebtPlan:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        strategy:
+          enum:
+          - AVALANCHE
+          - SNOWBALL
+          type: string
+        monthly_amount_available:
+          type: string
+          format: decimal
+          multipleOf: 0.01
+          maximum: 1000000000000
+          minimum: -1000000000000
+        start_date:
+          type: string
+          format: date
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - monthly_amount_available
+      - start_date
+    SavingsGoal:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        target_amount:
+          type: string
+          format: decimal
+          multipleOf: 0.01
+          maximum: 1000000000000
+          minimum: -1000000000000
+        current_amount:
+          type: string
+          format: decimal
+          multipleOf: 0.01
+          maximum: 1000000000000
+          minimum: -1000000000000
+        target_date:
+          type: string
+          format: date
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        linked_account:
+          type: integer
+          nullable: true
+        linked_account_name:
+          type: string
+          readOnly: true
+        description:
+          type: string
+        emoji:
+          type: string
+          maxLength: 10
+        progress_percentage:
+          type: string
+          readOnly: true
+        remaining_amount:
+          type: string
+          readOnly: true
+        contributions:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                readOnly: true
+              amount:
+                type: string
+                format: decimal
+                multipleOf: 0.01
+                maximum: 1000000000000
+                minimum: -1000000000000
+              contribution_type:
+                enum:
+                - MANUAL
+                - AUTOMATIC
+                type: string
+              date:
+                type: string
+                format: date
+              notes:
+                type: string
+              created_at:
+                type: string
+                format: date-time
+                readOnly: true
+              transaction:
+                type: integer
+                nullable: true
+              transaction_description:
+                type: string
+                readOnly: true
+            required:
+            - amount
+            - date
+          readOnly: true
+        days_remaining:
+          type: string
+          readOnly: true
+        monthly_target:
+          type: string
+          readOnly: true
+        total_from_transactions:
+          type: string
+          readOnly: true
+        interest_rate:
+          type: string
+          format: decimal
+          multipleOf: 0.01
+          maximum: 1000
+          minimum: -1000
+          description: Annual interest rate as a percentage (e.g., 10 for 10%)
+        projected_value:
+          type: string
+          readOnly: true
+      required:
+      - name
+      - target_amount
+    GoalContribution:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        amount:
+          type: string
+          format: decimal
+          multipleOf: 0.01
+          maximum: 1000000000000
+          minimum: -1000000000000
+        contribution_type:
+          enum:
+          - MANUAL
+          - AUTOMATIC
+          type: string
+        date:
+          type: string
+          format: date
+        notes:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        transaction:
+          type: integer
+          nullable: true
+        transaction_description:
+          type: string
+          readOnly: true
+      required:
+      - amount
+      - date
+    Investment:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        symbol:
+          type: string
+          description: Ticker symbol, policy number, or reference
+          maxLength: 50
+        investment_type:
+          enum:
+          - STOCK
+          - BOND
+          - MMF
+          - MUTUAL_FUND
+          - ETF
+          - TBILL
+          - TBOND
+          - FIXED_DEPOSIT
+          - SACCO
+          - UNIT_TRUST
+          - REAL_ESTATE
+          - CRYPTO
+          - PENSION
+          - INSURANCE_ENDOWMENT
+          - INSURANCE_WHOLE_LIFE
+          - INSURANCE_EDUCATION
+          - INSURANCE_INVESTMENT
+          - OTHER
+          type: string
+        investment_type_display:
+          type: string
+          readOnly: true
+        purchase_date:
+          type: string
+          format: date
+        purchase_price:
+          type: string
+          format: decimal
+          multipleOf: 0.01
+          maximum: 1000000000000
+          minimum: -1000000000000
+          description: Price per unit or total amount
+        quantity:
+          type: string
+          format: decimal
+          multipleOf: 0.0001
+          maximum: 10000000000
+          minimum: -10000000000
+          description: Units, shares, or face value
+        purchase_fees:
+          type: string
+          format: decimal
+          multipleOf: 0.01
+          maximum: 100000000
+          minimum: -100000000
+        current_price:
+          type: string
+          format: decimal
+          multipleOf: 0.01
+          maximum: 1000000000000
+          minimum: -1000000000000
+          description: Current price per unit or current value
+        last_updated:
+          type: string
+          format: date-time
+          readOnly: true
+        interest_rate:
+          type: string
+          format: decimal
+          multipleOf: 0.001
+          maximum: 1000
+          minimum: -1000
+          description: Annual interest/coupon/dividend rate as percentage
+        maturity_date:
+          type: string
+          format: date
+          nullable: true
+        bond_type:
+          enum:
+          - INFRASTRUCTURE
+          - CORPORATE
+          - GOVERNMENT
+          - MUNICIPAL
+          - OTHER
+          type: string
+        bond_type_display:
+          type: string
+          readOnly: true
+        payment_frequency:
+          enum:
+          - NONE
+          - MONTHLY
+          - QUARTERLY
+          - SEMI_ANNUAL
+          - ANNUAL
+          - AT_MATURITY
+          type: string
+        payment_frequency_display:
+          type: string
+          readOnly: true
+        next_payment_date:
+          type: string
+          format: date
+          nullable: true
+        tax_rate:
+          type: string
+          format: decimal
+          multipleOf: 0.01
+          maximum: 1000
+          minimum: -1000
+          description: Withholding tax rate on interest (0 for infra bonds, 15 for
+            others)
+        face_value:
+          type: string
+          format: decimal
+          multipleOf: 0.01
+          maximum: 1000000000000
+          minimum: -1000000000000
+          nullable: true
+          description: Par/Face value for bonds
+        monthly_rent:
+          type: string
+          format: decimal
+          multipleOf: 0.01
+          maximum: 10000000000
+          minimum: -10000000000
+          description: Monthly rental income
+        monthly_costs:
+          type: string
+          format: decimal
+          multipleOf: 0.01
+          maximum: 10000000000
+          minimum: -10000000000
+          description: Monthly costs (maintenance, management, insurance, etc.)
+        property_tax_annual:
+          type: string
+          format: decimal
+          multipleOf: 0.01
+          maximum: 10000000000
+          minimum: -10000000000
+          description: Annual property tax/rates
+        occupancy_status:
+          enum:
+          - ''
+          - OCCUPIED
+          - VACANT
+          - PARTIALLY
+          type: string
+        occupancy_status_display:
+          type: string
+          readOnly: true
+        sum_assured:
+          type: string
+          format: decimal
+          multipleOf: 0.01
+          maximum: 1000000000000
+          minimum: -1000000000000
+          nullable: true
+          description: Death benefit / Maturity value
+        premium_frequency:
+          enum:
+          - NONE
+          - MONTHLY
+          - QUARTERLY
+          - SEMI_ANNUAL
+          - ANNUAL
+          - AT_MATURITY
+          type: string
+        premium_amount:
+          type: string
+          format: decimal
+          multipleOf: 0.01
+          maximum: 10000000000
+          minimum: -10000000000
+          description: Premium amount per payment
+        surrender_value:
+          type: string
+          format: decimal
+          multipleOf: 0.01
+          maximum: 1000000000000
+          minimum: -1000000000000
+          nullable: true
+          description: Current surrender/cash value
+        dividend_rate:
+          type: string
+          format: decimal
+          multipleOf: 0.01
+          maximum: 1000
+          minimum: -1000
+          description: Annual dividend rate on deposits
+        loan_interest_rebate:
+          type: string
+          format: decimal
+          multipleOf: 0.01
+          maximum: 1000
+          minimum: -1000
+          description: Interest rebate rate on loans
+        platform:
+          type: string
+          description: e.g., NSE, CIC, Britam, Binance
+          maxLength: 100
+        notes:
+          type: string
+        status:
+          enum:
+          - ACTIVE
+          - SOLD
+          - MATURED
+          type: string
+        status_display:
+          type: string
+          readOnly: true
+        total_invested:
+          type: string
+          readOnly: true
+        current_value:
+          type: string
+          readOnly: true
+        gain_loss:
+          type: string
+          readOnly: true
+        gain_loss_percentage:
+          type: string
+          readOnly: true
+        days_held:
+          type: string
+          readOnly: true
+        annualized_return:
+          type: string
+          readOnly: true
+        annual_income:
+          type: string
+          readOnly: true
+        net_rental_yield:
+          type: string
+          readOnly: true
+        transactions:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                readOnly: true
+              transaction_type:
+                enum:
+                - BUY
+                - SELL
+                - DIVIDEND
+                - INTEREST
+                - BONUS
+                - SPLIT
+                - FEE
+                type: string
+              date:
+                type: string
+                format: date
+              quantity:
+                type: string
+                format: decimal
+                multipleOf: 0.0001
+                maximum: 10000000000
+                minimum: -10000000000
+              price_per_unit:
+                type: string
+                format: decimal
+                multipleOf: 0.01
+                maximum: 1000000000000
+                minimum: -1000000000000
+              total_amount:
+                type: string
+                format: decimal
+                multipleOf: 0.01
+                maximum: 1000000000000
+                minimum: -1000000000000
+              fees:
+                type: string
+                format: decimal
+                multipleOf: 0.01
+                maximum: 100000000
+                minimum: -100000000
+              notes:
+                type: string
+              created_at:
+                type: string
+                format: date-time
+                readOnly: true
+            required:
+            - transaction_type
+            - date
+            - total_amount
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - name
+      - purchase_date
+      - purchase_price
+      - current_price
+    InvestmentTransaction:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        transaction_type:
+          enum:
+          - BUY
+          - SELL
+          - DIVIDEND
+          - INTEREST
+          - BONUS
+          - SPLIT
+          - FEE
+          type: string
+        date:
+          type: string
+          format: date
+        quantity:
+          type: string
+          format: decimal
+          multipleOf: 0.0001
+          maximum: 10000000000
+          minimum: -10000000000
+        price_per_unit:
+          type: string
+          format: decimal
+          multipleOf: 0.01
+          maximum: 1000000000000
+          minimum: -1000000000000
+        total_amount:
+          type: string
+          format: decimal
+          multipleOf: 0.01
+          maximum: 1000000000000
+          minimum: -1000000000000
+        fees:
+          type: string
+          format: decimal
+          multipleOf: 0.01
+          maximum: 100000000
+          minimum: -100000000
+        notes:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - transaction_type
+      - date
+      - total_amount
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        message:
+          type: string
+        level:
+          enum:
+          - INFO
+          - SUCCESS
+          - WARNING
+          - ERROR
+          type: string
+        is_read:
+          type: boolean
+        category:
+          type: string
+          maxLength: 50
+        link_url:
+          type: string
+          maxLength: 255
+        email_sent:
+          type: boolean
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - title
