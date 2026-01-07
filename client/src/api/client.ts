@@ -1,8 +1,9 @@
 // src/api/client.ts
 import axios from "axios";
+import { getApiBaseUrl } from "../utils/platform";
 
 export const api = axios.create({
-  baseURL: "", // Use relative URLs - Vite proxy will forward to backend
+  baseURL: getApiBaseUrl(), // Use platform utility for environment-aware base URL
   withCredentials: true, // send cookies (for session auth)
   xsrfCookieName: "csrftoken", // Django default cookie name
   xsrfHeaderName: "X-CSRFToken", // header Django expects
