@@ -102,6 +102,9 @@ export interface CreateTransactionPayload {
   description?: string;
   tags?: string;
   savings_goal?: number | null;
+  source?: "MANUAL" | "SMS" | "IMPORT";
+  sms_reference?: string;
+  sms_detected_at?: string;
 }
 
 export async function createTransaction(
