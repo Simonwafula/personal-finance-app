@@ -70,6 +70,28 @@ cd "$APP_DIR"
 
 # Restart Gunicorn service
 echo -e "\n${YELLOW}→${NC} Restarting Gunicorn service..."
+# Optional: if a prepared systemd unit or OLS vhost is included in repo, install them (backup originals)
+if [ -f "$APP_DIR/deploy/systemd/finance-app.service" ]; then
+    echo -e "\n${YELLOW}→${NC} Installing systemd unit from repo (backup first)..."
+    sudo cp /etc/systemd/system/finance-app.service /etc/systemd/system/finance-app.service.bak 2>/dev/null || true
+    sudo cp "$APP_DIR/deploy/systemd/finance-app.service" /etc/systemd/system/finance-app.service
+    sudo chown root:root /etc/systemd/system/finance-app.service || true
+    sudo chmod 644 /etc/systemd/system/finance-app.service || true
+    sudo systemctl daemon-reload || true
+fi
+
+# Optional: install OpenLiteSpeed vhost if present
+VHOST_DIR=/usr/local/lsws/conf/vhosts/finance.mstatilitechnologies.com
+if [ -f "$APP_DIR/deploy/openlitespeed/vhost.conf" ] && [ -d "$VHOST_DIR" ]; then
+    echo -e "\n${YELLOW}→${NC} Installing OLS vhost from repo (backup first)..."
+    sudo cp "$VHOST_DIR/vhost.conf" "$VHOST_DIR/vhost.conf.bak" 2>/dev/null || true
+    sudo cp "$APP_DIR/deploy/openlitespeed/vhost.conf" "$VHOST_DIR/vhost.conf"
+    sudo chown root:root "$VHOST_DIR/vhost.conf" || true
+    sudo chmod 644 "$VHOST_DIR/vhost.conf" || true
+    sudo systemctl restart lsws || true
+fi
+
+echo -e "\n${YELLOW}→${NC} Restarting Gunicorn service..."
 sudo systemctl restart "$SERVICE_NAME"
 
 # Check service status
