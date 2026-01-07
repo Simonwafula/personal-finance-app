@@ -13,8 +13,8 @@ Wants=postgresql.service
 [Service]
 Type=notify
 # CyberPanel assigned user for finance.mstatilitechnologies.com
-User=finan1713
-Group=finan1713
+User=finan6751
+Group=finan6751
 
 # Working directory - where manage.py is located (public_html is git root)
 WorkingDirectory=/home/finance.mstatilitechnologies.com/public_html
