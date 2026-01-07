@@ -59,6 +59,7 @@ git commit -m "feat: Phase 1 - Add SMS tracking infrastructure
 - Update API serializers to support SMS fields
 - Update frontend types for SMS transactions
 - Update .gitignore to exclude build artifacts and keystores
+- Fix GitHub Actions workflow paths (backend in root, not ./server)
 
 BREAKING CHANGE: None - All changes are backward compatible
 Production-Safe: Migration uses nullable fields and defaults only"
