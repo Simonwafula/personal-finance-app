@@ -431,8 +431,8 @@ Group=$APP_USER
 WorkingDirectory=$APP_DIR
 EnvironmentFile=$ENV_FILE
 ExecStart=$VENV_PATH/bin/gunicorn \\
-    --workers 3 \\
-    --bind 127.0.0.1:8000 \\
+    --workers 3 \
+    --bind 127.0.0.1:8001 \
     --timeout 120 \\
     --access-logfile $LOG_DIR/gunicorn-access.log \\
     --error-logfile $LOG_DIR/gunicorn-error.log \\
@@ -483,10 +483,10 @@ echo -e "${YELLOW}
 ║  3. Click 'Rewrite Rules' and add these rules:                                ║
 ║                                                                               ║
 ║     RewriteEngine On                                                          ║
-║     RewriteRule ^/api/(.*)$ http://127.0.0.1:8000/api/\$1 [P,L]               ║
-║     RewriteRule ^/admin/(.*)$ http://127.0.0.1:8000/admin/\$1 [P,L]           ║
-║     RewriteRule ^/accounts/(.*)$ http://127.0.0.1:8000/accounts/\$1 [P,L]     ║
-║     RewriteRule ^/static/(.*)$ http://127.0.0.1:8000/static/\$1 [P,L]         ║
+║     RewriteRule ^/api/(.*)$ http://127.0.0.1:8001/api/\$1 [P,L]               ║
+║     RewriteRule ^/admin/(.*)$ http://127.0.0.1:8001/admin/\$1 [P,L]           ║
+║     RewriteRule ^/accounts/(.*)$ http://127.0.0.1:8001/accounts/\$1 [P,L]     ║
+║     RewriteRule ^/static/(.*)$ http://127.0.0.1:8001/static/\$1 [P,L]         ║
 ║     RewriteRule ^/assets/(.*)$ /client/dist/assets/\$1 [L]                    ║
 ║     RewriteCond %{REQUEST_FILENAME} !-f                                       ║
 ║     RewriteCond %{REQUEST_FILENAME} !-d                                       ║
@@ -527,7 +527,7 @@ fi
 
 # Test local API
 echo -e "\nTesting local API..."
-if curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8000/api/ | grep -q "200\|404\|401"; then
+if curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8001/api/ | grep -q "200\|404\|401"; then
     print_success "Django API is responding"
 else
     print_warning "Django API may not be responding (check logs)"

@@ -34,5 +34,12 @@ def create_user_profile(sender, instance, created, **kwargs):
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def save_user_profile(sender, instance, **kwargs):
     """Save the profile when the user is saved"""
-    if hasattr(instance, 'profile'):
-        instance.profile.save()
+    # Accessing the reverse one-to-one relation can raise a
+    # RelatedObjectDoesNotExist exception if the profile is missing.
+    try:
+        profile = instance.profile
+    except Exception:
+        profile = None
+
+    if profile:
+        profile.save()

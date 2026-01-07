@@ -121,7 +121,7 @@
 ## ✅ Testing Status
 
 - Database migrations: ✅ Applied successfully
-- Django server: ✅ Running on port 8000
+- Django server: ✅ Running on port 8001
 - API endpoints: ✅ Ready and accessible
 - Frontend: ✅ No compilation errors
 - Type safety: ✅ Full TypeScript coverage

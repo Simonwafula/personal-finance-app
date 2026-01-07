@@ -117,10 +117,10 @@ Add these rules:
 RewriteEngine On
 
 # Proxy to Django
-RewriteRule ^/api/(.*)$ http://127.0.0.1:8000/api/$1 [P,L]
-RewriteRule ^/admin/(.*)$ http://127.0.0.1:8000/admin/$1 [P,L]
-RewriteRule ^/accounts/(.*)$ http://127.0.0.1:8000/accounts/$1 [P,L]
-RewriteRule ^/static/(.*)$ http://127.0.0.1:8000/static/$1 [P,L]
+RewriteRule ^/api/(.*)$ http://127.0.0.1:8001/api/$1 [P,L]
+RewriteRule ^/admin/(.*)$ http://127.0.0.1:8001/admin/$1 [P,L]
+RewriteRule ^/accounts/(.*)$ http://127.0.0.1:8001/accounts/$1 [P,L]
+RewriteRule ^/static/(.*)$ http://127.0.0.1:8001/static/$1 [P,L]
 
 # Serve React assets
 RewriteRule ^/assets/(.*)$ /client/dist/assets/$1 [L]
@@ -175,7 +175,7 @@ journalctl -u finance-app -n 50
 ### 502 Bad Gateway
 ```bash
 # Check Gunicorn
-curl http://127.0.0.1:8000/api/
+curl http://127.0.0.1:8001/api/
 
 # Restart
 systemctl restart finance-app

@@ -27,10 +27,15 @@ def get_user_data_with_profile(user):
         "username": user.get_username(),
         "email": user.email,
     }
-    
-    # Include profile data if it exists
-    if hasattr(user, 'profile'):
+    # Include profile data if it exists. Accessing the reverse one-to-one
+    # relation can raise a RelatedObjectDoesNotExist exception if the
+    # profile was not created for this user; handle that safely.
+    try:
         profile = user.profile
+    except Exception:
+        profile = None
+
+    if profile:
         data['profile'] = {
             'bio': profile.bio,
             'phone': profile.phone,
@@ -78,9 +83,14 @@ def register_view(request: Request):
         username=username, email=email, password=password
     )
     
-    # Update profile with additional data if provided
-    if hasattr(user, 'profile'):
+    # Update profile with additional data if provided. Be defensive
+    # in case the related profile object is missing.
+    try:
         profile = user.profile
+    except Exception:
+        profile = None
+
+    if profile:
         profile.phone = data.get('phone', '')
         profile.bio = data.get('bio', '')
         profile.country = data.get('country', '')

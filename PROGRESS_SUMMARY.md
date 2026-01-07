@@ -882,15 +882,15 @@ const handleCreate = async (data) => {
 **[.env](.env)** (configured):
 ```bash
 GEMINI_API_KEY=your_api_key_here
-VITE_DJANGO_BACKEND_URL=http://localhost:8000
+VITE_DJANGO_BACKEND_URL=http://localhost:8001
 VITE_API_BASE_URL=
 VITE_GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
 ```
 
 ### Vite Config
 **[vite.config.ts](vite.config.ts)** (configured):
-- ✅ API proxy for `/api` → `http://localhost:8000`
-- ✅ OAuth proxy for `/accounts` → `http://localhost:8000`
+- ✅ API proxy for `/api` → `http://localhost:8001`
+- ✅ OAuth proxy for `/accounts` → `http://localhost:8001`
 - ✅ Environment variable loading
 - ✅ React plugin configured
 
