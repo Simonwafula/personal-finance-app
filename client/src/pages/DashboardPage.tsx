@@ -1,16 +1,25 @@
 // src/pages/DashboardPage.tsx
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchAggregatedTransactions, fetchTopCategories, fetchAccounts } from "../api/finance";
+import { fetchAggregatedTransactions, fetchTopCategories, fetchAccounts, fetchCategories } from "../api/finance";
 import { fetchTransactions } from "../api/finance";
 import { fetchCurrentNetWorth, fetchNetWorthSnapshots } from "../api/wealth";
 import { getSavingsSummary, type SavingsSummary } from "../api/savings";
 import { getInvestmentSummary, type InvestmentSummary } from "../api/investments";
-import type { Account } from "../api/types";
+import type { Account, Category } from "../api/types";
 import { useTimeRange } from "../contexts/TimeRangeContext";
 // TimeRangeSelector comes from global context (rendered in Layout)
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, CartesianGrid } from "recharts";
 import type { NetWorthCurrent } from "../api/types";
+import Platform from "../utils/platform";
+import { createTransaction } from "../api/finance";
+
+// Lazy load SMS components (only loaded on mobile)
+const SmsTransactionPrompt = lazy(() =>
+  import("../features/sms").then((module) => ({
+    default: module.SmsTransactionPrompt,
+  }))
+);
 
 interface DashboardTotals {
   income: number;
@@ -39,6 +48,8 @@ export default function DashboardPage() {
   const [investmentsSummary, setInvestmentsSummary] = useState<InvestmentSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
 
   const navigate = useNavigate();
   const { range } = useTimeRange();
@@ -49,16 +60,19 @@ export default function DashboardPage() {
         setLoading(true);
         setError(null);
 
-        const [nw, nws, accountsData, savingsSummary, invSummary] = await Promise.all([
+        const [nw, nws, accountsData, savingsSummary, invSummary, categoriesData] = await Promise.all([
           fetchCurrentNetWorth().catch(() => null),
           fetchNetWorthSnapshots().catch(() => []),
           fetchAccounts().catch(() => [] as Account[]),
           getSavingsSummary().catch(() => null),
           getInvestmentSummary().catch(() => null),
+          fetchCategories().catch(() => [] as Category[]),
         ]);
 
         if (savingsSummary) setSavingsGoals(savingsSummary);
         if (invSummary) setInvestmentsSummary(invSummary);
+        setAccounts(accountsData);
+        setCategories(categoriesData);
 
         // Calculate liquidity (immediate access cash)
         const liquidTypes = ['BANK', 'MOBILE_MONEY', 'CASH', 'SACCO'];
@@ -364,6 +378,32 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
+
+          {/* SMS Transaction Detection (Mobile only) */}
+          {Platform.canReadSms() && categories.length > 0 && accounts.length > 0 && (
+            <Suspense fallback={<div className="card p-4 animate-pulse">Loading SMS detection...</div>}>
+              <SmsTransactionPrompt
+                categories={categories}
+                accounts={accounts}
+                onSaveTransaction={async (txData) => {
+                  await createTransaction({
+                    amount: txData.amount,
+                    kind: txData.type === 'income' ? 'INCOME' : 'EXPENSE',
+                    category: txData.category,
+                    account: txData.account,
+                    description: txData.description,
+                    date: txData.date,
+                    source: 'SMS',
+                    sms_reference: txData.reference,
+                    sms_detected_at: new Date().toISOString(),
+                  });
+                  // Reload dashboard data
+                  window.location.reload();
+                }}
+                className="mb-6"
+              />
+            </Suspense>
+          )}
 
           {/* Recent Transactions */}
           <div className="card-elevated">
