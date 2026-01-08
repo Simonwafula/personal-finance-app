@@ -1,243 +1,596 @@
-# Deployment Guide - Personal Finance App
+# Production Deployment Guide
 
-Deploy Django + React on OpenLiteSpeed/CyberPanel.
+This guide covers deploying the Personal Finance application to a production VPS environment.
 
-## Your Server Configuration
+## 🌐 Production Environment
 
-| Setting | Value |
-|---------|-------|
-| **Domain** | `finance.mstatilitechnologies.com` |
-| **Server IP** | `67.217.62.77` |
-| **CyberPanel User** | `finan1713` |
-| **Home Directory** | `/home/finance.mstatilitechnologies.com` |
-| **App Directory** | `/home/finance.mstatilitechnologies.com/public_html` |
-| **Virtual Environment** | `/home/finance.mstatilitechnologies.com/.venv` |
-| **Environment File** | `/home/finance.mstatilitechnologies.com/.env` |
-| **Logs** | `/home/finance.mstatilitechnologies.com/logs` |
+**Domain:** https://finance.mstatilitechnologies.com
+**Server:** Ubuntu 22.04 LTS VPS
+**Web Server:** OpenLiteSpeed
+**WSGI Server:** Gunicorn
+**Database:** PostgreSQL 14+
+**Process Manager:** Systemd
 
----
+## 📋 Prerequisites
 
-## Quick Commands
+### Server Requirements
+- Ubuntu 22.04 LTS or later
+- Minimum 2GB RAM
+- 20GB storage
+- Root or sudo access
+- Domain name pointed to server IP
 
+### Required Software
 ```bash
-# SSH into server
-ssh root@67.217.62.77
+# System packages
+sudo apt update
+sudo apt install -y python3.11 python3.11-venv python3-pip postgresql postgresql-contrib nodejs npm git
 
-# Quick update after code changes
-cd /home/finance.mstatilitechnologies.com/public_html && ./deploy-direct.sh
-
-# View logs
-journalctl -u finance-app -f
-tail -f /home/finance.mstatilitechnologies.com/logs/gunicorn-error.log
-
-# Restart services
-systemctl restart finance-app
-/usr/local/lsws/bin/lswsctrl restart
+# OpenLiteSpeed (optional, or use Nginx)
+wget -O - http://rpms.litespeedtech.com/debian/enable_lst_debain_repo.sh | sudo bash
+sudo apt install openlitespeed
 ```
 
----
+## 🔧 Initial Server Setup
 
-## 1. Initial Setup (First Time Only)
-
-### 1.1 Install Systemd Service
+### 1. Create Application User
 
 ```bash
-# Copy the service file
-cp /home/finance.mstatilitechnologies.com/public_html/deploy/systemd/finance-app.service /etc/systemd/system/
-
-# Reload, enable, and start
-systemctl daemon-reload
-systemctl enable finance-app
-systemctl start finance-app
+sudo adduser finance
+sudo usermod -aG sudo finance
+su - finance
 ```
 
-### 1.2 Verify Environment File
-
-Ensure `/home/finance.mstatilitechnologies.com/.env` contains:
+### 2. Set Up PostgreSQL Database
 
 ```bash
-# Django
-DJANGO_SECRET_KEY=your-secret-key
-DJANGO_DEBUG=False
-DJANGO_ALLOWED_HOSTS=finance.mstatilitechnologies.com,www.finance.mstatilitechnologies.com
+# Create database and user
+sudo -u postgres psql
+
+CREATE DATABASE finance_db;
+CREATE USER finance_user WITH PASSWORD 'your_secure_password';
+ALTER ROLE finance_user SET client_encoding TO 'utf8';
+ALTER ROLE finance_user SET default_transaction_isolation TO 'read committed';
+ALTER ROLE finance_user SET timezone TO 'UTC';
+GRANT ALL PRIVILEGES ON DATABASE finance_db TO finance_user;
+\q
+```
+
+### 3. Clone Repository
+
+```bash
+cd /home
+git clone https://github.com/Simonwafula/personal-finance-app.git finance.mstatilitechnologies.com
+cd finance.mstatilitechnologies.com
+```
+
+## 🐍 Backend Deployment
+
+### 1. Create Virtual Environment
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+### 2. Install Python Dependencies
+
+```bash
+pip install --upgrade pip
+pip install -r requirements.txt
+pip install gunicorn psycopg2-binary
+```
+
+### 3. Configure Environment Variables
+
+Create `.env` file:
+
+```bash
+cat > .env << 'EOF'
+# Django Settings
+DEBUG=False
+SECRET_KEY=your-super-secret-key-change-this-in-production
+ALLOWED_HOSTS=finance.mstatilitechnologies.com,www.finance.mstatilitechnologies.com
 
 # Database
-DATABASE_ENGINE=django.db.backends.postgresql
 DATABASE_NAME=finance_db
 DATABASE_USER=finance_user
-DATABASE_PASSWORD=your-db-password
+DATABASE_PASSWORD=your_secure_password
 DATABASE_HOST=localhost
 DATABASE_PORT=5432
 
 # Security
+CSRF_TRUSTED_ORIGINS=https://finance.mstatilitechnologies.com,https://www.finance.mstatilitechnologies.com
 CORS_ALLOWED_ORIGINS=https://finance.mstatilitechnologies.com
-CSRF_TRUSTED_ORIGINS=https://finance.mstatilitechnologies.com
 
-# Google OAuth
-GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=your-secret
-SOCIALACCOUNT_LOGIN_REDIRECT_URL=https://finance.mstatilitechnologies.com/oauth-callback
-```
+# Email (optional)
+EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER=your-email@gmail.com
+EMAIL_HOST_PASSWORD=your-app-password
 
-### 1.3 Build Frontend
-
-```bash
-cd /home/finance.mstatilitechnologies.com/public_html/client
-
-# Create production env
-cat > .env.production << EOF
-VITE_API_BASE_URL=https://finance.mstatilitechnologies.com/api
-VITE_GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
+# Google OAuth (optional)
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
 EOF
 
-npm install && npm run build
+chmod 600 .env
 ```
 
-### 1.4 Django Setup
+### 4. Run Migrations
 
 ```bash
-cd /home/finance.mstatilitechnologies.com/public_html
-source /home/finance.mstatilitechnologies.com/.venv/bin/activate
-set -a && source /home/finance.mstatilitechnologies.com/.env && set +a
-
 python manage.py migrate
-python manage.py collectstatic --noinput
 python manage.py createsuperuser
 ```
 
----
+### 5. Collect Static Files
 
-## 2. CyberPanel Rewrite Rules (Critical!)
-
-Go to **CyberPanel → Websites → finance.mstatilitechnologies.com → Manage → Rewrite Rules**
-
-Add these rules:
-
-```apache
-RewriteEngine On
-
-# Proxy to Django
-RewriteRule ^/api/(.*)$ http://127.0.0.1:8001/api/$1 [P,L]
-RewriteRule ^/admin/(.*)$ http://127.0.0.1:8001/admin/$1 [P,L]
-RewriteRule ^/accounts/(.*)$ http://127.0.0.1:8001/accounts/$1 [P,L]
-RewriteRule ^/static/(.*)$ http://127.0.0.1:8001/static/$1 [P,L]
-
-# Serve React assets
-RewriteRule ^/assets/(.*)$ /client/dist/assets/$1 [L]
-
-# React SPA fallback
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteCond %{REQUEST_URI} !^/api/
-RewriteCond %{REQUEST_URI} !^/admin/
-RewriteCond %{REQUEST_URI} !^/accounts/
-RewriteCond %{REQUEST_URI} !^/static/
-RewriteRule ^(.*)$ /client/dist/index.html [L]
-```
-
-Then restart: `/usr/local/lsws/bin/lswsctrl restart`
-
----
-
-## 3. SSL Certificate
-
-In CyberPanel:
-1. Go to **SSL → Manage SSL**
-2. Select `finance.mstatilitechnologies.com`
-3. Click **Issue SSL**
-
----
-
-## 4. Google OAuth Setup
-
-### Google Cloud Console
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. **APIs & Services → Credentials → Create OAuth 2.0 Client ID**
-3. Set:
-   - Authorized JavaScript origins: `https://finance.mstatilitechnologies.com`
-   - Authorized redirect URIs: `https://finance.mstatilitechnologies.com/accounts/google/login/callback/`
-
-### Django Admin
-1. Go to `https://finance.mstatilitechnologies.com/admin/`
-2. **Social Applications → Add**
-3. Provider: Google, add Client ID and Secret
-
----
-
-## 5. Troubleshooting
-
-### Service Won't Start
 ```bash
-systemctl status finance-app
-journalctl -u finance-app -n 50
-```
-
-### 502 Bad Gateway
-```bash
-# Check Gunicorn
-curl http://127.0.0.1:8001/api/
-
-# Restart
-systemctl restart finance-app
-```
-
-### CSRF Errors
-Verify `CSRF_TRUSTED_ORIGINS` in `.env` includes `https://` prefix.
-
-### Static Files Not Loading
-```bash
-cd /home/finance.mstatilitechnologies.com/public_html
-source /home/finance.mstatilitechnologies.com/.venv/bin/activate
 python manage.py collectstatic --noinput
 ```
 
----
+### 6. Test Gunicorn
 
-## 6. Maintenance
-
-### Update Code
 ```bash
-cd /home/finance.mstatilitechnologies.com/public_html
-./deploy-direct.sh
+gunicorn backend.wsgi:application --bind 127.0.0.1:8001
 ```
 
-### Backup Database
+Press Ctrl+C after verifying it works.
+
+### 7. Create Systemd Service
+
 ```bash
-pg_dump -U finance_user finance_db > backup_$(date +%Y%m%d).sql
+sudo nano /etc/systemd/system/finance-app.service
 ```
 
-### View Logs
+Add:
+
+```ini
+[Unit]
+Description=Personal Finance Gunicorn Application
+After=network.target
+
+[Service]
+Type=notify
+User=finance
+Group=finance
+WorkingDirectory=/home/finance.mstatilitechnologies.com
+Environment="PATH=/home/finance.mstatilitechnologies.com/.venv/bin"
+EnvironmentFile=/home/finance.mstatilitechnologies.com/.env
+ExecStart=/home/finance.mstatilitechnologies.com/.venv/bin/gunicorn \
+          --workers 3 \
+          --bind 127.0.0.1:8001 \
+          --timeout 120 \
+          --access-logfile /var/log/finance-app/access.log \
+          --error-logfile /var/log/finance-app/error.log \
+          backend.wsgi:application
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Create log directory:
+
 ```bash
-# Gunicorn
-journalctl -u finance-app -f
+sudo mkdir -p /var/log/finance-app
+sudo chown finance:finance /var/log/finance-app
+```
 
-# Error log
-tail -f /home/finance.mstatilitechnologies.com/logs/gunicorn-error.log
+Enable and start service:
 
-# OLS
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable finance-app
+sudo systemctl start finance-app
+sudo systemctl status finance-app
+```
+
+## ⚛️ Frontend Deployment
+
+### 1. Install Node Dependencies
+
+```bash
+cd client
+npm install
+```
+
+### 2. Build Production Bundle
+
+```bash
+# For web deployment (without mobile features)
+npm run build:web
+
+# Output will be in client/dist/
+```
+
+### 3. Copy Index Template
+
+```bash
+# Copy built index.html to Django templates
+cp dist/index.html ../templates/index.html
+```
+
+### 4. Verify Build
+
+```bash
+ls -lh dist/assets/
+# Should see optimized JS and CSS files
+```
+
+## 🌐 Web Server Configuration
+
+### Option A: OpenLiteSpeed
+
+#### 1. Configure Virtual Host
+
+```bash
+sudo nano /usr/local/lsws/conf/vhosts/finance/vhost.conf
+```
+
+Use configuration from `deploy/openlitespeed/vhost.conf`:
+
+```apache
+docRoot                   /home/finance.mstatilitechnologies.com/client/dist
+enableGzip                1
+enableBrCache             1
+
+context / {
+  type                    proxy
+  handler                 http://127.0.0.1:8001
+  addDefaultCharset       off
+}
+
+context /api/ {
+  type                    proxy
+  handler                 http://127.0.0.1:8001
+  addDefaultCharset       off
+}
+
+context /assets/ {
+  type                    NULL
+  location                $DOC_ROOT/assets/
+  allowBrowse             1
+  extraHeaders            <<<END_HEADERS
+Cache-Control: public, max-age=31536000, immutable
+END_HEADERS
+}
+
+context /admin/ {
+  type                    proxy
+  handler                 http://127.0.0.1:8001
+  addDefaultCharset       off
+}
+
+rewrite  {
+  enable                  1
+  rules                   <<<END_rules
+RewriteCond %{REQUEST_URI} !^/api/
+RewriteCond %{REQUEST_URI} !^/admin/
+RewriteCond %{REQUEST_URI} !^/assets/
+RewriteCond %{REQUEST_URI} !^/static/
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ /index.html [L]
+END_rules
+}
+```
+
+#### 2. Restart OpenLiteSpeed
+
+```bash
+sudo /usr/local/lsws/bin/lswsctrl restart
+```
+
+### Option B: Nginx (Alternative)
+
+```nginx
+server {
+    listen 80;
+    server_name finance.mstatilitechnologies.com;
+
+    # Redirect HTTP to HTTPS
+    return 301 https://$server_name$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name finance.mstatilitechnologies.com;
+
+    ssl_certificate /path/to/cert.pem;
+    ssl_certificate_key /path/to/key.pem;
+
+    # Frontend static files
+    location / {
+        root /home/finance.mstatilitechnologies.com/client/dist;
+        try_files $uri $uri/ /index.html;
+    }
+
+    # API proxy
+    location /api/ {
+        proxy_pass http://127.0.0.1:8001;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Django admin
+    location /admin/ {
+        proxy_pass http://127.0.0.1:8001;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    # Static files
+    location /static/ {
+        alias /home/finance.mstatilitechnologies.com/staticfiles/;
+        expires 30d;
+        add_header Cache-Control "public, immutable";
+    }
+
+    # Assets with long cache
+    location /assets/ {
+        alias /home/finance.mstatilitechnologies.com/client/dist/assets/;
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+}
+```
+
+## 🔒 SSL/TLS Setup
+
+### Using Let's Encrypt (Certbot)
+
+```bash
+sudo apt install certbot python3-certbot-nginx
+
+# For Nginx
+sudo certbot --nginx -d finance.mstatilitechnologies.com
+
+# For OpenLiteSpeed (manual)
+sudo certbot certonly --standalone -d finance.mstatilitechnologies.com
+# Then configure OLS to use the certificates
+```
+
+## 🔄 Deployment Updates
+
+### Quick Update Script
+
+Create `deploy.sh`:
+
+```bash
+#!/bin/bash
+set -e
+
+echo "🚀 Deploying Personal Finance App..."
+
+# Navigate to project directory
+cd /home/finance.mstatilitechnologies.com
+
+# Pull latest changes
+echo "📥 Pulling latest code..."
+git pull origin main
+
+# Backend updates
+echo "🐍 Updating backend..."
+source .venv/bin/activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py collectstatic --noinput
+
+# Frontend updates
+echo "⚛️ Building frontend..."
+cd client
+npm install
+npm run build:web
+cp dist/index.html ../templates/index.html
+cd ..
+
+# Restart services
+echo "🔄 Restarting services..."
+sudo systemctl restart finance-app
+sudo /usr/local/lsws/bin/lswsctrl restart
+
+echo "✅ Deployment complete!"
+```
+
+Make executable:
+
+```bash
+chmod +x deploy.sh
+```
+
+Run deployment:
+
+```bash
+./deploy.sh
+```
+
+## 📊 Monitoring & Logs
+
+### View Application Logs
+
+```bash
+# Gunicorn logs
+sudo journalctl -u finance-app -f
+
+# Access logs
+tail -f /var/log/finance-app/access.log
+
+# Error logs
+tail -f /var/log/finance-app/error.log
+
+# OpenLiteSpeed logs
 tail -f /usr/local/lsws/logs/error.log
 ```
 
+### Database Backups
+
+Create backup script `backup-db.sh`:
+
+```bash
+#!/bin/bash
+BACKUP_DIR="/home/finance/backups"
+DATE=$(date +%Y%m%d_%H%M%S)
+mkdir -p $BACKUP_DIR
+
+pg_dump -U finance_user finance_db | gzip > $BACKUP_DIR/finance_db_$DATE.sql.gz
+
+# Keep only last 7 days
+find $BACKUP_DIR -name "finance_db_*.sql.gz" -mtime +7 -delete
+
+echo "Backup completed: finance_db_$DATE.sql.gz"
+```
+
+Schedule with cron:
+
+```bash
+crontab -e
+
+# Add daily backup at 2 AM
+0 2 * * * /home/finance/backup-db.sh
+```
+
+## 🧪 Health Checks
+
+### API Health Endpoint
+
+```bash
+# Check if API is responding
+curl -f https://finance.mstatilitechnologies.com/api/auth/login/ || echo "API Down"
+
+# Check Gunicorn
+sudo systemctl is-active finance-app
+```
+
+## 🔧 Troubleshooting
+
+### Backend Not Starting
+
+```bash
+# Check service status
+sudo systemctl status finance-app
+
+# Check logs
+sudo journalctl -u finance-app -n 50 --no-pager
+
+# Test Gunicorn manually
+cd /home/finance.mstatilitechnologies.com
+source .venv/bin/activate
+gunicorn backend.wsgi:application --bind 127.0.0.1:8001
+```
+
+### Frontend Not Loading
+
+```bash
+# Verify build files exist
+ls -la client/dist/
+
+# Check web server configuration
+sudo /usr/local/lsws/bin/lswsctrl configtest
+
+# Check web server logs
+tail -f /usr/local/lsws/logs/error.log
+```
+
+### Database Connection Issues
+
+```bash
+# Test database connection
+sudo -u postgres psql finance_db
+
+# Verify credentials in .env match database
+# Check PostgreSQL is running
+sudo systemctl status postgresql
+```
+
+### 503 Errors
+
+1. Check Gunicorn is running: `sudo systemctl status finance-app`
+2. Verify port 8001 is listening: `sudo netstat -tulpn | grep 8001`
+3. Check firewall: `sudo ufw status`
+4. Review error logs
+
+## 📱 Mobile App Deployment
+
+For Android APK distribution:
+
+1. Build release APK (see [MOBILE_BUILD_GUIDE.md](MOBILE_BUILD_GUIDE.md))
+2. Sign with release keystore
+3. Upload to GitHub Releases or distribute directly
+
+GitHub Actions will automatically build APK on version tags.
+
+## 🚦 Performance Optimization
+
+### Enable Caching
+
+```python
+# backend/settings.py
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/1',
+    }
+}
+```
+
+### Database Optimization
+
+```bash
+# PostgreSQL tuning (in /etc/postgresql/14/main/postgresql.conf)
+shared_buffers = 256MB
+effective_cache_size = 1GB
+maintenance_work_mem = 64MB
+checkpoint_completion_target = 0.9
+```
+
+### Gunicorn Workers
+
+```bash
+# Rule of thumb: (2 x CPU cores) + 1
+# For 2 core VPS: workers = 5
+```
+
+## 📋 Pre-Deployment Checklist
+
+- [ ] Environment variables configured in `.env`
+- [ ] Database created and migrated
+- [ ] Superuser account created
+- [ ] Static files collected
+- [ ] Frontend built for production
+- [ ] SSL certificate installed
+- [ ] Web server configured
+- [ ] Gunicorn service running
+- [ ] Firewall configured (ports 80, 443, 22)
+- [ ] Database backups scheduled
+- [ ] Domain DNS configured correctly
+- [ ] CORS and CSRF settings correct
+- [ ] Secret key is truly secret and unique
+
+## 🔐 Security Hardening
+
+```bash
+# Enable firewall
+sudo ufw allow 22/tcp
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+sudo ufw enable
+
+# Disable password authentication for SSH
+sudo nano /etc/ssh/sshd_config
+# Set: PasswordAuthentication no
+sudo systemctl restart sshd
+
+# Keep system updated
+sudo apt update && sudo apt upgrade -y
+```
+
 ---
 
-## File Structure
-
-```
-/home/finance.mstatilitechnologies.com/
-├── .env                          # Django environment variables
-├── .venv/                        # Python virtual environment
-├── logs/                         # Gunicorn logs
-└── public_html/                  # Git root / Document root
-    ├── manage.py
-    ├── backend/                  # Django settings
-    ├── finance/                  # Django apps...
-    ├── client/
-    │   ├── src/                  # React source
-    │   └── dist/                 # Built React app (index.html)
-    ├── staticfiles/              # Django collected static
-    ├── deploy/
-    │   ├── openlitespeed/        # OLS config files
-    │   └── systemd/              # Service file
-    ├── deploy-ols.sh             # Full deployment script
-    └── deploy-direct.sh          # Quick update script
-```
+**Last Updated:** January 2026
+**Version:** 1.0.0-mobile
+**Status:** Production Ready
