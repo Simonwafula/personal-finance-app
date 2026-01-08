@@ -18,4 +18,25 @@ export default defineConfig({
       },
     },
   },
+  define: {
+    // Expose VITE_PLATFORM to the app
+    'import.meta.env.VITE_PLATFORM': JSON.stringify(process.env.VITE_PLATFORM || 'web'),
+  },
+  build: {
+    // Optimize for tree-shaking
+    rollupOptions: {
+      output: {
+        manualChunks: (id) => {
+          // Keep SMS features in separate chunk for better tree-shaking
+          if (id.includes('features/sms')) {
+            return 'sms';
+          }
+          // Vendor chunk for node_modules
+          if (id.includes('node_modules')) {
+            return 'vendor';
+          }
+        },
+      },
+    },
+  },
 })
