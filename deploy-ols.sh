@@ -16,7 +16,7 @@ set -e  # Exit on any error
 # CONFIGURATION - Your CyberPanel Setup
 # =============================================================================
 DOMAIN="finance.mstatilitechnologies.com"   # Your domain name
-APP_USER="finan6751"                         # CyberPanel assigned user
+APP_USER="finan7417"                         # CyberPanel assigned user
 HOME_DIR="/home/finance.mstatilitechnologies.com"   # Home directory
 APP_DIR="${HOME_DIR}/public_html"           # Git root / app directory
 PUBLIC_HTML="${HOME_DIR}/public_html"       # Frontend deployment (same as APP_DIR)
