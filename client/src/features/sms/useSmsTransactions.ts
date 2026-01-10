@@ -144,7 +144,7 @@ export function useSmsTransactions(options: UseSmsTransactionsOptions = {}) {
       setError(null);
       
       // Set up listener for new messages
-      await SmsReader.addListener('smsReceived', (message) => {
+      await SmsReader.addListener('smsReceived', (message: SmsMessage) => {
         const pending = processMessage(message);
         if (pending) {
           setPendingTransactions(prev => [pending, ...prev]);
