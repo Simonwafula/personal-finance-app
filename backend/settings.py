@@ -238,6 +238,28 @@ else:
 
 CORS_ALLOW_CREDENTIALS = True
 
+# Explicit CORS headers and methods - required for preflight requests
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+CORS_PREFLIGHT_MAX_AGE = 86400  # Cache preflight for 24 hours
+
 # Cookie settings - will be overridden for production below
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_PATH = '/'
