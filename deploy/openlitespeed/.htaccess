@@ -1,10 +1,10 @@
 # OpenLiteSpeed .htaccess for React SPA with Django API
-# Place this in: /home/mstatilitechnologies.com/public_html/.htaccess
-# 
+# Place this in: /home/finance.mstatilitechnologies.com/public_html/.htaccess
+#
 # Structure:
-#   /home/mstatilitechnologies.com/
+#   /home/finance.mstatilitechnologies.com/
 #   ├── .env                    # Django environment
-#   ├── .venv/                  # Python virtual environment
+#   ├── venv/                   # Python virtual environment
 #   ├── logs/                   # Gunicorn logs
 #   └── public_html/            # Git root (Django + React)
 #       ├── manage.py
