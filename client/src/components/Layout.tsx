@@ -52,8 +52,6 @@ export default function Layout() {
   }, [location.pathname]);
 
   useEffect(() => {
-    console.log('Layout: user state changed:', user);
-    console.log('Layout: should render sidebar?', !!user);
     if (user) {
       setWelcomeMessage(`Welcome, ${user.username || user.email}!`);
       setWelcomeVisible(true);

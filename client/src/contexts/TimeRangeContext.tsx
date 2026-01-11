@@ -15,7 +15,7 @@ function fmtDate(d: Date) {
   return d.toISOString().slice(0, 10);
 }
 
-const TimeRangeContext = createContext<TimeRangeContextType | null>(null);
+export const TimeRangeContext = createContext<TimeRangeContextType | null>(null);
 
 export function TimeRangeProvider({ children }: { children: React.ReactNode }) {
   const location = useLocation();

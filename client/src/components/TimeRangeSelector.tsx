@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useTimeRange } from "../contexts/TimeRangeContext";
+import { useState, useEffect, useContext } from "react";
+import { TimeRangeContext } from "../contexts/TimeRangeContext";
 
 export interface TimeRange {
   startDate: string;
@@ -17,7 +17,8 @@ function fmtDate(d: Date) {
 }
 
 export default function TimeRangeSelector({ onChange, initialStart, initialEnd }: Props) {
-  const ctx = (() => { try { return useTimeRange(); } catch (e) { return null; } })();
+  // Use context directly to avoid the hook throwing an error
+  const ctx = useContext(TimeRangeContext);
   const [preset, setPreset] = useState<string>("30d");
   const [start, setStart] = useState<string>(initialStart ?? ctx?.range.startDate ?? fmtDate(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)));
   const [end, setEnd] = useState<string>(initialEnd ?? ctx?.range.endDate ?? fmtDate(new Date()));
@@ -27,7 +28,7 @@ export default function TimeRangeSelector({ onChange, initialStart, initialEnd }
       setStart(ctx.range.startDate);
       setEnd(ctx.range.endDate);
     }
-  }, [ctx?.range.startDate, ctx?.range.endDate]);
+  }, [ctx]);
 
   function applyPreset(p: string) {
     setPreset(p);

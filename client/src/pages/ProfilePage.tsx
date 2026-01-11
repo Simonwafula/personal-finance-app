@@ -105,7 +105,7 @@ export default function ProfilePage() {
     } finally {
       logoutLocal();
       window.dispatchEvent(new Event('authChanged'));
-      navigate('/login');
+      navigate('/');
     }
   }
 
