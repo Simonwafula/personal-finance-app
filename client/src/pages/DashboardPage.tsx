@@ -1,25 +1,16 @@
 // src/pages/DashboardPage.tsx
-import { useEffect, useState, lazy, Suspense } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchAggregatedTransactions, fetchTopCategories, fetchAccounts, fetchCategories } from "../api/finance";
+import { fetchAggregatedTransactions, fetchTopCategories, fetchAccounts } from "../api/finance";
 import { fetchTransactions } from "../api/finance";
 import { fetchCurrentNetWorth, fetchNetWorthSnapshots } from "../api/wealth";
 import { getSavingsSummary, type SavingsSummary } from "../api/savings";
 import { getInvestmentSummary, type InvestmentSummary } from "../api/investments";
-import type { Account, Category } from "../api/types";
+import type { Account } from "../api/types";
 import { useTimeRange } from "../contexts/TimeRangeContext";
 // TimeRangeSelector comes from global context (rendered in Layout)
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, CartesianGrid } from "recharts";
 import type { NetWorthCurrent } from "../api/types";
-import Platform from "../utils/platform";
-import { createTransaction } from "../api/finance";
-
-// Lazy load SMS components (only loaded on mobile)
-const SmsTransactionPrompt = lazy(() =>
-  import("../features/sms").then((module) => ({
-    default: module.SmsTransactionPrompt,
-  }))
-);
 
 interface DashboardTotals {
   income: number;
@@ -48,8 +39,6 @@ export default function DashboardPage() {
   const [investmentsSummary, setInvestmentsSummary] = useState<InvestmentSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [accounts, setAccounts] = useState<Account[]>([]);
 
   const navigate = useNavigate();
   const { range } = useTimeRange();
@@ -60,19 +49,16 @@ export default function DashboardPage() {
         setLoading(true);
         setError(null);
 
-        const [nw, nws, accountsData, savingsSummary, invSummary, categoriesData] = await Promise.all([
+        const [nw, nws, accountsData, savingsSummary, invSummary] = await Promise.all([
           fetchCurrentNetWorth().catch(() => null),
           fetchNetWorthSnapshots().catch(() => []),
           fetchAccounts().catch(() => [] as Account[]),
           getSavingsSummary().catch(() => null),
           getInvestmentSummary().catch(() => null),
-          fetchCategories().catch(() => [] as Category[]),
         ]);
 
         if (savingsSummary) setSavingsGoals(savingsSummary);
         if (invSummary) setInvestmentsSummary(invSummary);
-        setAccounts(accountsData);
-        setCategories(categoriesData);
 
         // Calculate liquidity (immediate access cash)
         const liquidTypes = ['BANK', 'MOBILE_MONEY', 'CASH', 'SACCO'];
@@ -199,7 +185,7 @@ export default function DashboardPage() {
   // categorySeries is populated by the backend top categories endpoint
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-6 animate-fade-in">
       {/* Page Header */}
       <div className="section-header">
         <div>
@@ -211,18 +197,11 @@ export default function DashboardPage() {
       </div>
 
       {loading && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <div className="skeleton h-40 rounded-xl" />
-            <div className="skeleton h-40 rounded-xl" />
-            <div className="skeleton h-40 rounded-xl" />
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-            <div className="skeleton h-32 rounded-xl" />
-            <div className="skeleton h-32 rounded-xl" />
-            <div className="skeleton h-32 rounded-xl" />
-            <div className="skeleton h-32 rounded-xl" />
-          </div>
+        <div className="kpi-grid">
+          <div className="skeleton h-32 rounded-xl" />
+          <div className="skeleton h-32 rounded-xl" />
+          <div className="skeleton h-32 rounded-xl" />
+          <div className="skeleton h-32 rounded-xl" />
         </div>
       )}
 
@@ -239,289 +218,203 @@ export default function DashboardPage() {
 
       {!loading && (
         <>
-          {/* Cash Flow Section - 3 equal cards */}
-          <section>
-            <h2 className="text-sm font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-4">
-              Cash Flow Overview
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {/* Income Card */}
-              <div className="kpi-card neu-stat-card">
-                <div className="kpi-label">Total Income</div>
-                <div className="kpi-value" style={{ color: 'var(--success-400)' }}>
-                  {formatMoney(totals.income)}
-                </div>
-                <div className="text-xs text-[var(--text-muted)] mb-3">KES</div>
-                <div style={{height:60}}>
-                  <ResponsiveContainer width="100%" height={60}>
-                    <AreaChart data={aggregatedSeries}>
-                      <defs>
-                        <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="var(--success-400)" stopOpacity={0.4}/>
-                          <stop offset="95%" stopColor="var(--success-400)" stopOpacity={0}/>
-                        </linearGradient>
-                      </defs>
-                      <Area
-                        dataKey="income"
-                        stroke="var(--success-400)"
-                        strokeWidth={2}
-                        fill="url(#incomeGradient)"
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
+          {/* Enhanced KPI Cards */}
+          <div className="kpi-grid">
+            {/* Income Card */}
+            <div className="kpi-card neu-stat-card">
+              <div className="kpi-label">Total Income</div>
+              <div className="kpi-value" style={{ color: 'var(--success-400)' }}>
+                {formatMoney(totals.income)}
               </div>
-
-              {/* Expenses Card */}
-              <div className="kpi-card neu-stat-card">
-                <div className="kpi-label">Total Expenses</div>
-                <div className="kpi-value" style={{ color: 'var(--danger-400)' }}>
-                  {formatMoney(totals.expenses)}
-                </div>
-                <div className="text-xs text-[var(--text-muted)] mb-3">KES</div>
-                <div style={{height:60}}>
-                  <ResponsiveContainer width="100%" height={60}>
-                    <AreaChart data={aggregatedSeries}>
-                      <defs>
-                        <linearGradient id="expenseGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="var(--danger-400)" stopOpacity={0.4}/>
-                          <stop offset="95%" stopColor="var(--danger-400)" stopOpacity={0}/>
-                        </linearGradient>
-                      </defs>
-                      <Area
-                        dataKey="expenses"
-                        stroke="var(--danger-400)"
-                        strokeWidth={2}
-                        fill="url(#expenseGradient)"
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-
-              {/* Net Cash Flow Card */}
-              <div className="kpi-card neu-stat-card">
-                <div className="kpi-label">Net Cash Flow</div>
-                <div className="kpi-value" style={{ color: totals.savings >= 0 ? 'var(--primary-400)' : 'var(--danger-400)' }}>
-                  {formatMoney(totals.savings)}
-                </div>
-                <div className="text-xs text-[var(--text-muted)] mb-3">KES</div>
-                <div style={{height:60}}>
-                  <ResponsiveContainer width="100%" height={60}>
-                    <AreaChart data={aggregatedSeries.map(s => ({ date: s.date, net: s.income - s.expenses }))}>
-                      <defs>
-                        <linearGradient id="netGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="var(--primary-400)" stopOpacity={0.4}/>
-                          <stop offset="95%" stopColor="var(--primary-400)" stopOpacity={0}/>
-                        </linearGradient>
-                      </defs>
-                      <Area
-                        dataKey="net"
-                        stroke="var(--primary-400)"
-                        strokeWidth={2}
-                        fill="url(#netGradient)"
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
+              <div className="text-xs text-[var(--text-muted)] mb-3">KES</div>
+              <div style={{height:60}}>
+                <ResponsiveContainer width="100%" height={60}>
+                  <AreaChart data={aggregatedSeries}>
+                    <defs>
+                      <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="var(--success-400)" stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor="var(--success-400)" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <Area
+                      dataKey="income"
+                      stroke="var(--success-400)"
+                      strokeWidth={2}
+                      fill="url(#incomeGradient)"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
               </div>
             </div>
-          </section>
 
-          {/* Financial Health Section - 4 equal cards */}
-          <section>
-            <h2 className="text-sm font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-4">
-              Financial Health
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-              {/* Liquidity Card - Available Cash */}
-              <div className="kpi-card neu-stat-card cursor-pointer hover:scale-[1.02] transition-transform" onClick={() => navigate('/accounts')}>
-                <div className="kpi-label flex items-center gap-2">
-                  <span className="text-base">💵</span> Available Cash
-                </div>
-                <div className="kpi-value text-2xl md:text-3xl" style={{ color: 'var(--success-400)' }}>
-                  {formatMoney(liquidity)}
-                </div>
-                <div className="text-xs text-[var(--text-muted)]">KES • Immediate access</div>
+            {/* Expenses Card */}
+            <div className="kpi-card neu-stat-card">
+              <div className="kpi-label">Total Expenses</div>
+              <div className="kpi-value" style={{ color: 'var(--danger-400)' }}>
+                {formatMoney(totals.expenses)}
               </div>
-
-              {/* Net Worth Card */}
-              <div className="kpi-card neu-stat-card cursor-pointer hover:scale-[1.02] transition-transform" onClick={() => navigate('/wealth')}>
-                <div className="kpi-label flex items-center gap-2">
-                  <span className="text-base">💎</span> Net Worth
-                </div>
-                <div className="kpi-value text-2xl md:text-3xl" style={{ color: 'var(--accent-400)' }}>
-                  {formatMoney(netWorthTotals.netWorth)}
-                </div>
-                <div className="flex items-center gap-3 text-xs mt-1">
-                  <span className="text-[var(--success-400)]">↑ {formatMoney(netWorthTotals.assets)}</span>
-                  <span className="text-[var(--danger-400)]">↓ {formatMoney(netWorthTotals.liabilities)}</span>
-                </div>
-              </div>
-
-              {/* Savings Goals Card */}
-              <div className="kpi-card neu-stat-card cursor-pointer hover:scale-[1.02] transition-transform" onClick={() => navigate('/savings')}>
-                <div className="kpi-label flex items-center gap-2">
-                  <span className="text-base">🎯</span> Savings
-                </div>
-                <div className="kpi-value text-2xl md:text-3xl" style={{ color: 'var(--primary-400)' }}>
-                  {formatMoney(savingsCard.total_saved)}
-                </div>
-                <div className="flex items-center justify-between text-xs mt-1">
-                  <span className="text-[var(--text-muted)]">
-                    {savingsCard.total_goals} goal{savingsCard.total_goals !== 1 ? 's' : ''}
-                  </span>
-                  <span className="text-[var(--success-400)] font-medium">
-                    {Number(savingsCard.average_progress || 0).toFixed(0)}%
-                  </span>
-                </div>
-              </div>
-
-              {/* Investments Card */}
-              <div className="kpi-card neu-stat-card cursor-pointer hover:scale-[1.02] transition-transform" onClick={() => navigate('/investments')}>
-                <div className="kpi-label flex items-center gap-2">
-                  <span className="text-base">📈</span> Investments
-                </div>
-                <div className="kpi-value text-2xl md:text-3xl" style={{ color: 'var(--accent-400)' }}>
-                  {formatMoney(investmentsCard.total_current_value)}
-                </div>
-                <div className="flex items-center justify-between text-xs mt-1">
-                  <span className="text-[var(--text-muted)]">
-                    {investmentsCard.investment_count} holding{investmentsCard.investment_count !== 1 ? 's' : ''}
-                  </span>
-                  <span className={`font-medium ${investmentsCard.total_gain_loss >= 0 ? 'text-[var(--success-400)]' : 'text-[var(--danger-400)]'}`}>
-                    {investmentsCard.total_gain_loss >= 0 ? '+' : ''}{Number(investmentsCard.total_gain_loss_percentage || 0).toFixed(1)}%
-                  </span>
-                </div>
+              <div className="text-xs text-[var(--text-muted)] mb-3">KES</div>
+              <div style={{height:60}}>
+                <ResponsiveContainer width="100%" height={60}>
+                  <AreaChart data={aggregatedSeries}>
+                    <defs>
+                      <linearGradient id="expenseGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="var(--danger-400)" stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor="var(--danger-400)" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <Area
+                      dataKey="expenses"
+                      stroke="var(--danger-400)"
+                      strokeWidth={2}
+                      fill="url(#expenseGradient)"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
               </div>
             </div>
-          </section>
 
-          {/* SMS Transaction Detection (Mobile only) */}
-          {Platform.canReadSms() && categories.length > 0 && accounts.length > 0 && (
-            <Suspense fallback={<div className="card p-4 animate-pulse">Loading SMS detection...</div>}>
-              <SmsTransactionPrompt
-                categories={categories}
-                accounts={accounts}
-                onSaveTransaction={async (txData) => {
-                  await createTransaction({
-                    amount: txData.amount,
-                    kind: txData.type === 'income' ? 'INCOME' : 'EXPENSE',
-                    category: txData.category,
-                    account: txData.account,
-                    description: txData.description,
-                    date: txData.date,
-                    source: 'SMS',
-                    sms_reference: txData.reference,
-                    sms_detected_at: new Date().toISOString(),
-                  });
-                  // Reload dashboard data
-                  window.location.reload();
-                }}
-                className="mb-6"
-              />
-            </Suspense>
-          )}
+            {/* Net Cash Flow Card */}
+            <div className="kpi-card neu-stat-card">
+              <div className="kpi-label">Net Cash Flow</div>
+              <div className="kpi-value" style={{ color: totals.savings >= 0 ? 'var(--primary-400)' : 'var(--danger-400)' }}>
+                {formatMoney(totals.savings)}
+              </div>
+              <div className="text-xs text-[var(--text-muted)] mb-3">KES</div>
+              <div style={{height:60}}>
+                <ResponsiveContainer width="100%" height={60}>
+                  <AreaChart data={aggregatedSeries.map(s => ({ date: s.date, net: s.income - s.expenses }))}>
+                    <defs>
+                      <linearGradient id="netGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="var(--primary-400)" stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor="var(--primary-400)" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <Area
+                      dataKey="net"
+                      stroke="var(--primary-400)"
+                      strokeWidth={2}
+                      fill="url(#netGradient)"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
 
-          {/* Activity Section - Two column layout */}
-          <section>
-            <h2 className="text-sm font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-4">
-              Activity
-            </h2>
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-              {/* Recent Transactions - Takes 3 columns */}
-              <div className="lg:col-span-3 card-elevated">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-bold">Recent Transactions</h3>
-                  <button
-                    onClick={() => navigate('/transactions')}
-                    className="text-sm font-semibold text-[var(--primary-400)] hover:text-[var(--primary-500)] transition-colors"
-                  >
-                    View all →
-                  </button>
+            {/* Liquidity Card - Available Cash */}
+            <div className="kpi-card neu-stat-card cursor-pointer" onClick={() => navigate('/accounts')}>
+              <div className="kpi-label">💵 Available Cash</div>
+              <div className="kpi-value" style={{ color: 'var(--success-400)' }}>
+                {formatMoney(liquidity)}
+              </div>
+              <div className="text-xs text-[var(--text-muted)] mb-3">KES</div>
+              <div className="text-xs text-[var(--text-muted)]">
+                Immediate access funds
+              </div>
+            </div>
+
+            {/* Net Worth Card */}
+            <div className="kpi-card neu-stat-card cursor-pointer" onClick={() => navigate('/wealth')}>
+              <div className="kpi-label">Net Worth</div>
+              <div className="kpi-value" style={{ color: 'var(--accent-400)' }}>
+                {formatMoney(netWorthTotals.netWorth)}
+              </div>
+              <div className="text-xs text-[var(--text-muted)] mb-3">KES</div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="kpi-change positive">
+                  ↑ Assets: {formatMoney(netWorthTotals.assets)}
+                </span>
+                <span className="kpi-change negative">
+                  ↓ Debt: {formatMoney(netWorthTotals.liabilities)}
+                </span>
+              </div>
+            </div>
+
+            {/* Savings Goals Card */}
+            <div className="kpi-card neu-stat-card cursor-pointer" onClick={() => navigate('/savings')}>
+              <div className="kpi-label">🎯 Savings Goals</div>
+              <div className="kpi-value" style={{ color: 'var(--primary-400)' }}>
+                {formatMoney(savingsCard.total_saved)}
+              </div>
+              <div className="text-xs text-[var(--text-muted)] mb-3">KES saved</div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-[var(--text-muted)]">
+                  {savingsCard.total_goals} goal{savingsCard.total_goals !== 1 ? 's' : ''}
+                </span>
+                <span className="kpi-change positive">
+                  {Number(savingsCard.average_progress || 0).toFixed(0)}% avg
+                </span>
+              </div>
+            </div>
+
+            {/* Investments Card */}
+            <div className="kpi-card neu-stat-card cursor-pointer" onClick={() => navigate('/investments')}>
+              <div className="kpi-label">📈 Investments</div>
+              <div className="kpi-value" style={{ color: 'var(--accent-400)' }}>
+                {formatMoney(investmentsCard.total_current_value)}
+              </div>
+              <div className="text-xs text-[var(--text-muted)] mb-3">KES value</div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-[var(--text-muted)]">
+                  {investmentsCard.investment_count} holding{investmentsCard.investment_count !== 1 ? 's' : ''}
+                </span>
+                <span className={`kpi-change ${investmentsCard.total_gain_loss >= 0 ? 'positive' : 'negative'}`}>
+                  {investmentsCard.total_gain_loss >= 0 ? '+' : ''}{Number(investmentsCard.total_gain_loss_percentage || 0).toFixed(1)}%
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Recent Transactions */}
+          <div className="card-elevated">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold">Recent Transactions</h3>
+              <button
+                onClick={() => navigate('/transactions')}
+                className="text-sm font-semibold text-[var(--primary-400)] hover:text-[var(--primary-500)] transition-colors"
+              >
+                View all →
+              </button>
+            </div>
+            <div>
+              {recentTx.length === 0 && (
+                <div className="text-center py-8 text-[var(--text-muted)]">
+                  No recent transactions
                 </div>
-                <div>
-                  {recentTx.length === 0 && (
-                    <div className="text-center py-8 text-[var(--text-muted)]">
-                      No recent transactions
-                    </div>
-                  )}
-                  {recentTx.length > 0 && (
-                    <div className="space-y-3">
-                      {recentTx.map((t:any) => (
-                        <div
-                          key={t.id}
-                          className="flex items-center justify-between p-3 rounded-lg bg-[var(--surface-glass)] hover:bg-[var(--surface-hover)] transition-all cursor-pointer"
-                          onClick={() => navigate('/transactions')}
-                        >
-                          <div className="flex-1 min-w-0">
-                            <div className="font-semibold text-[var(--text-main)] truncate">
-                              {t.description || t.category_name || 'Transaction'}
-                            </div>
-                            <div className="text-xs text-[var(--text-muted)] mt-1">
-                              {t.date} • {t.account_name || ''}
-                            </div>
-                          </div>
-                          <div
-                            className="text-lg font-bold ml-4 whitespace-nowrap"
-                            style={{
-                              color: t.amount < 0 ? 'var(--danger-400)' : 'var(--success-400)'
-                            }}
-                          >
-                            {t.amount < 0 ? '-' : '+'}{formatMoney(Math.abs(t.amount))}
-                          </div>
+              )}
+              {recentTx.length > 0 && (
+                <div className="space-y-3">
+                  {recentTx.map((t:any) => (
+                    <div
+                      key={t.id}
+                      className="flex items-center justify-between p-3 rounded-lg bg-[var(--surface-glass)] hover:bg-[var(--surface-hover)] transition-all cursor-pointer"
+                      onClick={() => navigate('/transactions')}
+                    >
+                      <div className="flex-1">
+                        <div className="font-semibold text-[var(--text-main)]">
+                          {t.description || t.category_name || 'Transaction'}
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Quick Summary - Takes 2 columns */}
-              <div className="lg:col-span-2 card-elevated">
-                <h3 className="text-lg font-bold mb-4">Period Summary</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-[var(--surface-glass)]">
-                    <span className="text-[var(--text-muted)]">Total In</span>
-                    <span className="font-bold text-[var(--success-400)]">+{formatMoney(totals.income)}</span>
-                  </div>
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-[var(--surface-glass)]">
-                    <span className="text-[var(--text-muted)]">Total Out</span>
-                    <span className="font-bold text-[var(--danger-400)]">-{formatMoney(totals.expenses)}</span>
-                  </div>
-                  <div className="border-t border-[var(--glass-border)] pt-4">
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-[var(--primary-600)]/10">
-                      <span className="font-medium text-[var(--text-main)]">Net Change</span>
-                      <span className={`font-bold text-lg ${totals.savings >= 0 ? 'text-[var(--success-400)]' : 'text-[var(--danger-400)]'}`}>
-                        {totals.savings >= 0 ? '+' : ''}{formatMoney(totals.savings)}
-                      </span>
-                    </div>
-                  </div>
-                  {totals.income > 0 && (
-                    <div className="pt-2">
-                      <div className="text-xs text-[var(--text-muted)] mb-2">Savings Rate</div>
-                      <div className="h-2 bg-[var(--surface-glass)] rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-gradient-to-r from-[var(--primary-400)] to-[var(--success-400)] rounded-full transition-all"
-                          style={{ width: `${Math.max(0, Math.min(100, (totals.savings / totals.income) * 100))}%` }}
-                        />
+                        <div className="text-xs text-[var(--text-muted)] mt-1">
+                          {t.date} • {t.account_name || ''}
+                        </div>
                       </div>
-                      <div className="text-right text-xs text-[var(--text-muted)] mt-1">
-                        {((totals.savings / totals.income) * 100).toFixed(1)}%
+                      <div
+                        className="text-lg font-bold"
+                        style={{
+                          color: t.amount < 0 ? 'var(--danger-400)' : 'var(--success-400)'
+                        }}
+                      >
+                        {t.amount < 0 ? '-' : '+'}{formatMoney(Math.abs(t.amount))} KES
                       </div>
                     </div>
-                  )}
+                  ))}
                 </div>
-              </div>
+              )}
             </div>
-          </section>
+          </div>
 
-          {/* Charts Section */}
-          <section>
-            <h2 className="text-sm font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-4">
-              Analytics
-            </h2>
-            <div className="grid gap-6 md:grid-cols-2">
+          {/* Charts Grid */}
+          <div className="grid gap-6 md:grid-cols-2">
             {/* Cashflow Chart */}
             <div className="chart-container">
               <div className="flex items-center justify-between mb-4">
@@ -647,10 +540,11 @@ export default function DashboardPage() {
                 </ResponsiveContainer>
               )}
             </div>
+          </div>
 
-            {/* Net Worth Trend */}
-            {netWorth && snapshots.length > 0 && (
-              <div className="chart-container md:col-span-2">
+          {/* Net Worth Trend */}
+          {netWorth && snapshots.length > 0 && (
+            <div className="chart-container">
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h3 className="text-lg font-bold">Net Worth Over Time</h3>
@@ -713,10 +607,8 @@ export default function DashboardPage() {
                   />
                 </AreaChart>
               </ResponsiveContainer>
-              </div>
-            )}
             </div>
-          </section>
+          )}
         </>
       )}
     </div>

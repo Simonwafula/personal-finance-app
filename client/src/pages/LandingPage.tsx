@@ -1,6 +1,127 @@
-import { useEffect } from "react";
+import { useEffect, type ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+} from "recharts";
+import PublicHeader from "../components/PublicHeader";
+import PublicFooter from "../components/PublicFooter";
 import { fetchCurrentUser } from "../api/auth";
+
+const AuthLink = ({
+  children,
+  className,
+}: {
+  children?: ReactNode;
+  className?: string;
+}) => (
+  <Link to="/login" className={className}>
+    {children}
+  </Link>
+);
+
+const chartData = [
+  { date: "Nov 1", income: 8000, expenses: 5200 },
+  { date: "Nov 5", income: 8000, expenses: 7300 },
+  { date: "Nov 10", income: 27000, expenses: 12300 },
+  { date: "Nov 15", income: 27000, expenses: 8900 },
+  { date: "Nov 20", income: 35000, expenses: 15200 },
+  { date: "Nov 25", income: 35000, expenses: 9800 },
+  { date: "Nov 30", income: 35000, expenses: 6700 },
+];
+
+const highlights = [
+  { label: "Track accounts", value: "Unlimited" },
+  { label: "Free forever", value: "Core features" },
+  { label: "Your data", value: "Export anytime" },
+];
+
+const accounts = [
+  { name: "M-Pesa", balance: "KES 45,200", status: "Manual", icon: "📱" },
+  { name: "KCB Salary", balance: "KES 62,100", status: "Manual", icon: "🏦" },
+  { name: "SACCO", balance: "KES 18,130", status: "Manual", icon: "🤝" },
+];
+
+const calculators = [
+  {
+    title: "Budget Tracker",
+    desc: "Set spending limits by category and track progress throughout the month.",
+    icon: "📊",
+    tone: "from-blue-100/60 via-white to-white/80 dark:from-blue-900/20 dark:via-white/5 dark:to-white/0",
+  },
+  {
+    title: "Debt Planner",
+    desc: "Compare snowball vs avalanche strategies with payment timelines.",
+    icon: "💳",
+    tone: "from-purple-100/60 via-white to-white/80 dark:from-purple-900/20 dark:via-white/5 dark:to-white/0",
+  },
+  {
+    title: "Savings Goals",
+    desc: "Set targets with deadlines and track contributions over time.",
+    icon: "🎯",
+    tone: "from-emerald-100/60 via-white to-white/80 dark:from-emerald-900/20 dark:via-white/5 dark:to-white/0",
+  },
+  {
+    title: "Net Worth Tracker",
+    desc: "Monitor assets, liabilities, and see your financial health over time.",
+    icon: "💰",
+    tone: "from-amber-100/60 via-white to-white/80 dark:from-amber-900/20 dark:via-white/5 dark:to-white/0",
+  },
+  {
+    title: "Investment Portfolio",
+    desc: "Track stocks, funds, crypto, insurance and calculate returns.",
+    icon: "📈",
+    tone: "from-cyan-100/60 via-white to-white/80 dark:from-cyan-900/20 dark:via-white/5 dark:to-white/0",
+  },
+  {
+    title: "Subscription Manager",
+    desc: "Keep track of recurring payments and their renewal dates.",
+    icon: "🔄",
+    tone: "from-rose-100/60 via-white to-white/80 dark:from-rose-900/20 dark:via-white/5 dark:to-white/0",
+  },
+];
+
+const features = [
+  { title: "Multi-Account Tracking", desc: "Track M-Pesa, banks, SACCO, cash manually", icon: "🔗" },
+  { title: "Transaction Categories", desc: "Organize spending with custom categories", icon: "🏷️" },
+  { title: "Budget Limits", desc: "Set monthly limits per category", icon: "⚡" },
+  { title: "Debt Planner", desc: "Snowball/avalanche payoff strategies", icon: "💳" },
+  { title: "Savings Goals", desc: "Track progress towards financial targets", icon: "🎯" },
+  { title: "Investment Portfolio", desc: "Stocks, funds, crypto, insurance", icon: "📈" },
+  { title: "Net Worth Tracking", desc: "Assets minus liabilities over time", icon: "💰" },
+  { title: "Subscription Tracker", desc: "Monitor recurring payments", icon: "🔄" },
+];
+
+const faqs = [
+  {
+    q: "How do I add my accounts?",
+    a: "Simply create accounts manually - add your M-Pesa, bank accounts, SACCO, or cash on hand. Enter the current balance and start tracking. There's no automatic bank connection - you have full control over what data you enter.",
+  },
+  {
+    q: "Can I export my data?",
+    a: "Yes! You can export all your transactions, accounts, and reports to CSV format. Your data is yours—take it with you anytime, use it in other tools, or keep offline backups. No lock-in, no hidden fees for exports.",
+  },
+  {
+    q: "Is it really free?",
+    a: "Yes! All current features are completely free: unlimited transactions, budgets, debt planning, savings goals, investment tracking, and net worth monitoring. We may introduce premium features in the future, but everything you see today is free.",
+  },
+  {
+    q: "How secure is my financial data?",
+    a: "Your data is protected with encrypted sessions and secure authentication (email/password or Google OAuth). Your data is isolated—no one else can see it. We don't sell your information to third parties.",
+  },
+  {
+    q: "Do I need to be tech-savvy to use this?",
+    a: "Not at all! The interface is designed to be intuitive and user-friendly. If you can use WhatsApp or M-Pesa, you can use this app. We provide clear visual feedback and an easy-to-navigate dashboard.",
+  },
+  {
+    q: "What features are you planning to add?",
+    a: "Coming soon: M-Pesa statement import, bank statement parsing, Chama/group savings management, automated recurring transactions, and smart notifications. Let us know what features matter most to you!",
+  },
+];
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -12,452 +133,322 @@ export default function LandingPage() {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen bg-[#0B1120] text-white overflow-hidden">
-      {/* Animated Background */}
-      <div className="fixed inset-0 -z-10">
-        <div className="absolute top-0 -left-40 w-[600px] h-[600px] bg-purple-500/20 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute top-1/2 -right-40 w-[500px] h-[500px] bg-blue-500/20 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: "1s" }} />
-        <div className="absolute -bottom-40 left-1/3 w-[400px] h-[400px] bg-cyan-500/20 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: "2s" }} />
-        {/* Grid Pattern */}
-        <div
-          className="absolute inset-0 opacity-[0.03]"
-          style={{
-            backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
-            backgroundSize: '60px 60px'
-          }}
-        />
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950">
+      <PublicHeader />
+
+      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+        <div className="absolute -top-24 left-10 h-64 w-64 rounded-full bg-blue-500/10 blur-3xl" />
+        <div className="absolute top-40 -right-10 h-72 w-72 rounded-full bg-indigo-500/10 blur-3xl" />
+        <div className="absolute bottom-10 left-1/4 h-60 w-60 rounded-full bg-cyan-400/10 blur-3xl" />
       </div>
 
-      {/* Header */}
-      <header className="relative z-50">
-        <nav className="max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center font-bold text-lg">
-              M
-            </div>
-            <span className="text-xl font-bold">Mstatili</span>
-          </div>
-
-          <div className="hidden md:flex items-center gap-8">
-            <a href="#features" className="text-gray-400 hover:text-white transition-colors">Features</a>
-            <a href="#how-it-works" className="text-gray-400 hover:text-white transition-colors">How it Works</a>
-            <a href="#pricing" className="text-gray-400 hover:text-white transition-colors">Pricing</a>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <Link to="/login" className="text-gray-300 hover:text-white transition-colors font-medium">
-              Sign In
-            </Link>
-            <Link
-              to="/signup"
-              className="px-5 py-2.5 bg-white text-gray-900 font-semibold rounded-lg hover:bg-gray-100 transition-all"
-            >
-              Get Started
-            </Link>
-          </div>
-        </nav>
-      </header>
-
-      {/* Hero Section */}
-      <section className="relative pt-20 pb-32 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="max-w-4xl mx-auto text-center">
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm mb-8">
-              <span className="flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-green-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-              </span>
-              <span className="text-gray-300">Trusted by 500+ Kenyans</span>
-            </div>
-
-            {/* Headline */}
-            <h1 className="text-5xl md:text-7xl font-bold leading-tight mb-6">
-              Take Control of
-              <br />
-              <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                Your Money
-              </span>
-            </h1>
-
-            {/* Subheadline */}
-            <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-10">
-              The all-in-one finance app built for Kenya. Track M-Pesa, bank accounts,
-              budgets, debts, and investments in one beautiful dashboard.
-            </p>
-
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-              <Link
-                to="/signup"
-                className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-xl hover:opacity-90 transition-all shadow-lg shadow-purple-500/25 flex items-center justify-center gap-2"
-              >
-                Start Free Today
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </svg>
-              </Link>
-              <a
-                href="#how-it-works"
-                className="w-full sm:w-auto px-8 py-4 bg-white/5 border border-white/10 text-white font-semibold rounded-xl hover:bg-white/10 transition-all flex items-center justify-center gap-2"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Watch Demo
-              </a>
-            </div>
-
-            {/* Stats */}
-            <div className="flex items-center justify-center gap-12 md:gap-20">
-              <div className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-white">100%</div>
-                <div className="text-sm text-gray-500">Free Forever</div>
-              </div>
-              <div className="w-px h-12 bg-white/10" />
-              <div className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-white">M-Pesa</div>
-                <div className="text-sm text-gray-500">SMS Tracking</div>
-              </div>
-              <div className="w-px h-12 bg-white/10" />
-              <div className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-white">Secure</div>
-                <div className="text-sm text-gray-500">Bank-level</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Dashboard Preview */}
-          <div className="mt-20 relative">
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0B1120] via-transparent to-transparent z-10 pointer-events-none" />
-            <div className="relative rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-2 shadow-2xl">
-              <div className="rounded-xl bg-[#0d1424] p-6 overflow-hidden">
-                {/* Mock Dashboard Header */}
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <div className="text-sm text-gray-500">Total Balance</div>
-                    <div className="text-3xl font-bold">KES 247,500</div>
-                  </div>
-                  <div className="flex gap-2">
-                    <div className="px-3 py-1.5 rounded-lg bg-green-500/10 text-green-400 text-sm font-medium">
-                      +12.5% this month
-                    </div>
-                  </div>
+      <main className="flex-1 relative z-10">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <section className="py-14 md:py-20">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              <div className="space-y-6 text-center lg:text-left">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 dark:bg-white/10 text-sm font-semibold text-blue-800 dark:text-blue-100 border border-white/50 dark:border-0 shadow-sm backdrop-blur mx-auto lg:mx-0">
+                  <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
+                  Built for Kenya · M-Pesa first
+                </div>
+                <h1 className="text-4xl sm:text-5xl md:text-6xl font-black leading-[1.05] text-slate-900 dark:text-white">
+                  Get a clear picture of your money in one place.
+                </h1>
+                <p className="text-lg md:text-xl text-slate-600 dark:text-slate-200/80 leading-relaxed max-w-xl mx-auto lg:mx-0">
+                  Track Budget, Income, Spending, Investments, and Debts in a single dashboard.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3 pt-1 justify-center lg:justify-start">
+                  <AuthLink className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 text-white font-semibold rounded-xl shadow-xl shadow-blue-500/25 transition-transform hover:-translate-y-0.5">
+                    <span>Join us</span>
+                    <span className="text-lg">→</span>
+                  </AuthLink>
+                  <button
+                    onClick={() => {
+                      document.querySelector("[data-section='demo']")?.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl border border-slate-200/80 dark:border-0 text-slate-900 dark:text-white font-semibold bg-white/80 dark:bg-white/10 hover:bg-white dark:hover:bg-white/15 shadow-sm backdrop-blur transition-all"
+                  >
+                    Try a live demo (no login)
+                  </button>
                 </div>
 
-                {/* Mock Chart Area */}
-                <div className="h-48 flex items-end justify-between gap-2 mb-6">
-                  {[40, 65, 45, 80, 55, 90, 70, 85, 60, 75, 95, 80].map((h, i) => (
-                    <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                      <div
-                        className="w-full rounded-t-md bg-gradient-to-t from-blue-500 to-purple-500 opacity-80"
-                        style={{ height: `${h}%` }}
-                      />
-                      <span className="text-[10px] text-gray-600">{['J','F','M','A','M','J','J','A','S','O','N','D'][i]}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Mock Account Cards */}
-                <div className="grid grid-cols-3 gap-4">
-                  {[
-                    { name: 'M-Pesa', balance: 'KES 45,200', color: 'from-green-500 to-emerald-600', icon: '📱' },
-                    { name: 'KCB Bank', balance: 'KES 182,300', color: 'from-blue-500 to-cyan-600', icon: '🏦' },
-                    { name: 'SACCO', balance: 'KES 20,000', color: 'from-purple-500 to-pink-600', icon: '🤝' },
-                  ].map((acc) => (
-                    <div key={acc.name} className="p-4 rounded-xl bg-white/5 border border-white/5">
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${acc.color} flex items-center justify-center text-sm`}>
-                          {acc.icon}
-                        </div>
-                        <span className="text-sm text-gray-400">{acc.name}</span>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 max-w-xl mx-auto lg:mx-0">
+                  {highlights.map((item) => (
+                    <div
+                      key={item.label}
+                      className="rounded-2xl border border-white/50 dark:border-0 bg-white/80 dark:bg-white/10 backdrop-blur px-4 py-4 shadow-sm text-center"
+                    >
+                      <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                        {item.label}
                       </div>
-                      <div className="text-lg font-semibold">{acc.balance}</div>
+                      <div className="text-xl font-semibold text-slate-900 dark:text-white">{item.value}</div>
                     </div>
                   ))}
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
-      {/* Features Section */}
-      <section id="features" className="py-32 px-6 relative">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-sm text-blue-400 mb-4">
-              Powerful Features
-            </div>
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              Everything You Need
-            </h2>
-            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-              Built specifically for Kenya's financial ecosystem
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              {
-                icon: "📊",
-                title: "Smart Budgeting",
-                desc: "Set monthly budgets by category. Get alerts before you overspend.",
-                gradient: "from-blue-500/20 to-cyan-500/20"
-              },
-              {
-                icon: "💳",
-                title: "Debt Payoff Planner",
-                desc: "Compare snowball vs avalanche. See your debt-free date.",
-                gradient: "from-purple-500/20 to-pink-500/20"
-              },
-              {
-                icon: "🎯",
-                title: "Savings Goals",
-                desc: "Set targets with deadlines. Track progress automatically.",
-                gradient: "from-green-500/20 to-emerald-500/20"
-              },
-              {
-                icon: "📈",
-                title: "Investment Tracker",
-                desc: "Stocks, MMFs, SACCOs, crypto - all in one place.",
-                gradient: "from-orange-500/20 to-red-500/20"
-              },
-              {
-                icon: "💰",
-                title: "Net Worth Dashboard",
-                desc: "Assets minus liabilities. See your true financial health.",
-                gradient: "from-yellow-500/20 to-orange-500/20"
-              },
-              {
-                icon: "📱",
-                title: "M-Pesa SMS Sync",
-                desc: "Auto-detect transactions from your M-Pesa messages.",
-                gradient: "from-teal-500/20 to-blue-500/20"
-              },
-            ].map((feature) => (
-              <div
-                key={feature.title}
-                className={`group p-6 rounded-2xl bg-gradient-to-br ${feature.gradient} border border-white/5 hover:border-white/10 transition-all hover:-translate-y-1`}
-              >
-                <div className="text-4xl mb-4">{feature.icon}</div>
-                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                <p className="text-gray-400">{feature.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* How it Works */}
-      <section id="how-it-works" className="py-32 px-6 bg-white/[0.02]">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 border border-green-500/20 text-sm text-green-400 mb-4">
-              Simple Setup
-            </div>
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              Get Started in Minutes
-            </h2>
-            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-              No complicated setup. Just sign up and start tracking.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                step: "01",
-                title: "Create Account",
-                desc: "Sign up with email or Google. Takes less than 30 seconds.",
-                icon: "👤"
-              },
-              {
-                step: "02",
-                title: "Add Your Accounts",
-                desc: "Add M-Pesa, bank accounts, SACCOs, or cash on hand.",
-                icon: "🏦"
-              },
-              {
-                step: "03",
-                title: "Track Everything",
-                desc: "Log transactions, set budgets, and watch your wealth grow.",
-                icon: "📈"
-              },
-            ].map((item, idx) => (
-              <div key={item.step} className="relative">
-                {idx < 2 && (
-                  <div className="hidden md:block absolute top-12 left-[60%] w-[80%] h-px bg-gradient-to-r from-white/20 to-transparent" />
-                )}
-                <div className="relative z-10 text-center">
-                  <div className="w-24 h-24 mx-auto mb-6 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-4xl">
-                    {item.icon}
+              <div className="relative max-w-xl w-full mx-auto lg:mx-0">
+                <div className="rounded-3xl border border-white/60 dark:border-0 bg-white/85 dark:bg-white/10 shadow-2xl shadow-blue-900/20 backdrop-blur-xl p-6 space-y-5">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-sm font-semibold text-slate-700 dark:text-slate-200">Net worth</div>
+                      <div className="text-3xl font-bold text-slate-900 dark:text-white">KES 1,245,300</div>
+                    </div>
+                    <span className="text-xs px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200 font-semibold">
+                      +KES 42,000 this month
+                    </span>
                   </div>
-                  <div className="text-sm text-gray-500 mb-2">Step {item.step}</div>
-                  <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
-                  <p className="text-gray-400">{item.desc}</p>
+
+                  <div className="rounded-2xl border border-white/50 dark:border-0 bg-white/80 dark:bg-white/10 backdrop-blur p-4 shadow-sm">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="text-sm font-semibold text-slate-800 dark:text-white">Income vs Expenses</div>
+                      <div className="text-xs text-emerald-600 dark:text-emerald-300 font-semibold">+12% vs last month</div>
+                    </div>
+                    <div className="h-36">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={chartData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                          <defs>
+                            <linearGradient id="heroIncome" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="rgb(59, 130, 246)" stopOpacity={0.9} />
+                              <stop offset="95%" stopColor="rgb(59, 130, 246)" stopOpacity={0.05} />
+                            </linearGradient>
+                            <linearGradient id="heroExpenses" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="rgb(236, 72, 153)" stopOpacity={0.9} />
+                              <stop offset="95%" stopColor="rgb(236, 72, 153)" stopOpacity={0.05} />
+                            </linearGradient>
+                          </defs>
+                          <XAxis dataKey="date" hide />
+                          <YAxis hide />
+                          <Tooltip
+                            contentStyle={{
+                              backgroundColor: "rgba(15, 23, 42, 0.9)",
+                              border: "1px solid rgba(255,255,255,0.08)",
+                              borderRadius: "10px",
+                              color: "white",
+                            }}
+                            labelStyle={{ color: "#e2e8f0" }}
+                          />
+                          <Area type="monotone" dataKey="income" stroke="rgb(59, 130, 246)" strokeWidth={2} fill="url(#heroIncome)" />
+                          <Area type="monotone" dataKey="expenses" stroke="rgb(236, 72, 153)" strokeWidth={2} fill="url(#heroExpenses)" />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="text-sm font-semibold text-slate-800 dark:text-white">Recent activity</div>
+                      <span className="text-xs text-slate-500 dark:text-slate-400">Demo data</span>
+                    </div>
+                    <div className="space-y-2">
+                      {[
+                        { title: "Salary · KCB", amount: "+KES 62,100", tone: "text-emerald-600 dark:text-emerald-300" },
+                        { title: "Rent · Riverside", amount: "-KES 28,000", tone: "text-rose-500 dark:text-rose-300" },
+                        { title: "SACCO Savings", amount: "-KES 8,500", tone: "text-amber-500 dark:text-amber-300" },
+                        { title: "Groceries", amount: "-KES 5,400", tone: "text-rose-500 dark:text-rose-300" },
+                      ].map((tx) => (
+                        <div
+                          key={tx.title}
+                          className="flex items-center justify-between rounded-xl border border-white/40 dark:border-0 bg-white/80 dark:bg-white/10 backdrop-blur px-3 py-2"
+                        >
+                          <div className="text-sm text-slate-800 dark:text-white">{tx.title}</div>
+                          <div className={`text-sm font-semibold ${tx.tone}`}>{tx.amount}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Section */}
-      <section id="pricing" className="py-32 px-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-sm text-purple-400 mb-4">
-              Simple Pricing
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              Free. Forever.
-            </h2>
-            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-              No hidden fees. No credit card required. No limits.
-            </p>
-          </div>
+          </section>
 
-          <div className="relative p-8 rounded-3xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10">
-            <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-sm font-medium">
-              Currently Free
-            </div>
-
-            <div className="text-center mb-8">
-              <div className="text-6xl font-bold mb-2">
-                KES 0
-                <span className="text-2xl text-gray-500 font-normal">/month</span>
+          <section data-section="demo" className="py-16 md:py-20 border-t border-white/50 dark:border-t-0">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-10">
+              <div>
+                <p className="text-sm font-semibold text-blue-600 dark:text-blue-300 mb-1">Live snapshot</p>
+                <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">See it in action</h2>
+                <p className="text-base md:text-lg text-slate-600 dark:text-slate-300">
+                  Real-time view of all your finances in one place.
+                </p>
               </div>
-              <p className="text-gray-400">All features included</p>
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 dark:bg-white/10 border border-white/60 dark:border-0 text-sm text-slate-700 dark:text-white/80 backdrop-blur">
+                Live demo · No sign-up needed
+              </div>
             </div>
 
-            <div className="grid sm:grid-cols-2 gap-4 mb-8">
-              {[
-                "Unlimited transactions",
-                "Unlimited accounts",
-                "Budget tracking",
-                "Debt planner",
-                "Savings goals",
-                "Net worth tracking",
-                "Investment portfolio",
-                "CSV export",
-                "M-Pesa SMS sync",
-                "Reports & analytics",
-              ].map((feature) => (
-                <div key={feature} className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center">
-                    <svg className="w-3 h-3 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                    </svg>
+            <div className="grid gap-6 lg:grid-cols-3">
+              <div className="lg:col-span-2 rounded-3xl bg-white/80 dark:bg-white/10 border border-white/60 dark:border-0 p-6 shadow-xl shadow-blue-900/15 backdrop-blur-md">
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white">30-Day Overview</h3>
+                  <span className="text-xs px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200 font-semibold">
+                    Up 12% vs last month
+                  </span>
+                </div>
+                <ResponsiveContainer width="100%" height={320}>
+                  <AreaChart data={chartData}>
+                    <defs>
+                      <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="rgb(59, 130, 246)" stopOpacity={0.9} />
+                        <stop offset="95%" stopColor="rgb(59, 130, 246)" stopOpacity={0.08} />
+                      </linearGradient>
+                      <linearGradient id="colorExpenses" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="rgb(236, 72, 153)" stopOpacity={0.9} />
+                        <stop offset="95%" stopColor="rgb(236, 72, 153)" stopOpacity={0.08} />
+                      </linearGradient>
+                    </defs>
+                    <XAxis dataKey="date" stroke="rgb(148, 163, 184)" style={{ fontSize: "12px" }} tickLine={false} axisLine={false} />
+                    <YAxis stroke="rgb(148, 163, 184)" style={{ fontSize: "12px" }} tickLine={false} axisLine={false} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "rgba(15, 23, 42, 0.9)",
+                        border: "1px solid rgba(255,255,255,0.08)",
+                        borderRadius: "12px",
+                        color: "white",
+                      }}
+                      labelStyle={{ color: "#e2e8f0" }}
+                    />
+                    <Area type="monotone" dataKey="income" stroke="rgb(59, 130, 246)" strokeWidth={2.5} fillOpacity={1} fill="url(#colorIncome)" />
+                    <Area type="monotone" dataKey="expenses" stroke="rgb(236, 72, 153)" strokeWidth={2.5} fillOpacity={1} fill="url(#colorExpenses)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div className="space-y-4">
+                <div className="rounded-3xl bg-white/80 dark:bg-white/10 border border-white/60 dark:border-0 p-6 shadow-xl shadow-blue-900/15 backdrop-blur-md">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200 uppercase tracking-wide">
+                      Accounts
+                    </h3>
+                    <span className="text-xs px-2 py-1 rounded-full bg-slate-100 text-slate-700 dark:bg-slate-900/40 dark:text-slate-200 font-semibold">
+                      Demo
+                    </span>
                   </div>
-                  <span className="text-gray-300">{feature}</span>
+                  <div className="space-y-3">
+                    {accounts.map((acc) => (
+                      <div
+                        key={acc.name}
+                        className="flex items-center justify-between p-3 rounded-xl bg-white/90 dark:bg-white/10 border border-white/60 dark:border-0 shadow-sm"
+                      >
+                        <div>
+                          <div className="text-sm font-semibold text-slate-900 dark:text-white">
+                            {acc.icon} {acc.name}
+                          </div>
+                          <div className="text-xs text-slate-600 dark:text-slate-400">{acc.balance}</div>
+                        </div>
+                        <span className="text-xs px-2 py-1 rounded-full bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-slate-200">
+                          {acc.status}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="py-16 md:py-20 border-t border-white/50 dark:border-t-0">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-10">
+              <div>
+                <p className="text-sm font-semibold text-blue-600 dark:text-blue-300 mb-1">Guided tools</p>
+                <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">Plan your finances</h2>
+                <p className="text-base md:text-lg text-slate-600 dark:text-slate-300">
+                  Pre-filled with realistic Kenyan spending patterns.
+                </p>
+              </div>
+              <div className="text-sm text-slate-600 dark:text-slate-400">Pick a calculator and try it.</div>
+            </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {calculators.map((calc) => (
+                <div
+                  key={calc.title}
+                  className={`rounded-3xl bg-gradient-to-br ${calc.tone} border border-white/60 dark:border-white/10 p-7 shadow-xl shadow-blue-900/10 backdrop-blur-md`}
+                >
+                  <div className="text-3xl mb-3">{calc.icon}</div>
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{calc.title}</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-300 mb-6">{calc.desc}</p>
+                  <AuthLink className="inline-flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 font-semibold shadow-md hover:shadow-lg transition-all">
+                    Try It
+                  </AuthLink>
                 </div>
               ))}
             </div>
+          </section>
 
-            <Link
-              to="/signup"
-              className="block w-full py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-xl text-center hover:opacity-90 transition-all"
-            >
-              Get Started Free
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ Section */}
-      <section className="py-32 px-6 bg-white/[0.02]">
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              Questions? Answers.
-            </h2>
-          </div>
-
-          <div className="space-y-4">
-            {[
-              {
-                q: "Is it really free?",
-                a: "Yes! All features are completely free. We may introduce premium features in the future, but core functionality will always be free."
-              },
-              {
-                q: "How do I add my accounts?",
-                a: "Simply create accounts manually - add your M-Pesa, bank accounts, SACCO, or cash. Enter the balance and start tracking."
-              },
-              {
-                q: "Is my data secure?",
-                a: "Absolutely. We use bank-level encryption and never sell your data. Your financial info is private and secure."
-              },
-              {
-                q: "Can I export my data?",
-                a: "Yes! Export all your transactions and reports to CSV format anytime. Your data is yours."
-              },
-            ].map((faq) => (
-              <details
-                key={faq.q}
-                className="group rounded-2xl bg-white/5 border border-white/5 overflow-hidden"
-              >
-                <summary className="flex items-center justify-between p-6 font-semibold cursor-pointer select-none hover:bg-white/5 transition-colors">
-                  {faq.q}
-                  <span className="text-gray-500 group-open:rotate-180 transition-transform">
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </span>
-                </summary>
-                <div className="px-6 pb-6 text-gray-400">{faq.a}</div>
-              </details>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Final CTA */}
-      <section className="py-32 px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl md:text-6xl font-bold mb-6">
-            Ready to Transform
-            <br />
-            <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-              Your Finances?
-            </span>
-          </h2>
-          <p className="text-xl text-gray-400 mb-10 max-w-2xl mx-auto">
-            Join hundreds of Kenyans who are already taking control of their money.
-          </p>
-          <Link
-            to="/signup"
-            className="inline-flex items-center gap-2 px-10 py-5 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-xl hover:opacity-90 transition-all shadow-lg shadow-purple-500/25 text-lg"
-          >
-            Create Free Account
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-            </svg>
-          </Link>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="py-12 px-6 border-t border-white/5">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center font-bold text-sm">
-              M
+          <section className="py-16 md:py-20 border-t border-white/50 dark:border-t-0">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-10">
+              <div>
+                <p className="text-sm font-semibold text-blue-600 dark:text-blue-300 mb-1">Calm control</p>
+                <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">Everything you need</h2>
+                <p className="text-base md:text-lg text-slate-600 dark:text-slate-300">
+                  One workspace for income, spend, debt, and goals.
+                </p>
+              </div>
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 dark:bg-white/10 border border-white/60 dark:border-0 text-sm text-slate-700 dark:text-white/80 backdrop-blur">
+                Built for Kenya · M-Pesa first
+              </div>
             </div>
-            <span className="font-semibold">Mstatili Finance</span>
-          </div>
 
-          <div className="text-gray-500 text-sm">
-            &copy; {new Date().getFullYear()} Mstatili Technologies. All rights reserved.
-          </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {features.map((feature) => (
+                <div
+                  key={feature.title}
+                  className="rounded-2xl border border-white/60 dark:border-0 bg-white/85 dark:bg-white/10 backdrop-blur p-4 shadow-lg shadow-blue-900/10 hover:-translate-y-1 transition-transform"
+                >
+                  <div className="text-2xl mb-2">{feature.icon}</div>
+                  <h3 className="font-bold text-slate-900 dark:text-white text-sm mb-1">{feature.title}</h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-300">{feature.desc}</p>
+                </div>
+              ))}
+            </div>
+          </section>
 
-          <div className="flex items-center gap-6 text-sm">
-            <Link to="/login" className="text-gray-400 hover:text-white transition-colors">Sign In</Link>
-            <Link to="/signup" className="text-gray-400 hover:text-white transition-colors">Sign Up</Link>
-          </div>
+          <section className="py-16 md:py-20 border-t border-white/50 dark:border-t-0">
+            <div className="max-w-3xl mx-auto">
+              <div className="mb-10 text-center">
+                <p className="text-sm font-semibold text-blue-600 dark:text-blue-300 mb-2">Answers</p>
+                <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white">Questions?</h2>
+                <p className="text-base md:text-lg text-slate-600 dark:text-slate-300">What people usually ask us</p>
+              </div>
+
+              <div className="space-y-4">
+                {faqs.map((faq) => (
+                  <details
+                    key={faq.q}
+                    className="group rounded-2xl border border-white/60 dark:border-0 p-5 bg-white/85 dark:bg-white/10 backdrop-blur shadow-sm"
+                  >
+                    <summary className="flex items-center justify-between font-semibold text-slate-900 dark:text-white cursor-pointer select-none">
+                      {faq.q}
+                      <span className="text-lg group-open:rotate-180 transition-transform">▼</span>
+                    </summary>
+                    <p className="mt-3 text-slate-600 dark:text-slate-300 leading-relaxed">{faq.a}</p>
+                  </details>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <section className="py-16 md:py-20 border-t border-white/50 dark:border-t-0">
+            <div className="rounded-3xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 dark:from-blue-700 dark:via-indigo-700 dark:to-purple-700 p-12 md:p-16 text-center shadow-2xl shadow-blue-900/30">
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Ready to control your money?</h2>
+              <p className="text-lg md:text-xl text-blue-50/90 mb-8 max-w-2xl mx-auto">
+                Join thousands of Kenyans who track, plan, and grow with Mstatili Finance.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <AuthLink className="inline-flex items-center gap-2 px-8 py-4 bg-white text-blue-700 font-bold rounded-xl shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5">
+                  <span>Get Started Free</span>
+                  <span className="text-lg">→</span>
+                </AuthLink>
+                <button className="inline-flex items-center gap-2 px-8 py-4 rounded-xl border border-white/70 text-white font-semibold backdrop-blur hover:bg-white/10 transition-all">
+                  Talk to us
+                </button>
+              </div>
+            </div>
+          </section>
         </div>
-      </footer>
+      </main>
+
+      <PublicFooter />
     </div>
   );
 }
