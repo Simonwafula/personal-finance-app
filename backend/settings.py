@@ -34,6 +34,15 @@ else:
     # Fallback: try to load from environment or dotenv default
     load_dotenv()
 
+# Load .env.local for local development overrides (takes precedence)
+_env_local = BASE_DIR / '.env.local'
+if _env_local.exists():
+    load_dotenv(_env_local, override=True)
+
+# Detect if running tests
+import sys
+TESTING = 'test' in sys.argv or 'pytest' in sys.modules
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
@@ -356,7 +365,8 @@ if not DEBUG:
         os.getenv('SECURE_HSTS_INCLUDE_SUBDOMAINS', 'True') == 'True'
     )
     SECURE_HSTS_PRELOAD = os.getenv('SECURE_HSTS_PRELOAD', 'True') == 'True'
-    SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'False') == 'True'  # Let OLS/nginx handle SSL
+    # Disable SSL redirect during tests; otherwise use env var
+    SECURE_SSL_REDIRECT = not TESTING and os.getenv('SECURE_SSL_REDIRECT', 'False') == 'True'
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
     # OAuth commonly uses popups; allow opener relationship in modern browsers

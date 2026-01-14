@@ -23,7 +23,7 @@ function isPresetActive(range: { startDate: string; endDate: string }, days: num
     // Accept a tolerance of 1 day
     if (days === 365) return Math.abs(diff - 365) <= 1;
     return Math.abs(diff - days) <= 1;
-  } catch (e) {
+  } catch {
     return false;
   }
 }
@@ -49,14 +49,20 @@ export default function Layout() {
     if (!user) {
       refresh().catch(() => {});
     }
+    // Only re-run when pathname changes, not when user/refresh change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
 
+  // Show welcome toast when user logs in
   useEffect(() => {
     if (user) {
-      setWelcomeMessage(`Welcome, ${user.username || user.email}!`);
+      const message = `Welcome, ${user.username || user.email}!`;
+      setWelcomeMessage(message);
       setWelcomeVisible(true);
     }
-  }, [user]);
+    // Intentionally only run when user identity changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
 
   // Show both Login and Sign up buttons only on auth pages

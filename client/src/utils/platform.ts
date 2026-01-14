@@ -18,6 +18,20 @@
  * ```
  */
 
+// Type for Capacitor global object
+interface CapacitorGlobal {
+  isNativePlatform: () => boolean;
+  getPlatform: () => 'web' | 'ios' | 'android';
+  isPluginAvailable: (name: string) => boolean;
+}
+
+// Extend Window to include Capacitor
+declare global {
+  interface Window {
+    Capacitor?: CapacitorGlobal;
+  }
+}
+
 // Create a mock Capacitor for web environments
 const mockCapacitor = {
   isNativePlatform: () => false,
@@ -38,8 +52,8 @@ const getCapacitor = () => {
 
   // Mobile build - Capacitor should be available
   // We can't use require() or top-level await, so we check window object
-  if (typeof window !== 'undefined' && (window as any).Capacitor) {
-    return (window as any).Capacitor;
+  if (typeof window !== 'undefined' && window.Capacitor) {
+    return window.Capacitor;
   }
 
   // Fallback to mock if not available

@@ -12,6 +12,11 @@ import type { Transaction, Account, Category } from "../api/types";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
+// jsPDF-autotable extends jsPDF with lastAutoTable property
+interface jsPDFWithAutoTable extends jsPDF {
+  lastAutoTable: { finalY: number };
+}
+
 function formatMoney(value: number) {
   return value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
@@ -203,8 +208,9 @@ export default function ReportsPage() {
         transactions
       });
       setTxPage(1); // Reset pagination when new report generated
-    } catch (err: any) {
-      setError(err.message || "Failed to generate report");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to generate report";
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -345,7 +351,7 @@ export default function ReportsPage() {
       });
       
       // Category Breakdown
-      let yPos = (doc as any).lastAutoTable.finalY + 10;
+      let yPos = (doc as jsPDFWithAutoTable).lastAutoTable.finalY + 10;
       doc.setFontSize(14);
       doc.text("Expenses by Category", 14, yPos);
       
@@ -363,7 +369,7 @@ export default function ReportsPage() {
       });
       
       // Account Balances
-      yPos = (doc as any).lastAutoTable.finalY + 10;
+      yPos = (doc as jsPDFWithAutoTable).lastAutoTable.finalY + 10;
       if (yPos > 240) {
         doc.addPage();
         yPos = 20;
@@ -439,6 +445,8 @@ export default function ReportsPage() {
 
   useEffect(() => {
     generateReport();
+    // Run only on mount to generate initial report
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -731,7 +739,7 @@ export default function ReportsPage() {
                       <select
                         value={txFilter.kind}
                         onChange={e => {
-                          setTxFilter(f => ({ ...f, kind: e.target.value as any }));
+                          setTxFilter(f => ({ ...f, kind: e.target.value as TransactionFilter["kind"] }));
                           setTxPage(1);
                         }}
                         className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900 text-sm"

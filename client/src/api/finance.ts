@@ -4,6 +4,41 @@ import type { Account, Transaction, Category, Tag, TagAnalysis } from "./types";
 
 export type { Account };
 
+// Paginated response type
+export interface PaginatedTransactions {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: Transaction[];
+}
+
+// Recurring transaction type (matches backend serializer)
+export interface RecurringTransaction {
+  id: number;
+  account: number;
+  account_name: string;
+  date: string;
+  amount: string | number;
+  kind: "INCOME" | "EXPENSE" | "TRANSFER";
+  category: number | null;
+  category_name: string | null;
+  description: string;
+  frequency: "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
+  end_date: string | null;
+  last_executed: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// Export filter params
+export interface ExportParams {
+  start?: string;
+  end?: string;
+  account?: number;
+  category?: number;
+  kind?: "INCOME" | "EXPENSE" | "TRANSFER";
+}
+
 export async function fetchAccounts(): Promise<Account[]> {
   const res = await api.get("/api/finance/accounts/");
   return res.data;
@@ -66,7 +101,7 @@ export async function fetchTransactions(
 
 export async function fetchTransactionsPaged(
   filters: TransactionFilters & { limit?: number; offset?: number } = {}
-): Promise<any> {
+): Promise<PaginatedTransactions> {
   const res = await api.get("/api/finance/transactions/", { params: filters });
   return res.data;
 }
@@ -168,7 +203,7 @@ export async function createRecurring(payload: CreateRecurringPayload) {
   return res.data;
 }
 
-export async function fetchRecurring(): Promise<any[]> {
+export async function fetchRecurring(): Promise<RecurringTransaction[]> {
   const res = await api.get("/api/finance/recurring/");
   return res.data;
 }
@@ -202,7 +237,7 @@ export async function importTransactionsCsv(file: File) {
   return res.data;
 }
 
-export async function exportTransactionsCsv(params: any = {}) {
+export async function exportTransactionsCsv(params: ExportParams = {}) {
   const res = await api.get("/api/finance/transactions/export-csv/", { params, responseType: 'blob' });
   return res.data;
 }

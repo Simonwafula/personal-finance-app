@@ -68,8 +68,8 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
                 <Route path="subscriptions" element={<RequireAuth><SubscriptionsPage /></RequireAuth>} />
                 <Route path="notifications" element={<RequireAuth><NotificationsPage /></RequireAuth>} />
                 <Route path="reports" element={<RequireAuth><ReportsPage /></RequireAuth>} />
-                <Route path="blog" element={<RequireAuth><BlogPage /></RequireAuth>} />
-                <Route path="blog/:slug" element={<RequireAuth><BlogArticle /></RequireAuth>} />
+                <Route path="blog" element={<BlogPage />} />
+                <Route path="blog/:slug" element={<BlogArticle />} />
                 <Route path="*" element={<NotFoundPage />} />
               </Route>
             </Routes>

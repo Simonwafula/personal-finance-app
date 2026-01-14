@@ -25,6 +25,7 @@ import {
   deleteRecurring,
   previewRecurring,
   materializeRecurring,
+  type RecurringTransaction,
 } from "../api/finance";
 import type { Account, Category } from "../api/types";
 
@@ -71,22 +72,8 @@ function detectSubscriptionCategory(description: string, kind: string): string {
   return "other";
 }
 
-type RecurringItem = {
-  id: number;
-  account: number;
-  account_name: string;
-  date: string;
-  amount: string | number;
-  kind: "INCOME" | "EXPENSE" | "TRANSFER";
-  category: number | null;
-  category_name: string | null;
-  description: string;
-  frequency: "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
-  end_date: string | null;
-  last_executed: string | null;
-  created_at: string;
-  updated_at: string;
-};
+// Use RecurringTransaction type from api/finance
+type RecurringItem = RecurringTransaction;
 
 // Frequency display helpers
 const FREQUENCY_LABELS: Record<string, string> = {

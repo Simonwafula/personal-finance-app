@@ -25,6 +25,11 @@ import type {
   TransactionKind,
 } from "../api/types";
 
+interface ImportResult {
+  success?: { imported: number; skipped: number };
+  error?: string;
+}
+
 function formatMoney(value: string | number) {
   const num = typeof value === "string" ? Number(value) : value;
   if (Number.isNaN(num)) return value.toString();
@@ -59,7 +64,7 @@ export default function TransactionsPage() {
   const [savingsGoalId, setSavingsGoalId] = useState<number | "">("");
   const [saving, setSaving] = useState(false);
   const [exporting, setExporting] = useState(false);
-  const [importResult, setImportResult] = useState<any | null>(null);
+  const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [searchParams] = useSearchParams();
   const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([]);
@@ -230,7 +235,9 @@ export default function TransactionsPage() {
         const { fetchAggregatedTransactions } = await import('../api/finance');
         const res = await fetchAggregatedTransactions({ start: range.startDate, end: range.endDate });
         setAggregatedSeries(res.series || []);
-      } catch (err) {}
+      } catch {
+        // Silently ignore aggregation errors - non-critical
+      }
       window.dispatchEvent(new Event('transactionsUpdated'));
     } catch (err) {
       console.error(err);
@@ -467,7 +474,7 @@ export default function TransactionsPage() {
           <ResponsiveContainer width='100%' height={100}>
             <AreaChart data={aggregatedSeries}>
               <XAxis dataKey='date' hide />
-              <Tooltip formatter={(v:any) => formatMoney(v)} />
+              <Tooltip formatter={(v: number) => formatMoney(v)} />
               <Area type='monotone' dataKey='income' stroke='#16A34A' fill='#16A34A' fillOpacity={0.2} />
               <Area type='monotone' dataKey='expenses' stroke='#DC2626' fill='#DC2626' fillOpacity={0.2} />
             </AreaChart>
@@ -497,8 +504,9 @@ export default function TransactionsPage() {
               a.click();
               a.remove();
               window.URL.revokeObjectURL(url);
-            } catch (err: any) {
-              setError(err?.message || "Failed to export CSV");
+            } catch (err) {
+              const message = err instanceof Error ? err.message : "Failed to export CSV";
+              setError(message);
             } finally {
               setExporting(false);
             }
@@ -533,8 +541,9 @@ export default function TransactionsPage() {
             const res = await importTransactionsCsv(f);
             setImportResult({ success: res });
             await loadTransactions();
-          } catch (err: any) {
-            setImportResult({ error: err?.message || String(err) });
+          } catch (err) {
+            const message = err instanceof Error ? err.message : String(err);
+            setImportResult({ error: message });
           }
         }}
       />
@@ -542,7 +551,7 @@ export default function TransactionsPage() {
       {importResult && (
         <div className={`card text-sm p-4 ${importResult.error ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}>
           {importResult.error && `Error: ${String(importResult.error)}`}
-          {importResult.success && `Successfully imported ${importResult.success.created ?? 'transactions'}`}
+          {importResult.success && `Successfully imported ${importResult.success.imported} transactions (${importResult.success.skipped} skipped)`}
         </div>
       )}
 

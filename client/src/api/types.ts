@@ -39,6 +39,14 @@ export type TransactionKind = "INCOME" | "EXPENSE" | "TRANSFER";
 
 export type TransactionSource = "MANUAL" | "SMS" | "IMPORT";
 
+export interface RecurringRule {
+  frequency: "daily" | "weekly" | "monthly" | "yearly";
+  interval?: number;
+  day_of_month?: number;
+  day_of_week?: number;
+  end_date?: string;
+}
+
 export interface Transaction {
   id: number;
   account: number;
@@ -51,7 +59,7 @@ export interface Transaction {
   description: string;
   tags: string;
   is_recurring: boolean;
-  recurring_rule: any;
+  recurring_rule: RecurringRule | null;
   savings_goal: number | null;
   savings_goal_name: string | null;
   savings_goal_emoji: string | null;
