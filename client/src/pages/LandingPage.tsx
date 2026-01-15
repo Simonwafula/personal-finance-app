@@ -128,6 +128,9 @@ export default function LandingPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Force light mode for landing page aesthetics
+    document.documentElement.classList.remove("dark");
+
     fetchCurrentUser()
       .then(() => navigate("/dashboard"))
       .catch(() => { });
