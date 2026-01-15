@@ -109,9 +109,9 @@ export default function LandingPage() {
           <div className="absolute inset-0 bg-gradient-to-b from-blue-600/10 via-transparent to-transparent pointer-events-none" />
 
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-            <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 items-center">
               {/* Left Column - Content */}
-              <div className="text-center lg:text-left">
+              <div className="text-center lg:text-left flex-1">
                 {/* Badge */}
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-medium mb-6">
                   <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
@@ -120,7 +120,7 @@ export default function LandingPage() {
 
                 {/* Headline */}
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white mb-6 leading-[1.1]">
-                  Master Your <span className="text-blue-400">Money</span>
+                  Master Your <span style={{ color: '#60a5fa' }}>Money</span>
                 </h1>
 
                 <p className="text-lg lg:text-xl text-slate-400 mb-8 leading-relaxed max-w-xl mx-auto lg:mx-0" style={{ maxWidth: '60ch' }}>
@@ -160,7 +160,7 @@ export default function LandingPage() {
               </div>
 
               {/* Right Column - Phone Mockup */}
-              <div className="relative flex justify-center lg:justify-end" data-section="demo">
+              <div className="relative flex justify-center shrink-0" data-section="demo">
                 <div className="relative">
                   {/* Glow effect */}
                   <div className="absolute -inset-4 bg-gradient-to-r from-blue-600/20 via-purple-600/10 to-blue-600/20 rounded-[3rem] blur-2xl" />
