@@ -120,8 +120,7 @@ export default function LandingPage() {
 
                 {/* Headline */}
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white mb-6 leading-[1.1]">
-                  Master Your
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600"> Money</span>
+                  Master Your <span className="text-blue-400">Money</span>
                 </h1>
 
                 <p className="text-lg lg:text-xl text-slate-400 mb-8 leading-relaxed max-w-xl mx-auto lg:mx-0" style={{ maxWidth: '60ch' }}>
@@ -166,12 +165,14 @@ export default function LandingPage() {
                   {/* Glow effect */}
                   <div className="absolute -inset-4 bg-gradient-to-r from-blue-600/20 via-purple-600/10 to-blue-600/20 rounded-[3rem] blur-2xl" />
 
-                  {/* Phone frame */}
-                  <div className="relative bg-slate-800 rounded-[2.5rem] p-1.5 shadow-2xl shadow-black/50">
-                    {/* Inner screen */}
-                    <div className="relative bg-slate-950 rounded-[2rem] overflow-hidden w-[240px] sm:w-[260px]">
-                      {/* Notch */}
-                      <div className="absolute top-2 left-1/2 -translate-x-1/2 w-16 h-5 bg-slate-950 rounded-full z-20 border-b-2 border-slate-800" />
+                  {/* Phone frame - outer shell */}
+                  <div className="relative bg-gradient-to-b from-slate-600 to-slate-800 rounded-[2.5rem] p-[3px] shadow-2xl shadow-black/50">
+                    {/* Phone body */}
+                    <div className="bg-slate-900 rounded-[2.4rem] p-1">
+                      {/* Inner screen */}
+                      <div className="relative bg-slate-950 rounded-[2rem] overflow-hidden w-[240px] sm:w-[260px]">
+                        {/* Notch */}
+                        <div className="absolute top-2 left-1/2 -translate-x-1/2 w-16 h-5 bg-black rounded-full z-20" />
 
                       {/* Screen content */}
                       <div className="pt-10 pb-6 px-4">
@@ -225,6 +226,7 @@ export default function LandingPage() {
                         </div>
                       </div>
                     </div>
+                  </div>
                   </div>
                 </div>
               </div>
