@@ -166,13 +166,13 @@ export default function LandingPage() {
                   <div className="absolute -inset-4 bg-gradient-to-r from-blue-600/20 via-purple-600/10 to-blue-600/20 rounded-[3rem] blur-2xl" />
 
                   {/* Phone frame - outer shell */}
-                  <div className="relative bg-gradient-to-b from-slate-600 to-slate-800 rounded-[2.5rem] p-[3px] shadow-2xl shadow-black/50">
+                  <div style={{ background: 'linear-gradient(to bottom, #475569, #1e293b)', padding: '4px', borderRadius: '2.5rem', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}>
                     {/* Phone body */}
-                    <div className="bg-slate-900 rounded-[2.4rem] p-1">
+                    <div style={{ background: '#0f172a', borderRadius: '2.3rem', padding: '4px' }}>
                       {/* Inner screen */}
-                      <div className="relative bg-slate-950 rounded-[2rem] overflow-hidden w-[240px] sm:w-[260px]">
+                      <div style={{ background: '#020617', borderRadius: '2rem', overflow: 'hidden', width: '260px' }}>
                         {/* Notch */}
-                        <div className="absolute top-2 left-1/2 -translate-x-1/2 w-16 h-5 bg-black rounded-full z-20" />
+                        <div style={{ position: 'absolute', top: '8px', left: '50%', transform: 'translateX(-50%)', width: '60px', height: '20px', background: '#000', borderRadius: '999px', zIndex: 20 }} />
 
                       {/* Screen content */}
                       <div className="pt-10 pb-6 px-4">
