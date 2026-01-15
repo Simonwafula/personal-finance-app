@@ -109,7 +109,7 @@ export default function LandingPage() {
           <div className="absolute inset-0 bg-gradient-to-b from-blue-600/10 via-transparent to-transparent pointer-events-none" />
 
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-            <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 items-center">
+            <div style={{ display: 'flex', flexDirection: 'row', gap: '4rem', alignItems: 'center' }} className="flex-col lg:flex-row">
               {/* Left Column - Content */}
               <div className="text-center lg:text-left flex-1">
                 {/* Badge */}
