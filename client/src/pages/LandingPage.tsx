@@ -139,108 +139,107 @@ export default function LandingPage() {
               Get Started Free <span className="text-indigo-600">→</span>
             </AuthLink>
             <button
-              onClick={() => document.querySelector("#features")?.scrollIntoView({ behavior: "smooth" });
-              }
-            className="h-12 px-8 rounded-full bg-slate-800/50 border border-slate-700 text-white font-medium hover:bg-slate-800 transition-colors"
+              onClick={() => document.querySelector("#features")?.scrollIntoView({ behavior: "smooth" })}
+              className="h-12 px-8 rounded-full bg-slate-800/50 border border-slate-700 text-white font-medium hover:bg-slate-800 transition-colors"
             >
-            Explore Features
-          </button>
-        </div>
+              Explore Features
+            </button>
+          </div>
 
-        {/* Hero Dashboard Graphic */}
-        <div className="mt-20 relative max-w-5xl mx-auto">
-          <div className="relative rounded-xl border border-slate-800 bg-slate-900/50 backdrop-blur-sm p-2 shadow-2xl shadow-indigo-500/10">
-            <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent" />
-            <div className="rounded-lg overflow-hidden bg-slate-950 aspect-[16/9] relative group">
-              {/* Simulated UI */}
-              <div className="absolute inset-0 flex flex-col">
-                <div className="h-12 border-b border-slate-800 flex items-center px-4 gap-4">
-                  <div className="flex gap-2">
-                    <div className="w-3 h-3 rounded-full bg-slate-800" />
-                    <div className="w-3 h-3 rounded-full bg-slate-800" />
-                    <div className="w-3 h-3 rounded-full bg-slate-800" />
-                  </div>
-                  <div className="h-6 w-32 bg-slate-800/50 rounded-full" />
-                </div>
-                <div className="flex-1 p-6 grid grid-cols-3 gap-6">
-                  <div className="col-span-2 space-y-6">
-                    <div className="h-48 rounded-lg bg-indigo-500/5 border border-indigo-500/10 p-4">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={chartData}>
-                          <defs>
-                            <linearGradient id="heroGradient" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
-                              <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
-                            </linearGradient>
-                          </defs>
-                          <Area type="monotone" dataKey="income" stroke="#6366f1" strokeWidth={2} fill="url(#heroGradient)" />
-                        </AreaChart>
-                      </ResponsiveContainer>
+          {/* Hero Dashboard Graphic */}
+          <div className="mt-20 relative max-w-5xl mx-auto">
+            <div className="relative rounded-xl border border-slate-800 bg-slate-900/50 backdrop-blur-sm p-2 shadow-2xl shadow-indigo-500/10">
+              <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent" />
+              <div className="rounded-lg overflow-hidden bg-slate-950 aspect-[16/9] relative group">
+                {/* Simulated UI */}
+                <div className="absolute inset-0 flex flex-col">
+                  <div className="h-12 border-b border-slate-800 flex items-center px-4 gap-4">
+                    <div className="flex gap-2">
+                      <div className="w-3 h-3 rounded-full bg-slate-800" />
+                      <div className="w-3 h-3 rounded-full bg-slate-800" />
+                      <div className="w-3 h-3 rounded-full bg-slate-800" />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="h-24 rounded-lg bg-slate-900 border border-slate-800 p-4">
-                        <div className="w-8 h-8 rounded-full bg-emerald-500/20 mb-2" />
-                        <div className="h-4 w-20 bg-slate-800 rounded mb-1" />
-                        <div className="h-3 w-12 bg-slate-800/50 rounded" />
-                      </div>
-                      <div className="h-24 rounded-lg bg-slate-900 border border-slate-800 p-4">
-                        <div className="w-8 h-8 rounded-full bg-rose-500/20 mb-2" />
-                        <div className="h-4 w-20 bg-slate-800 rounded mb-1" />
-                        <div className="h-3 w-12 bg-slate-800/50 rounded" />
-                      </div>
-                    </div>
+                    <div className="h-6 w-32 bg-slate-800/50 rounded-full" />
                   </div>
-                  <div className="col-span-1 space-y-4">
-                    <div className="h-full rounded-lg bg-slate-900/50 border border-slate-800 p-4">
-                      <div className="h-4 w-24 bg-slate-800 rounded mb-4" />
-                      {[1, 2, 3, 4].map(i => (
-                        <div key={i} className="flex items-center gap-3 mb-3">
-                          <div className="w-8 h-8 rounded-full bg-slate-800" />
-                          <div className="flex-1">
-                            <div className="h-3 w-full bg-slate-800/50 rounded mb-1" />
-                            <div className="h-2 w-1/2 bg-slate-800/30 rounded" />
-                          </div>
+                  <div className="flex-1 p-6 grid grid-cols-3 gap-6">
+                    <div className="col-span-2 space-y-6">
+                      <div className="h-48 rounded-lg bg-indigo-500/5 border border-indigo-500/10 p-4">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart data={chartData}>
+                            <defs>
+                              <linearGradient id="heroGradient" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
+                                <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                              </linearGradient>
+                            </defs>
+                            <Area type="monotone" dataKey="income" stroke="#6366f1" strokeWidth={2} fill="url(#heroGradient)" />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="h-24 rounded-lg bg-slate-900 border border-slate-800 p-4">
+                          <div className="w-8 h-8 rounded-full bg-emerald-500/20 mb-2" />
+                          <div className="h-4 w-20 bg-slate-800 rounded mb-1" />
+                          <div className="h-3 w-12 bg-slate-800/50 rounded" />
                         </div>
-                      ))}
+                        <div className="h-24 rounded-lg bg-slate-900 border border-slate-800 p-4">
+                          <div className="w-8 h-8 rounded-full bg-rose-500/20 mb-2" />
+                          <div className="h-4 w-20 bg-slate-800 rounded mb-1" />
+                          <div className="h-3 w-12 bg-slate-800/50 rounded" />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="col-span-1 space-y-4">
+                      <div className="h-full rounded-lg bg-slate-900/50 border border-slate-800 p-4">
+                        <div className="h-4 w-24 bg-slate-800 rounded mb-4" />
+                        {[1, 2, 3, 4].map(i => (
+                          <div key={i} className="flex items-center gap-3 mb-3">
+                            <div className="w-8 h-8 rounded-full bg-slate-800" />
+                            <div className="flex-1">
+                              <div className="h-3 w-full bg-slate-800/50 rounded mb-1" />
+                              <div className="h-2 w-1/2 bg-slate-800/30 rounded" />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
+                {/* Reflection effect */}
+                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
               </div>
-              {/* Reflection effect */}
-              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
             </div>
           </div>
         </div>
-    </div>
       </section >
 
-    {/* Features Grid */ }
-    < section id = "features" className = "py-24 bg-slate-950 relative" >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-16 md:text-center max-w-3xl mx-auto">
-          <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">Everything you need.</h2>
-          <p className="text-lg text-slate-400">
-            Powerful tools designed to replace your spreadsheets and give you clarity.
-          </p>
-        </div>
+      {/* Features Grid */}
+      < section id="features" className="py-24 bg-slate-950 relative" >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-16 md:text-center max-w-3xl mx-auto">
+            <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">Everything you need.</h2>
+            <p className="text-lg text-slate-400">
+              Powerful tools designed to replace your spreadsheets and give you clarity.
+            </p>
+          </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {features.map((feature) => (
-            <SpotlightCard key={feature.title} className={feature.colSpan}>
-              <div className="text-4xl mb-4 p-3 bg-slate-800/50 rounded-2xl w-fit">{feature.icon}</div>
-              <h3 className="text-xl font-bold text-white mb-2">{feature.title}</h3>
-              <p className="text-slate-400 leading-relaxed">{feature.desc}</p>
-            </SpotlightCard>
-          ))}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {features.map((feature) => (
+              <SpotlightCard key={feature.title} className={feature.colSpan}>
+                <div className="text-4xl mb-4 p-3 bg-slate-800/50 rounded-2xl w-fit">{feature.icon}</div>
+                <h3 className="text-xl font-bold text-white mb-2">{feature.title}</h3>
+                <p className="text-slate-400 leading-relaxed">{feature.desc}</p>
+              </SpotlightCard>
+            ))}
+          </div>
         </div>
-      </div>
       </section >
 
-    {/* CTA Section */ }
-    < section className = "py-24 relative overflow-hidden" >
+      {/* CTA Section */}
+      < section className="py-24 relative overflow-hidden" >
         <div className="absolute inset-0 bg-indigo-600/10" />
         <div className="absolute inset-0 bg-grid-pattern opacity-20" />
-        
+
         <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-8 tracking-tight">
             Ready to master your money?
@@ -249,15 +248,15 @@ export default function LandingPage() {
             Join thousands of Kenyans using Mstatili Finance to build a better financial future.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-             <AuthLink className="px-10 py-4 bg-white text-indigo-900 font-bold rounded-full hover:bg-indigo-50 transition-all shadow-xl hover:shadow-indigo-500/25 hover:-translate-y-1">
-               Create Free Account
-             </AuthLink>
+            <AuthLink className="px-10 py-4 bg-white text-indigo-900 font-bold rounded-full hover:bg-indigo-50 transition-all shadow-xl hover:shadow-indigo-500/25 hover:-translate-y-1">
+              Create Free Account
+            </AuthLink>
           </div>
           <p className="mt-8 text-slate-500 text-sm">No credit card required · Free forever plan available</p>
         </div>
       </section >
 
-    <PublicFooter />
+      <PublicFooter />
     </div >
   );
 }
