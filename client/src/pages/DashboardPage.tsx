@@ -197,7 +197,7 @@ export default function DashboardPage() {
       </div>
 
       {loading && (
-        <div className="kpi-grid">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
           <div className="skeleton h-32 rounded-xl" />
           <div className="skeleton h-32 rounded-xl" />
           <div className="skeleton h-32 rounded-xl" />
@@ -218,8 +218,8 @@ export default function DashboardPage() {
 
       {!loading && (
         <>
-          {/* Enhanced KPI Cards */}
-          <div className="kpi-grid">
+          {/* Primary KPI Cards - 4 columns on large screens, 2 on mobile */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
             {/* Income Card */}
             <div className="kpi-card neu-stat-card">
               <div className="kpi-label">Total Income</div>
@@ -303,7 +303,7 @@ export default function DashboardPage() {
 
             {/* Liquidity Card - Available Cash */}
             <div className="kpi-card neu-stat-card cursor-pointer" onClick={() => navigate('/accounts')}>
-              <div className="kpi-label">💵 Available Cash</div>
+              <div className="kpi-label">Available Cash</div>
               <div className="kpi-value" style={{ color: 'var(--success-400)' }}>
                 {formatMoney(liquidity)}
               </div>
@@ -312,7 +312,10 @@ export default function DashboardPage() {
                 Immediate access funds
               </div>
             </div>
+          </div>
 
+          {/* Secondary KPI Cards - Wealth Overview - 3 columns centered */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6 mb-6">
             {/* Net Worth Card */}
             <div className="kpi-card neu-stat-card cursor-pointer" onClick={() => navigate('/wealth')}>
               <div className="kpi-label">Net Worth</div>
@@ -320,19 +323,19 @@ export default function DashboardPage() {
                 {formatMoney(netWorthTotals.netWorth)}
               </div>
               <div className="text-xs text-[var(--text-muted)] mb-3">KES</div>
-              <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center justify-between text-xs gap-2">
                 <span className="kpi-change positive">
-                  ↑ Assets: {formatMoney(netWorthTotals.assets)}
+                  ↑ {formatMoney(netWorthTotals.assets)}
                 </span>
                 <span className="kpi-change negative">
-                  ↓ Debt: {formatMoney(netWorthTotals.liabilities)}
+                  ↓ {formatMoney(netWorthTotals.liabilities)}
                 </span>
               </div>
             </div>
 
             {/* Savings Goals Card */}
             <div className="kpi-card neu-stat-card cursor-pointer" onClick={() => navigate('/savings')}>
-              <div className="kpi-label">🎯 Savings Goals</div>
+              <div className="kpi-label">Savings Goals</div>
               <div className="kpi-value" style={{ color: 'var(--primary-400)' }}>
                 {formatMoney(savingsCard.total_saved)}
               </div>
@@ -349,7 +352,7 @@ export default function DashboardPage() {
 
             {/* Investments Card */}
             <div className="kpi-card neu-stat-card cursor-pointer" onClick={() => navigate('/investments')}>
-              <div className="kpi-label">📈 Investments</div>
+              <div className="kpi-label">Investments</div>
               <div className="kpi-value" style={{ color: 'var(--accent-400)' }}>
                 {formatMoney(investmentsCard.total_current_value)}
               </div>
