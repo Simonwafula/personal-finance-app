@@ -53,6 +53,7 @@ media/  # User-uploaded files
 
 # Env files / secrets
 .env
+.env.local
 !.env.example
 *.nv
 nv
