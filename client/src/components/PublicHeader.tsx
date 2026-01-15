@@ -10,47 +10,53 @@ export default function PublicHeader() {
   };
 
   return (
-    <header className="bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/50 sticky top-0 z-50">
-      <div className="max-w-6xl mx-auto px-6 lg:px-8 h-16 flex items-center justify-between">
+    <header className="bg-slate-950/90 backdrop-blur-xl border-b border-slate-800/50 sticky top-0 z-50">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
-          <Logo width={32} height={32} />
-          <span className="font-semibold text-white text-lg hidden sm:inline">Mstatili Finance</span>
+        <Link to="/" className="flex items-center gap-2.5 hover:opacity-90 transition-opacity">
+          <Logo width={36} height={36} title="Utajiri" />
+          <span className="font-bold text-white text-lg tracking-tight hidden sm:inline">Utajiri</span>
         </Link>
 
         {/* Navigation */}
-        <nav className="hidden md:flex items-center gap-8">
+        <nav className="hidden md:flex items-center gap-6">
           <button
-            onClick={() => scrollToSection('demo')}
-            className="text-sm font-medium text-slate-400 hover:text-white transition-colors"
+            onClick={() => scrollToSection('features')}
+            className="text-sm font-medium text-slate-400 hover:text-white transition-colors py-2"
           >
-            Demo
+            Features
+          </button>
+          <button
+            onClick={() => scrollToSection('screens')}
+            className="text-sm font-medium text-slate-400 hover:text-white transition-colors py-2"
+          >
+            Screens
           </button>
           <button
             onClick={() => scrollToSection('faq')}
-            className="text-sm font-medium text-slate-400 hover:text-white transition-colors"
+            className="text-sm font-medium text-slate-400 hover:text-white transition-colors py-2"
           >
             FAQ
           </button>
           <Link
             to="/blog"
-            className="text-sm font-medium text-slate-400 hover:text-white transition-colors"
+            className="text-sm font-medium text-slate-400 hover:text-white transition-colors py-2"
           >
             Blog
           </Link>
         </nav>
 
         {/* Actions */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <Link
             to="/login"
-            className="text-sm font-medium text-slate-400 hover:text-white transition-colors hidden sm:inline"
+            className="text-sm font-medium text-slate-400 hover:text-white transition-colors py-2 px-3 hidden sm:inline-block"
           >
             Sign in
           </Link>
           <Link
             to="/signup"
-            className="inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+            className="inline-flex items-center px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-all shadow-sm hover:shadow-md hover:shadow-blue-500/20 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-950"
           >
             Get Started
           </Link>

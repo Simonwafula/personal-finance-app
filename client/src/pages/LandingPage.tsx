@@ -5,50 +5,64 @@ import PublicFooter from "../components/PublicFooter";
 import { fetchCurrentUser } from "../api/auth";
 import Logo from "../components/Logo";
 
-const features = [
+// Feature blocks grouped by theme: Track, Plan, Grow
+const featureBlocks = [
   {
-    title: "Track Everything",
-    description: "Connect M-Pesa, bank accounts, and cash transactions in one unified dashboard.",
+    theme: "Track",
+    title: "See Everything Clearly",
+    description: "All your money in one place.",
+    color: "blue",
     icon: (
       <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
       </svg>
     ),
+    bullets: [
+      "M-Pesa, bank accounts & cash unified",
+      "Auto-import from SMS messages",
+      "Real-time balance updates",
+    ],
   },
   {
-    title: "Smart Budgets",
-    description: "Create realistic budgets based on your spending habits and get alerts before overspending.",
+    theme: "Plan",
+    title: "Budget With Confidence",
+    description: "Know where every shilling goes.",
+    color: "green",
     icon: (
       <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
     ),
+    bullets: [
+      "Category-based spending limits",
+      "Alerts before you overspend",
+      "Savings goals with progress tracking",
+    ],
   },
   {
-    title: "Wealth Tracking",
-    description: "Monitor your net worth growth with assets, investments, and debt in one clear view.",
+    theme: "Grow",
+    title: "Build Lasting Wealth",
+    description: "Watch your net worth climb.",
+    color: "purple",
     icon: (
       <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
       </svg>
     ),
-  },
-  {
-    title: "Debt Management",
-    description: "Compare snowball vs avalanche strategies and create a clear path to being debt-free.",
-    icon: (
-      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-      </svg>
-    ),
+    bullets: [
+      "Track assets, investments & debts",
+      "Debt payoff strategies (snowball/avalanche)",
+      "Investment portfolio monitoring",
+    ],
   },
 ];
 
-const tools = [
-  { name: "Budget Tracker", description: "Set spending limits by category" },
-  { name: "Savings Goals", description: "Track progress towards your targets" },
-  { name: "Investment Portfolio", description: "Monitor stocks, funds, and crypto" },
-  { name: "Subscription Manager", description: "Never miss a renewal date" },
+// App screenshots for preview section
+const appScreens = [
+  { name: "Dashboard", description: "Your financial overview at a glance" },
+  { name: "Transactions", description: "Track every shilling in and out" },
+  { name: "Budgets", description: "Stay on top of your spending limits" },
+  { name: "Reports", description: "Insights to help you grow" },
 ];
 
 const stats = [
@@ -72,18 +86,22 @@ const faqs = [
   },
   {
     question: "What does it cost?",
-    answer: "Mstatili Finance offers a generous free tier. Premium features are available at affordable rates for power users.",
+    answer: "Utajiri offers a generous free tier. Premium features are available at affordable rates for power users.",
   },
+];
+
+// Trust chips data
+const trustChips = [
+  { icon: "shield", label: "Private by design" },
+  { icon: "download", label: "Export anytime" },
+  { icon: "lock", label: "PIN & Biometrics" },
 ];
 
 export default function LandingPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Force dark mode for landing page
     document.documentElement.classList.add("dark");
-
-    // Redirect authenticated users to dashboard
     fetchCurrentUser()
       .then(() => navigate("/dashboard"))
       .catch(() => {});
@@ -94,93 +112,145 @@ export default function LandingPage() {
       <PublicHeader />
 
       <main className="flex-1">
-        {/* Hero Section */}
-        <section className="relative py-20 lg:py-32 overflow-hidden">
-          {/* Background gradient */}
+        {/* Hero Section - 2 Column Layout */}
+        <section className="relative py-16 lg:py-24 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-b from-blue-600/10 via-transparent to-transparent pointer-events-none" />
 
-          <div className="max-w-6xl mx-auto px-6 lg:px-8 relative">
-            <div className="max-w-3xl mx-auto text-center">
-              {/* Badge */}
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-medium mb-8">
-                <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
-                Built for Kenya
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+            <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+              {/* Left Column - Content */}
+              <div className="text-center lg:text-left">
+                {/* Badge */}
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-medium mb-6">
+                  <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+                  Built for Kenya
+                </div>
+
+                {/* Headline */}
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white mb-6 leading-[1.1]">
+                  Master Your
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600"> Money</span>
+                </h1>
+
+                <p className="text-lg lg:text-xl text-slate-400 mb-8 leading-relaxed max-w-xl mx-auto lg:mx-0" style={{ maxWidth: '60ch' }}>
+                  Track M-Pesa, budget smarter, and build wealth with tools designed for how you actually manage money.
+                </p>
+
+                {/* CTAs */}
+                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
+                  <Link
+                    to="/signup"
+                    className="inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl transition-all shadow-lg shadow-blue-600/25 hover:shadow-blue-600/40 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-950"
+                  >
+                    Start Free
+                  </Link>
+                  <Link
+                    to="/login"
+                    className="inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-slate-300 bg-slate-800/50 hover:bg-slate-800 border border-slate-700 hover:border-slate-600 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 focus:ring-offset-slate-950"
+                  >
+                    Sign In
+                  </Link>
+                </div>
+
+                {/* Trust Chips */}
+                <div className="flex flex-wrap gap-3 justify-center lg:justify-start">
+                  {trustChips.map((chip) => (
+                    <div
+                      key={chip.label}
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/50 border border-slate-700/50 text-slate-400 text-sm"
+                    >
+                      {chip.icon === "shield" && (
+                        <svg className="w-4 h-4 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                      )}
+                      {chip.icon === "download" && (
+                        <svg className="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                      )}
+                      {chip.icon === "lock" && (
+                        <svg className="w-4 h-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4" />
+                        </svg>
+                      )}
+                      <span>{chip.label}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              {/* Headline */}
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white mb-6">
-                Master Your
-                <span className="text-blue-500"> Money</span>
-              </h1>
+              {/* Right Column - Phone Mockup */}
+              <div className="relative flex justify-center lg:justify-end" data-section="demo">
+                <div className="relative">
+                  {/* Glow effect */}
+                  <div className="absolute -inset-8 bg-gradient-to-r from-blue-600/30 via-purple-600/20 to-blue-600/30 rounded-[3rem] blur-3xl opacity-50" />
 
-              <p className="text-lg lg:text-xl text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed">
-                The modern personal finance platform. Track M-Pesa, budget smarter,
-                and build wealth with tools designed for how you actually manage money.
-              </p>
+                  {/* Phone frame */}
+                  <div className="relative w-[280px] sm:w-[320px] bg-slate-900 rounded-[2.5rem] border-[8px] border-slate-800 shadow-2xl overflow-hidden">
+                    {/* Phone notch */}
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-6 bg-slate-800 rounded-b-2xl z-10" />
 
-              {/* CTAs */}
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link
-                  to="/signup"
-                  className="inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-lg shadow-blue-600/25 hover:shadow-blue-600/40 hover:-translate-y-0.5"
-                >
-                  Start Free
-                </Link>
-                <Link
-                  to="/login"
-                  className="inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-slate-300 bg-slate-800/50 hover:bg-slate-800 border border-slate-700 hover:border-slate-600 rounded-xl transition-all"
-                >
-                  Sign In
-                </Link>
-              </div>
-            </div>
-
-            {/* Hero Visual - Dashboard Preview */}
-            <div className="mt-16 lg:mt-20 relative" data-section="demo">
-              <div className="relative mx-auto max-w-4xl">
-                {/* Glow effect */}
-                <div className="absolute -inset-4 bg-gradient-to-r from-blue-600/20 via-purple-600/20 to-blue-600/20 rounded-3xl blur-2xl opacity-50" />
-
-                {/* Dashboard mockup */}
-                <div className="relative bg-slate-900 rounded-2xl border border-slate-800 shadow-2xl overflow-hidden">
-                  {/* Browser chrome */}
-                  <div className="flex items-center gap-2 px-4 py-3 bg-slate-800/50 border-b border-slate-700">
-                    <div className="flex gap-2">
-                      <div className="w-3 h-3 rounded-full bg-red-500/80" />
-                      <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
-                      <div className="w-3 h-3 rounded-full bg-green-500/80" />
-                    </div>
-                    <div className="flex-1 text-center">
-                      <span className="text-xs text-slate-500 font-mono">finance.mstatilitechnologies.com</span>
-                    </div>
-                  </div>
-
-                  {/* Dashboard content */}
-                  <div className="p-6 lg:p-8">
-                    {/* Stats row */}
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                      {[
-                        { label: "Net Worth", value: "KES 847,250", change: "+12.4%", positive: true },
-                        { label: "This Month", value: "KES 45,200", change: "-8.2%", positive: false },
-                        { label: "Savings", value: "KES 125,000", change: "+5.1%", positive: true },
-                        { label: "Investments", value: "KES 320,500", change: "+18.7%", positive: true },
-                      ].map((stat) => (
-                        <div key={stat.label} className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50">
-                          <p className="text-xs text-slate-500 font-medium mb-1">{stat.label}</p>
-                          <p className="text-lg font-bold text-white">{stat.value}</p>
-                          <p className={`text-xs font-medium ${stat.positive ? "text-green-400" : "text-red-400"}`}>
-                            {stat.change}
-                          </p>
+                    {/* Screen content */}
+                    <div className="bg-slate-950 pt-8 pb-4 px-4 min-h-[500px]">
+                      {/* App header */}
+                      <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-2">
+                          <Logo width={24} height={24} title="Utajiri" />
+                          <span className="font-semibold text-white text-sm">Utajiri</span>
                         </div>
-                      ))}
-                    </div>
+                        <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center">
+                          <span className="text-xs text-slate-400">SW</span>
+                        </div>
+                      </div>
 
-                    {/* Chart placeholder */}
-                    <div className="bg-slate-800/30 rounded-xl p-4 border border-slate-700/50">
-                      <p className="text-sm text-slate-500 mb-4">Spending Trends</p>
-                      <div className="flex items-end gap-2 h-32">
-                        {[40, 65, 45, 80, 55, 70, 90, 60, 75, 85, 50, 95].map((h, i) => (
-                          <div key={i} className="flex-1 rounded-t-sm bg-gradient-to-t from-blue-600 to-blue-400" style={{ height: `${h}%` }} />
+                      {/* Balance card */}
+                      <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-4 mb-4 shadow-lg">
+                        <p className="text-blue-200 text-xs mb-1">Total Balance</p>
+                        <p className="text-white text-2xl font-bold mb-2">KES 847,250</p>
+                        <div className="flex items-center gap-1 text-green-300 text-xs">
+                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                          </svg>
+                          <span>+12.4% this month</span>
+                        </div>
+                      </div>
+
+                      {/* Quick stats */}
+                      <div className="grid grid-cols-2 gap-3 mb-4">
+                        <div className="bg-slate-800/50 rounded-xl p-3 border border-slate-700/50">
+                          <p className="text-slate-500 text-xs mb-1">Income</p>
+                          <p className="text-green-400 font-semibold text-sm">+65,200</p>
+                        </div>
+                        <div className="bg-slate-800/50 rounded-xl p-3 border border-slate-700/50">
+                          <p className="text-slate-500 text-xs mb-1">Expenses</p>
+                          <p className="text-red-400 font-semibold text-sm">-42,800</p>
+                        </div>
+                      </div>
+
+                      {/* Recent transactions */}
+                      <div className="bg-slate-800/30 rounded-xl p-3 border border-slate-700/50">
+                        <p className="text-slate-400 text-xs font-medium mb-3">Recent</p>
+                        {[
+                          { name: "Safaricom", amount: "-1,500", icon: "phone" },
+                          { name: "Salary", amount: "+65,000", icon: "briefcase" },
+                          { name: "Groceries", amount: "-3,200", icon: "cart" },
+                        ].map((tx) => (
+                          <div key={tx.name} className="flex items-center justify-between py-2 border-b border-slate-700/30 last:border-0">
+                            <div className="flex items-center gap-2">
+                              <div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center">
+                                <span className="text-[10px]">
+                                  {tx.icon === "phone" && "P"}
+                                  {tx.icon === "briefcase" && "S"}
+                                  {tx.icon === "cart" && "G"}
+                                </span>
+                              </div>
+                              <span className="text-white text-xs">{tx.name}</span>
+                            </div>
+                            <span className={`text-xs font-medium ${tx.amount.startsWith('+') ? 'text-green-400' : 'text-red-400'}`}>
+                              {tx.amount}
+                            </span>
+                          </div>
                         ))}
                       </div>
                     </div>
@@ -192,9 +262,9 @@ export default function LandingPage() {
         </section>
 
         {/* Stats Bar */}
-        <section className="py-12 border-y border-slate-800/50 bg-slate-900/30">
-          <div className="max-w-6xl mx-auto px-6 lg:px-8">
-            <div className="flex flex-wrap justify-center gap-12 lg:gap-24">
+        <section className="py-10 border-y border-slate-800/50 bg-slate-900/30">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-wrap justify-center gap-8 lg:gap-20">
               {stats.map((stat) => (
                 <div key={stat.label} className="text-center">
                   <p className="text-3xl lg:text-4xl font-bold text-white mb-1">{stat.value}</p>
@@ -205,116 +275,177 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Features Section */}
-        <section className="py-20 lg:py-28">
-          <div className="max-w-6xl mx-auto px-6 lg:px-8">
+        {/* Features Section - Track / Plan / Grow */}
+        <section className="py-20 lg:py-24" data-section="features">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
-                Everything You Need
+                Everything You Need to Succeed
               </h2>
-              <p className="text-lg text-slate-400 max-w-2xl mx-auto">
-                Powerful tools to help you understand, plan, and grow your finances.
+              <p className="text-lg text-slate-400 max-w-2xl mx-auto" style={{ maxWidth: '60ch' }}>
+                From tracking every shilling to building lasting wealth.
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
-              {features.map((feature) => (
+            <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
+              {featureBlocks.map((block) => (
                 <div
-                  key={feature.title}
-                  className="group relative bg-slate-900/50 hover:bg-slate-900/80 border border-slate-800 hover:border-slate-700 rounded-2xl p-6 lg:p-8 transition-all duration-300"
+                  key={block.theme}
+                  className="group bg-slate-900/50 hover:bg-slate-900/80 border border-slate-800 hover:border-slate-700 rounded-2xl p-6 lg:p-8 transition-all duration-300"
                 >
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-xl bg-blue-500/10 text-blue-400 group-hover:bg-blue-500/20 transition-colors">
-                      {feature.icon}
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-semibold text-white mb-2">{feature.title}</h3>
-                      <p className="text-slate-400 leading-relaxed">{feature.description}</p>
-                    </div>
+                  {/* Theme badge */}
+                  <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold mb-4 ${
+                    block.color === 'blue' ? 'bg-blue-500/10 text-blue-400' :
+                    block.color === 'green' ? 'bg-green-500/10 text-green-400' :
+                    'bg-purple-500/10 text-purple-400'
+                  }`}>
+                    {block.theme}
                   </div>
+
+                  {/* Icon */}
+                  <div className={`w-12 h-12 flex items-center justify-center rounded-xl mb-4 transition-colors ${
+                    block.color === 'blue' ? 'bg-blue-500/10 text-blue-400 group-hover:bg-blue-500/20' :
+                    block.color === 'green' ? 'bg-green-500/10 text-green-400 group-hover:bg-green-500/20' :
+                    'bg-purple-500/10 text-purple-400 group-hover:bg-purple-500/20'
+                  }`}>
+                    {block.icon}
+                  </div>
+
+                  {/* Content */}
+                  <h3 className="text-xl font-semibold text-white mb-2">{block.title}</h3>
+                  <p className="text-slate-400 mb-4">{block.description}</p>
+
+                  {/* Bullet points */}
+                  <ul className="space-y-2">
+                    {block.bullets.map((bullet, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-slate-400">
+                        <svg className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
+                          block.color === 'blue' ? 'text-blue-400' :
+                          block.color === 'green' ? 'text-green-400' :
+                          'text-purple-400'
+                        }`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>{bullet}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* Tools Section */}
-        <section className="py-20 lg:py-28 bg-slate-900/50">
-          <div className="max-w-6xl mx-auto px-6 lg:px-8">
-            <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-              <div>
-                <h2 className="text-3xl lg:text-4xl font-bold text-white mb-6">
-                  Tools for Every Goal
-                </h2>
-                <p className="text-lg text-slate-400 mb-8 leading-relaxed">
-                  Whether you're paying off debt, saving for a goal, or building an investment portfolio,
-                  we have the tools to help you succeed.
-                </p>
+        {/* Screens Preview Section - NEW */}
+        <section className="py-20 lg:py-24 bg-slate-900/50" data-section="screens">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
+                See Utajiri in Action
+              </h2>
+              <p className="text-lg text-slate-400 max-w-2xl mx-auto">
+                Clean, intuitive screens designed for real people managing real money.
+              </p>
+            </div>
 
-                <div className="space-y-4">
-                  {tools.map((tool) => (
-                    <div key={tool.name} className="flex items-center gap-4 p-4 bg-slate-800/50 rounded-xl border border-slate-700/50">
-                      <div className="w-2 h-2 rounded-full bg-blue-500" />
-                      <div>
-                        <p className="font-medium text-white">{tool.name}</p>
-                        <p className="text-sm text-slate-500">{tool.description}</p>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {appScreens.map((screen, index) => (
+                <div key={screen.name} className="group">
+                  {/* Screen mockup placeholder */}
+                  <div className="relative bg-slate-800 rounded-2xl border border-slate-700/50 overflow-hidden mb-4 aspect-[9/16] transition-all group-hover:border-slate-600 group-hover:shadow-lg group-hover:shadow-blue-500/10">
+                    {/* Placeholder screen content */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-slate-800 to-slate-900 p-4">
+                      {/* Status bar */}
+                      <div className="flex justify-between items-center text-[10px] text-slate-500 mb-4">
+                        <span>9:41</span>
+                        <div className="flex gap-1">
+                          <div className="w-3 h-1.5 bg-slate-600 rounded-sm" />
+                          <div className="w-3 h-1.5 bg-slate-600 rounded-sm" />
+                          <div className="w-4 h-2 bg-slate-600 rounded-sm" />
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
 
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-tr from-blue-600/10 to-purple-600/10 rounded-3xl blur-2xl" />
-                <div className="relative bg-slate-900 rounded-2xl border border-slate-800 p-6 lg:p-8">
-                  <div className="flex items-center gap-3 mb-6">
-                    <Logo width={32} height={32} />
-                    <span className="font-semibold text-white">Mstatili Finance</span>
+                      {/* Screen-specific content */}
+                      {index === 0 && (
+                        // Dashboard
+                        <div className="space-y-3">
+                          <div className="bg-blue-600/20 rounded-xl p-3 border border-blue-500/20">
+                            <div className="h-2 w-16 bg-slate-600 rounded mb-2" />
+                            <div className="h-4 w-24 bg-white/20 rounded" />
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="bg-slate-700/50 rounded-lg p-2 h-16" />
+                            <div className="bg-slate-700/50 rounded-lg p-2 h-16" />
+                          </div>
+                          <div className="bg-slate-700/50 rounded-lg p-2 h-20" />
+                        </div>
+                      )}
+                      {index === 1 && (
+                        // Transactions
+                        <div className="space-y-2">
+                          <div className="h-3 w-20 bg-slate-600 rounded mb-4" />
+                          {[1,2,3,4,5].map(i => (
+                            <div key={i} className="flex items-center justify-between bg-slate-700/30 rounded-lg p-2">
+                              <div className="flex items-center gap-2">
+                                <div className="w-6 h-6 bg-slate-600 rounded-full" />
+                                <div className="h-2 w-16 bg-slate-600 rounded" />
+                              </div>
+                              <div className="h-2 w-12 bg-slate-500 rounded" />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {index === 2 && (
+                        // Budgets
+                        <div className="space-y-3">
+                          <div className="h-3 w-16 bg-slate-600 rounded mb-4" />
+                          {[
+                            { color: 'bg-green-500', width: '70%' },
+                            { color: 'bg-yellow-500', width: '85%' },
+                            { color: 'bg-blue-500', width: '45%' },
+                          ].map((bar, i) => (
+                            <div key={i} className="space-y-1">
+                              <div className="h-2 w-20 bg-slate-600 rounded" />
+                              <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                                <div className={`h-full ${bar.color} rounded-full`} style={{ width: bar.width }} />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {index === 3 && (
+                        // Reports
+                        <div className="space-y-3">
+                          <div className="h-3 w-16 bg-slate-600 rounded mb-4" />
+                          <div className="bg-slate-700/50 rounded-lg p-2 h-24 flex items-end gap-1 px-3">
+                            {[30, 50, 40, 70, 55, 80, 65].map((h, i) => (
+                              <div key={i} className="flex-1 bg-blue-500/60 rounded-t" style={{ height: `${h}%` }} />
+                            ))}
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="bg-slate-700/50 rounded-lg p-2 h-12" />
+                            <div className="bg-slate-700/50 rounded-lg p-2 h-12" />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Overlay gradient on hover */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-blue-600/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
 
-                  <div className="space-y-4">
-                    <div className="bg-slate-800/50 rounded-xl p-4">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm text-slate-400">Emergency Fund</span>
-                        <span className="text-sm font-medium text-green-400">67%</span>
-                      </div>
-                      <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
-                        <div className="h-full w-2/3 bg-gradient-to-r from-green-500 to-green-400 rounded-full" />
-                      </div>
-                      <p className="text-xs text-slate-500 mt-2">KES 201,000 of KES 300,000</p>
-                    </div>
-
-                    <div className="bg-slate-800/50 rounded-xl p-4">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm text-slate-400">Vacation Fund</span>
-                        <span className="text-sm font-medium text-blue-400">45%</span>
-                      </div>
-                      <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
-                        <div className="h-full w-[45%] bg-gradient-to-r from-blue-500 to-blue-400 rounded-full" />
-                      </div>
-                      <p className="text-xs text-slate-500 mt-2">KES 45,000 of KES 100,000</p>
-                    </div>
-
-                    <div className="bg-slate-800/50 rounded-xl p-4">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm text-slate-400">New Laptop</span>
-                        <span className="text-sm font-medium text-purple-400">82%</span>
-                      </div>
-                      <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
-                        <div className="h-full w-[82%] bg-gradient-to-r from-purple-500 to-purple-400 rounded-full" />
-                      </div>
-                      <p className="text-xs text-slate-500 mt-2">KES 82,000 of KES 100,000</p>
-                    </div>
-                  </div>
+                  {/* Label */}
+                  <h3 className="font-semibold text-white mb-1">{screen.name}</h3>
+                  <p className="text-sm text-slate-500">{screen.description}</p>
                 </div>
-              </div>
+              ))}
             </div>
           </div>
         </section>
 
         {/* FAQ Section */}
-        <section className="py-20 lg:py-28" data-section="faq">
-          <div className="max-w-3xl mx-auto px-6 lg:px-8">
+        <section className="py-20 lg:py-24" data-section="faq">
+          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
                 Common Questions
@@ -328,10 +459,10 @@ export default function LandingPage() {
               {faqs.map((faq, index) => (
                 <div
                   key={index}
-                  className="bg-slate-900/50 border border-slate-800 rounded-xl p-6"
+                  className="bg-slate-900/50 border border-slate-800 hover:border-slate-700 rounded-xl p-6 transition-colors"
                 >
                   <h3 className="text-lg font-semibold text-white mb-2">{faq.question}</h3>
-                  <p className="text-slate-400 leading-relaxed">{faq.answer}</p>
+                  <p className="text-slate-400 leading-relaxed" style={{ maxWidth: '65ch' }}>{faq.answer}</p>
                 </div>
               ))}
             </div>
@@ -339,17 +470,17 @@ export default function LandingPage() {
         </section>
 
         {/* CTA Section */}
-        <section className="py-20 lg:py-28 bg-gradient-to-t from-slate-900 to-transparent">
-          <div className="max-w-4xl mx-auto px-6 lg:px-8 text-center">
+        <section className="py-20 lg:py-24 bg-gradient-to-t from-slate-900 to-transparent">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-3xl lg:text-5xl font-bold text-white mb-6">
               Ready to Take Control?
             </h2>
-            <p className="text-lg text-slate-400 mb-10 max-w-2xl mx-auto">
-              Join thousands of Kenyans who are building better financial habits with Mstatili Finance.
+            <p className="text-lg text-slate-400 mb-10 max-w-2xl mx-auto" style={{ maxWidth: '60ch' }}>
+              Join thousands of Kenyans building better financial habits with Utajiri.
             </p>
             <Link
               to="/signup"
-              className="inline-flex items-center justify-center px-10 py-4 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-lg shadow-blue-600/25 hover:shadow-blue-600/40 hover:-translate-y-0.5"
+              className="inline-flex items-center justify-center px-10 py-4 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl transition-all shadow-lg shadow-blue-600/25 hover:shadow-blue-600/40 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-950"
             >
               Create Free Account
             </Link>

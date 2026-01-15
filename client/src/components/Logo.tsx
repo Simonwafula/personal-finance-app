@@ -1,7 +1,7 @@
 export default function Logo({
   width = 40,
   height = 40,
-  title = "Mstatili Finance",
+  title = "Utajiri",
   className = "",
 }: {
   width?: number;
