@@ -3,28 +3,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer utilities {
-  .bg-navy-950 {
-    background-color: #001C3D;
-  }
-
-  .bg-navy-900 {
-    background-color: #002B5C;
-  }
-
-  .text-brand-blue {
-    color: #0060FF;
-  }
-
-  .bg-brand-blue {
-    background-color: #0060FF;
-  }
-
-  .border-brand-blue {
-    border-color: #0060FF;
-  }
-}
-
 :root {
   --bg-body: #F3F4F6;
   --surface: #FFFFFF;
