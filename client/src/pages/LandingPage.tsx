@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import PublicHeader from "../components/PublicHeader";
 import PublicFooter from "../components/PublicFooter";
 import { fetchCurrentUser } from "../api/auth";
-import Logo from "../components/Logo";
 
 // Feature blocks grouped by theme: Track, Plan, Grow
 const featureBlocks = [
@@ -13,8 +12,8 @@ const featureBlocks = [
     description: "All your money in one place.",
     color: "blue",
     icon: (
-      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
       </svg>
     ),
     bullets: [
@@ -29,8 +28,8 @@ const featureBlocks = [
     description: "Know where every shilling goes.",
     color: "green",
     icon: (
-      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
     ),
     bullets: [
@@ -45,8 +44,8 @@ const featureBlocks = [
     description: "Watch your net worth climb.",
     color: "purple",
     icon: (
-      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
       </svg>
     ),
     bullets: [
@@ -184,75 +183,21 @@ export default function LandingPage() {
               <div className="relative flex justify-center lg:justify-end" data-section="demo">
                 <div className="relative">
                   {/* Glow effect */}
-                  <div className="absolute -inset-8 bg-gradient-to-r from-blue-600/30 via-purple-600/20 to-blue-600/30 rounded-[3rem] blur-3xl opacity-50" />
+                  <div className="absolute -inset-4 bg-gradient-to-r from-blue-600/20 via-purple-600/10 to-blue-600/20 rounded-[3rem] blur-2xl" />
 
                   {/* Phone frame */}
-                  <div className="relative w-[280px] sm:w-[320px] bg-slate-900 rounded-[2.5rem] border-[8px] border-slate-800 shadow-2xl overflow-hidden">
-                    {/* Phone notch */}
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-6 bg-slate-800 rounded-b-2xl z-10" />
+                  <div className="relative bg-slate-900 rounded-[2.5rem] p-2 shadow-2xl shadow-black/50">
+                    {/* Inner bezel */}
+                    <div className="relative bg-black rounded-[2rem] overflow-hidden">
+                      {/* Dynamic Island */}
+                      <div className="absolute top-3 left-1/2 -translate-x-1/2 w-20 h-6 bg-black rounded-full z-20" />
 
-                    {/* Screen content */}
-                    <div className="bg-slate-950 pt-8 pb-4 px-4 min-h-[500px]">
-                      {/* App header */}
-                      <div className="flex items-center justify-between mb-6">
-                        <div className="flex items-center gap-2">
-                          <Logo width={24} height={24} title="Utajiri" />
-                          <span className="font-semibold text-white text-sm">Utajiri</span>
-                        </div>
-                        <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center">
-                          <span className="text-xs text-slate-400">SW</span>
-                        </div>
-                      </div>
-
-                      {/* Balance card */}
-                      <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-4 mb-4 shadow-lg">
-                        <p className="text-blue-200 text-xs mb-1">Total Balance</p>
-                        <p className="text-white text-2xl font-bold mb-2">KES 847,250</p>
-                        <div className="flex items-center gap-1 text-green-300 text-xs">
-                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                          </svg>
-                          <span>+12.4% this month</span>
-                        </div>
-                      </div>
-
-                      {/* Quick stats */}
-                      <div className="grid grid-cols-2 gap-3 mb-4">
-                        <div className="bg-slate-800/50 rounded-xl p-3 border border-slate-700/50">
-                          <p className="text-slate-500 text-xs mb-1">Income</p>
-                          <p className="text-green-400 font-semibold text-sm">+65,200</p>
-                        </div>
-                        <div className="bg-slate-800/50 rounded-xl p-3 border border-slate-700/50">
-                          <p className="text-slate-500 text-xs mb-1">Expenses</p>
-                          <p className="text-red-400 font-semibold text-sm">-42,800</p>
-                        </div>
-                      </div>
-
-                      {/* Recent transactions */}
-                      <div className="bg-slate-800/30 rounded-xl p-3 border border-slate-700/50">
-                        <p className="text-slate-400 text-xs font-medium mb-3">Recent</p>
-                        {[
-                          { name: "Safaricom", amount: "-1,500", icon: "phone" },
-                          { name: "Salary", amount: "+65,000", icon: "briefcase" },
-                          { name: "Groceries", amount: "-3,200", icon: "cart" },
-                        ].map((tx) => (
-                          <div key={tx.name} className="flex items-center justify-between py-2 border-b border-slate-700/30 last:border-0">
-                            <div className="flex items-center gap-2">
-                              <div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center">
-                                <span className="text-[10px]">
-                                  {tx.icon === "phone" && "P"}
-                                  {tx.icon === "briefcase" && "S"}
-                                  {tx.icon === "cart" && "G"}
-                                </span>
-                              </div>
-                              <span className="text-white text-xs">{tx.name}</span>
-                            </div>
-                            <span className={`text-xs font-medium ${tx.amount.startsWith('+') ? 'text-green-400' : 'text-red-400'}`}>
-                              {tx.amount}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
+                      {/* Screenshot image */}
+                      <img
+                        src="/screenshots/dashboard.svg"
+                        alt="Utajiri Dashboard"
+                        className="w-[260px] sm:w-[280px] h-auto"
+                      />
                     </div>
                   </div>
                 </div>
@@ -303,7 +248,7 @@ export default function LandingPage() {
                   </div>
 
                   {/* Icon */}
-                  <div className={`w-12 h-12 flex items-center justify-center rounded-xl mb-4 transition-colors ${
+                  <div className={`w-10 h-10 flex items-center justify-center rounded-lg mb-4 transition-colors ${
                     block.color === 'blue' ? 'bg-blue-500/10 text-blue-400 group-hover:bg-blue-500/20' :
                     block.color === 'green' ? 'bg-green-500/10 text-green-400 group-hover:bg-green-500/20' :
                     'bg-purple-500/10 text-purple-400 group-hover:bg-purple-500/20'
@@ -319,12 +264,12 @@ export default function LandingPage() {
                   <ul className="space-y-2">
                     {block.bullets.map((bullet, i) => (
                       <li key={i} className="flex items-start gap-2 text-sm text-slate-400">
-                        <svg className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
+                        <svg className={`w-3.5 h-3.5 mt-0.5 flex-shrink-0 ${
                           block.color === 'blue' ? 'text-blue-400' :
                           block.color === 'green' ? 'text-green-400' :
                           'text-purple-400'
-                        }`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        }`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                         </svg>
                         <span>{bullet}</span>
                       </li>
