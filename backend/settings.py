@@ -63,6 +63,7 @@ ALLOWED_HOSTS = (
     if _ah
     else ['localhost', '127.0.0.1']
 )
+ALLOWED_HOSTS += ['finance.mstatilitechnologies.com', 'www.finance.mstatilitechnologies.com', '67.217.62.77']
 
 
 # Application definition
