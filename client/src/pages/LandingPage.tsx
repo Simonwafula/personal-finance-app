@@ -89,13 +89,6 @@ const faqs = [
   },
 ];
 
-// Trust chips data
-const trustChips = [
-  { icon: "shield", label: "Private by design" },
-  { icon: "download", label: "Export anytime" },
-  { icon: "lock", label: "PIN & Biometrics" },
-];
-
 export default function LandingPage() {
   const navigate = useNavigate();
 
@@ -151,31 +144,19 @@ export default function LandingPage() {
                   </Link>
                 </div>
 
-                {/* Trust Chips */}
-                <div className="flex flex-wrap gap-3 justify-center lg:justify-start">
-                  {trustChips.map((chip) => (
-                    <div
-                      key={chip.label}
-                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/50 border border-slate-700/50 text-slate-400 text-sm"
-                    >
-                      {chip.icon === "shield" && (
-                        <svg className="w-4 h-4 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                        </svg>
-                      )}
-                      {chip.icon === "download" && (
-                        <svg className="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                        </svg>
-                      )}
-                      {chip.icon === "lock" && (
-                        <svg className="w-4 h-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4" />
-                        </svg>
-                      )}
-                      <span>{chip.label}</span>
-                    </div>
-                  ))}
+                {/* Trust Chips - Simple text badges */}
+                <div className="flex flex-wrap gap-2 justify-center lg:justify-start text-sm text-slate-500">
+                  <span className="flex items-center gap-1.5">
+                    <span className="text-green-400">&#10003;</span> Private by design
+                  </span>
+                  <span className="text-slate-600">|</span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="text-blue-400">&#10003;</span> Export anytime
+                  </span>
+                  <span className="text-slate-600">|</span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="text-purple-400">&#10003;</span> PIN & Biometrics
+                  </span>
                 </div>
               </div>
 
@@ -186,18 +167,63 @@ export default function LandingPage() {
                   <div className="absolute -inset-4 bg-gradient-to-r from-blue-600/20 via-purple-600/10 to-blue-600/20 rounded-[3rem] blur-2xl" />
 
                   {/* Phone frame */}
-                  <div className="relative bg-slate-900 rounded-[2.5rem] p-2 shadow-2xl shadow-black/50">
-                    {/* Inner bezel */}
-                    <div className="relative bg-black rounded-[2rem] overflow-hidden">
-                      {/* Dynamic Island */}
-                      <div className="absolute top-3 left-1/2 -translate-x-1/2 w-20 h-6 bg-black rounded-full z-20" />
+                  <div className="relative bg-slate-800 rounded-[2.5rem] p-1.5 shadow-2xl shadow-black/50">
+                    {/* Inner screen */}
+                    <div className="relative bg-slate-950 rounded-[2rem] overflow-hidden w-[240px] sm:w-[260px]">
+                      {/* Notch */}
+                      <div className="absolute top-2 left-1/2 -translate-x-1/2 w-16 h-5 bg-slate-950 rounded-full z-20 border-b-2 border-slate-800" />
 
-                      {/* Screenshot image */}
-                      <img
-                        src="/screenshots/dashboard.svg"
-                        alt="Utajiri Dashboard"
-                        className="w-[260px] sm:w-[280px] h-auto"
-                      />
+                      {/* Screen content */}
+                      <div className="pt-10 pb-6 px-4">
+                        {/* Mini header */}
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-5 h-5 rounded bg-blue-500 flex items-center justify-center">
+                              <span className="text-[8px] text-white font-bold">U</span>
+                            </div>
+                            <span className="text-white text-xs font-medium">Utajiri</span>
+                          </div>
+                          <div className="w-6 h-6 rounded-full bg-slate-800" />
+                        </div>
+
+                        {/* Balance card */}
+                        <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl p-3 mb-3">
+                          <p className="text-blue-200 text-[10px] mb-0.5">Total Balance</p>
+                          <p className="text-white text-lg font-bold">KES 847,250</p>
+                          <p className="text-green-300 text-[10px]">+12.4% this month</p>
+                        </div>
+
+                        {/* Stats row */}
+                        <div className="grid grid-cols-2 gap-2 mb-3">
+                          <div className="bg-slate-800/80 rounded-lg p-2">
+                            <p className="text-slate-500 text-[9px]">Income</p>
+                            <p className="text-green-400 text-xs font-semibold">+65,200</p>
+                          </div>
+                          <div className="bg-slate-800/80 rounded-lg p-2">
+                            <p className="text-slate-500 text-[9px]">Expenses</p>
+                            <p className="text-red-400 text-xs font-semibold">-42,800</p>
+                          </div>
+                        </div>
+
+                        {/* Transactions */}
+                        <div className="bg-slate-800/50 rounded-lg p-2">
+                          <p className="text-slate-400 text-[9px] font-medium mb-2">Recent</p>
+                          <div className="space-y-1.5">
+                            <div className="flex justify-between items-center">
+                              <span className="text-white text-[10px]">Safaricom</span>
+                              <span className="text-red-400 text-[10px]">-1,500</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-white text-[10px]">Salary</span>
+                              <span className="text-green-400 text-[10px]">+65,000</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-white text-[10px]">Groceries</span>
+                              <span className="text-red-400 text-[10px]">-3,200</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
