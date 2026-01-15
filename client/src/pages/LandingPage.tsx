@@ -398,7 +398,7 @@ export default function LandingPage() {
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {calculators.map((calc, idx) => (
+              {calculators.map((calc) => (
                 <div
                   key={calc.title}
                   className={`group relative overflow-hidden rounded-[2rem] border ${calc.border} bg-gradient-to-br ${calc.tone} p-8 hover:-translate-y-2 hover:shadow-xl transition-all duration-300`}
@@ -422,14 +422,14 @@ export default function LandingPage() {
           {/* Features List */}
           <section className="py-20">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {features.map((feature, i) => (
-                <div key={feature.title} className={`${feature.colSpan} p-8 rounded-3xl bg-slate-900/50 border border-slate-800 flex items-start gap-4 hover:bg-slate-800 transition-colors`}>
+              {features.map((feature) => (
+                <SpotlightCard key={feature.title} className={`${feature.colSpan} flex items-start gap-4 hover:bg-slate-800 transition-colors`}>
                   <div className="text-3xl bg-slate-800 p-3 rounded-2xl shadow-sm">{feature.icon}</div>
                   <div>
                     <h3 className="text-lg font-bold text-white mb-2">{feature.title}</h3>
                     <p className="text-slate-400 leading-relaxed">{feature.desc}</p>
                   </div>
-                </div>
+                </SpotlightCard>
               ))}
             </div>
           </section>
