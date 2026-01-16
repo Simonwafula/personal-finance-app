@@ -30,98 +30,99 @@ const glassCardStyle: React.CSSProperties = {
   overflow: 'hidden',
 };
 
-// Feature blocks grouped by theme: Track, Plan, Grow
+// Feature blocks - accurately describing app capabilities
 const featureBlocks = [
   {
-    theme: "Track",
-    title: "See Everything Clearly",
-    description: "All your money in one place.",
+    theme: "Transactions",
+    title: "Record Every Transaction",
+    description: "Never lose track of where your money goes.",
     color: "blue",
     gradient: "from-blue-500 to-cyan-500",
     iconBg: "linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)",
+    icon: (
+      <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+      </svg>
+    ),
+    bullets: [
+      "Log income, expenses & transfers",
+      "Auto-import M-Pesa & bank SMS",
+      "Categorize with custom tags",
+    ],
+  },
+  {
+    theme: "Budgets",
+    title: "Set & Track Budgets",
+    description: "Control spending with category limits.",
+    color: "green",
+    gradient: "from-emerald-500 to-teal-500",
+    iconBg: "linear-gradient(135deg, #10b981 0%, #14b8a6 100%)",
+    icon: (
+      <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+      </svg>
+    ),
+    bullets: [
+      "Monthly budgets by category",
+      "See remaining vs spent at a glance",
+      "Track savings goals progress",
+    ],
+  },
+  {
+    theme: "Insights",
+    title: "Understand Your Finances",
+    description: "Reports and analytics for better decisions.",
+    color: "purple",
+    gradient: "from-purple-500 to-pink-500",
+    iconBg: "linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)",
     icon: (
       <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
       </svg>
     ),
     bullets: [
-      "M-Pesa, bank accounts & cash unified",
-      "Auto-import from SMS messages",
-      "Real-time balance updates",
-    ],
-  },
-  {
-    theme: "Plan",
-    title: "Budget With Confidence",
-    description: "Know where every shilling goes.",
-    color: "green",
-    gradient: "from-emerald-500 to-teal-500",
-    iconBg: "linear-gradient(135deg, #10b981 0%, #14b8a6 100%)",
-    icon: (
-      <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    ),
-    bullets: [
-      "Category-based spending limits",
-      "Alerts before you overspend",
-      "Savings goals with progress tracking",
-    ],
-  },
-  {
-    theme: "Grow",
-    title: "Build Lasting Wealth",
-    description: "Watch your net worth climb.",
-    color: "purple",
-    gradient: "from-purple-500 to-pink-500",
-    iconBg: "linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)",
-    icon: (
-      <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-      </svg>
-    ),
-    bullets: [
-      "Track assets, investments & debts",
-      "Debt payoff strategies (snowball/avalanche)",
-      "Investment portfolio monitoring",
+      "Income vs expense breakdowns",
+      "Net worth tracking over time",
+      "Spending trends by category",
     ],
   },
 ];
 
-// App screenshots for preview section
+// App screenshots for preview section - reflecting actual app screens
 const appScreens = [
-  { name: "Dashboard", description: "Your financial command center", icon: "📊" },
-  { name: "Transactions", description: "Every shilling, tracked", icon: "💳" },
-  { name: "Budgets", description: "Spending under control", icon: "🎯" },
-  { name: "Reports", description: "Insights that matter", icon: "📈" },
+  { name: "Dashboard", description: "Overview of all accounts & balances", icon: "📊" },
+  { name: "Transactions", description: "Complete history of money in & out", icon: "💳" },
+  { name: "Budgets", description: "Monthly limits by spending category", icon: "🎯" },
+  { name: "Net Worth", description: "Assets, liabilities & investments", icon: "📈" },
 ];
 
-const stats = [
-  { value: "KES 1.2B+", label: "Tracked", icon: "💰" },
-  { value: "15,000+", label: "Users", icon: "👥" },
-  { value: "4.8/5", label: "Rating", icon: "⭐" },
+// What the app helps you do
+const benefits = [
+  { text: "See all accounts in one place", icon: "👁️" },
+  { text: "Know exactly where money goes", icon: "🎯" },
+  { text: "Make informed financial decisions", icon: "💡" },
 ];
 
 const faqs = [
   {
-    question: "Is my financial data secure?",
-    answer: "Yes. We use bank-level encryption and never store your bank credentials. Your data is encrypted at rest and in transit.",
-    icon: "🔒",
+    question: "What can I track with Utajiri?",
+    answer: "Track all your finances: bank accounts, M-Pesa, cash, income, expenses, budgets, savings goals, investments, and debts. Everything in one place.",
+    icon: "📋",
   },
   {
-    question: "Can I track M-Pesa transactions?",
-    answer: "Absolutely. You can manually log M-Pesa transactions or use our SMS parsing feature to automatically import them.",
+    question: "How does SMS import work?",
+    answer: "On mobile, Utajiri can read your M-Pesa and bank SMS messages and automatically extract transaction details. This happens locally on your device for privacy.",
     icon: "📱",
   },
   {
-    question: "Is there a mobile app?",
-    answer: "Yes, we have Android and iOS apps available. You can also access everything through our responsive web app.",
-    icon: "📲",
+    question: "Is my data private and secure?",
+    answer: "Yes. Your data is encrypted and stored securely. We never access your bank accounts directly - you control what information you add.",
+    icon: "🔒",
   },
   {
-    question: "What does it cost?",
-    answer: "Utajiri offers a generous free tier. Premium features are available at affordable rates for power users.",
-    icon: "💎",
+    question: "Can I access it on multiple devices?",
+    answer: "Yes. Use Utajiri on the web or download our Android app. Your data syncs across all your devices.",
+    icon: "📲",
   },
 ];
 
@@ -212,7 +213,7 @@ export default function LandingPage() {
                   marginBottom: '1.5rem',
                 }}>
                   <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#60a5fa', animation: 'pulse 2s infinite' }} />
-                  <span style={{ color: '#60a5fa', fontSize: '0.875rem', fontWeight: 500 }}>Built for Kenya</span>
+                  <span style={{ color: '#60a5fa', fontSize: '0.875rem', fontWeight: 500 }}>Personal Finance Tracker</span>
                 </div>
 
                 {/* Headline */}
@@ -224,13 +225,14 @@ export default function LandingPage() {
                   marginBottom: '1.5rem',
                   lineHeight: 1.1,
                 }}>
-                  Master Your{' '}
+                  All Your{' '}
                   <span style={{
                     background: 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 50%, #34d399 100%)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text',
-                  }}>Money</span>
+                  }}>Finances</span>
+                  {' '}in One Place
                 </h1>
 
                 <p style={{
@@ -242,7 +244,7 @@ export default function LandingPage() {
                   marginLeft: isLargeScreen ? 0 : 'auto',
                   marginRight: isLargeScreen ? 0 : 'auto',
                 }}>
-                  Track M-Pesa, budget smarter, and build wealth with tools designed for how Kenyans actually manage money.
+                  Track your income, expenses, budgets, and accounts — M-Pesa, bank, and cash — so you always know where your money stands.
                 </p>
 
                 {/* CTAs */}
@@ -288,16 +290,12 @@ export default function LandingPage() {
                   </Link>
                 </div>
 
-                {/* Trust Chips */}
+                {/* Benefits Chips */}
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', justifyContent: isLargeScreen ? 'flex-start' : 'center', fontSize: '0.875rem', color: '#64748b' }}>
-                  {[
-                    { icon: '🔒', text: 'Private by design' },
-                    { icon: '📤', text: 'Export anytime' },
-                    { icon: '🔐', text: 'PIN & Biometrics' },
-                  ].map((chip, i) => (
+                  {benefits.map((benefit, i) => (
                     <span key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <span>{chip.icon}</span>
-                      <span>{chip.text}</span>
+                      <span>{benefit.icon}</span>
+                      <span>{benefit.text}</span>
                     </span>
                   ))}
                 </div>
@@ -395,7 +393,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Stats Bar */}
+        {/* What You Can Track Section */}
         <section style={{
           padding: '3rem 0',
           borderTop: '1px solid rgba(71, 85, 105, 0.2)',
@@ -403,20 +401,26 @@ export default function LandingPage() {
           background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.5) 0%, rgba(30, 41, 59, 0.3) 100%)',
         }}>
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: isLargeScreen ? '5rem' : '3rem' }}>
-              {stats.map((stat) => (
-                <div key={stat.label} style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>{stat.icon}</div>
-                  <p style={{
-                    fontSize: isLargeScreen ? '2.5rem' : '2rem',
-                    fontWeight: 700,
-                    background: 'linear-gradient(135deg, #fff 0%, #94a3b8 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                    marginBottom: '0.25rem',
-                  }}>{stat.value}</p>
-                  <p style={{ fontSize: '0.875rem', color: '#64748b', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{stat.label}</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: isLargeScreen ? '3rem' : '1.5rem' }}>
+              {[
+                { icon: '💳', label: 'Transactions' },
+                { icon: '📊', label: 'Budgets' },
+                { icon: '💰', label: 'Savings' },
+                { icon: '📈', label: 'Investments' },
+                { icon: '🏠', label: 'Assets' },
+                { icon: '💸', label: 'Debts' },
+              ].map((item) => (
+                <div key={item.label} style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                  padding: '0.75rem 1.25rem',
+                  background: 'rgba(30, 41, 59, 0.5)',
+                  borderRadius: '0.75rem',
+                  border: '1px solid rgba(71, 85, 105, 0.3)',
+                }}>
+                  <span style={{ fontSize: '1.25rem' }}>{item.icon}</span>
+                  <span style={{ color: '#e2e8f0', fontWeight: 500 }}>{item.label}</span>
                 </div>
               ))}
             </div>
