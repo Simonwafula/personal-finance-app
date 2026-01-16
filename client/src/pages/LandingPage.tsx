@@ -1,8 +1,34 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import PublicHeader from "../components/PublicHeader";
 import PublicFooter from "../components/PublicFooter";
 import { fetchCurrentUser } from "../api/auth";
+
+// Inline styles to ensure layout works regardless of Tailwind purging
+const heroGridStyle: React.CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '4rem',
+  alignItems: 'center',
+};
+
+const heroGridStyleLg: React.CSSProperties = {
+  display: 'flex',
+  flexDirection: 'row',
+  gap: '4rem',
+  alignItems: 'center',
+};
+
+// Modern glassmorphism card style
+const glassCardStyle: React.CSSProperties = {
+  background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.5) 0%, rgba(15, 23, 42, 0.8) 100%)',
+  backdropFilter: 'blur(20px)',
+  WebkitBackdropFilter: 'blur(20px)',
+  borderRadius: '1.5rem',
+  border: '1px solid rgba(148, 163, 184, 0.1)',
+  position: 'relative',
+  overflow: 'hidden',
+};
 
 // Feature blocks grouped by theme: Track, Plan, Grow
 const featureBlocks = [
@@ -11,8 +37,10 @@ const featureBlocks = [
     title: "See Everything Clearly",
     description: "All your money in one place.",
     color: "blue",
+    gradient: "from-blue-500 to-cyan-500",
+    iconBg: "linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)",
     icon: (
-      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
       </svg>
     ),
@@ -27,8 +55,10 @@ const featureBlocks = [
     title: "Budget With Confidence",
     description: "Know where every shilling goes.",
     color: "green",
+    gradient: "from-emerald-500 to-teal-500",
+    iconBg: "linear-gradient(135deg, #10b981 0%, #14b8a6 100%)",
     icon: (
-      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
     ),
@@ -43,8 +73,10 @@ const featureBlocks = [
     title: "Build Lasting Wealth",
     description: "Watch your net worth climb.",
     color: "purple",
+    gradient: "from-purple-500 to-pink-500",
+    iconBg: "linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)",
     icon: (
-      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
       </svg>
     ),
@@ -58,45 +90,75 @@ const featureBlocks = [
 
 // App screenshots for preview section
 const appScreens = [
-  { name: "Dashboard", description: "Your financial overview at a glance" },
-  { name: "Transactions", description: "Track every shilling in and out" },
-  { name: "Budgets", description: "Stay on top of your spending limits" },
-  { name: "Reports", description: "Insights to help you grow" },
+  { name: "Dashboard", description: "Your financial command center", icon: "📊" },
+  { name: "Transactions", description: "Every shilling, tracked", icon: "💳" },
+  { name: "Budgets", description: "Spending under control", icon: "🎯" },
+  { name: "Reports", description: "Insights that matter", icon: "📈" },
 ];
 
 const stats = [
-  { value: "KES 1.2B+", label: "Tracked" },
-  { value: "15,000+", label: "Users" },
-  { value: "4.8/5", label: "Rating" },
+  { value: "KES 1.2B+", label: "Tracked", icon: "💰" },
+  { value: "15,000+", label: "Users", icon: "👥" },
+  { value: "4.8/5", label: "Rating", icon: "⭐" },
 ];
 
 const faqs = [
   {
     question: "Is my financial data secure?",
     answer: "Yes. We use bank-level encryption and never store your bank credentials. Your data is encrypted at rest and in transit.",
+    icon: "🔒",
   },
   {
     question: "Can I track M-Pesa transactions?",
     answer: "Absolutely. You can manually log M-Pesa transactions or use our SMS parsing feature to automatically import them.",
+    icon: "📱",
   },
   {
     question: "Is there a mobile app?",
     answer: "Yes, we have Android and iOS apps available. You can also access everything through our responsive web app.",
+    icon: "📲",
   },
   {
     question: "What does it cost?",
     answer: "Utajiri offers a generous free tier. Premium features are available at affordable rates for power users.",
+    icon: "💎",
   },
 ];
 
 export default function LandingPage() {
   const navigate = useNavigate();
+  const [isLargeScreen, setIsLargeScreen] = useState(false);
+  const [isMediumScreen, setIsMediumScreen] = useState(false);
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
 
   useEffect(() => {
     document.documentElement.classList.add("dark");
     fetchCurrentUser()
       .then(() => navigate("/dashboard"))
-      .catch(() => {});
+      .catch(() => { });
+
+    // Check screen size for responsive layout (Tailwind breakpoints: sm=640, md=768, lg=1024)
+    const lgQuery = window.matchMedia('(min-width: 1024px)');
+    const mdQuery = window.matchMedia('(min-width: 768px)');
+    const smQuery = window.matchMedia('(min-width: 640px)');
+
+    const handleLgChange = (e: MediaQueryListEvent | MediaQueryList) => setIsLargeScreen(e.matches);
+    const handleMdChange = (e: MediaQueryListEvent | MediaQueryList) => setIsMediumScreen(e.matches);
+    const handleSmChange = (e: MediaQueryListEvent | MediaQueryList) => setIsSmallScreen(e.matches);
+
+    handleLgChange(lgQuery);
+    handleMdChange(mdQuery);
+    handleSmChange(smQuery);
+
+    lgQuery.addEventListener('change', handleLgChange);
+    mdQuery.addEventListener('change', handleMdChange);
+    smQuery.addEventListener('change', handleSmChange);
+
+    return () => {
+      lgQuery.removeEventListener('change', handleLgChange);
+      mdQuery.removeEventListener('change', handleMdChange);
+      smQuery.removeEventListener('change', handleSmChange);
+    };
   }, [navigate]);
 
   return (
@@ -106,56 +168,138 @@ export default function LandingPage() {
       <main className="flex-1">
         {/* Hero Section - 2 Column Layout */}
         <section className="relative py-16 lg:py-24 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-b from-blue-600/10 via-transparent to-transparent pointer-events-none" />
+          {/* Animated background gradient */}
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'radial-gradient(ellipse 80% 50% at 50% -20%, rgba(59, 130, 246, 0.15), transparent)',
+            pointerEvents: 'none',
+          }} />
+          <div style={{
+            position: 'absolute',
+            top: '20%',
+            left: '10%',
+            width: '300px',
+            height: '300px',
+            background: 'radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 70%)',
+            filter: 'blur(40px)',
+            pointerEvents: 'none',
+          }} />
+          <div style={{
+            position: 'absolute',
+            bottom: '10%',
+            right: '10%',
+            width: '250px',
+            height: '250px',
+            background: 'radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%)',
+            filter: 'blur(40px)',
+            pointerEvents: 'none',
+          }} />
 
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-            <div style={{ display: 'flex', flexDirection: 'row', gap: '4rem', alignItems: 'center' }} className="flex-col lg:flex-row">
+            <div style={isLargeScreen ? heroGridStyleLg : heroGridStyle}>
               {/* Left Column - Content */}
-              <div className="text-center lg:text-left flex-1">
+              <div style={{ textAlign: isLargeScreen ? 'left' : 'center', flex: 1 }}>
                 {/* Badge */}
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-medium mb-6">
-                  <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
-                  Built for Kenya
+                <div style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '9999px',
+                  background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%)',
+                  border: '1px solid rgba(59, 130, 246, 0.2)',
+                  marginBottom: '1.5rem',
+                }}>
+                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#60a5fa', animation: 'pulse 2s infinite' }} />
+                  <span style={{ color: '#60a5fa', fontSize: '0.875rem', fontWeight: 500 }}>Built for Kenya</span>
                 </div>
 
                 {/* Headline */}
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white mb-6 leading-[1.1]">
-                  Master Your <span style={{ color: '#60a5fa' }}>Money</span>
+                <h1 style={{
+                  fontSize: isLargeScreen ? '3.75rem' : isSmallScreen ? '3rem' : '2.25rem',
+                  fontWeight: 800,
+                  letterSpacing: '-0.02em',
+                  color: '#ffffff',
+                  marginBottom: '1.5rem',
+                  lineHeight: 1.1,
+                }}>
+                  Master Your{' '}
+                  <span style={{
+                    background: 'linear-gradient(135deg, #60a5fa 0%, #a78bfa 50%, #34d399 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                  }}>Money</span>
                 </h1>
 
-                <p className="text-lg lg:text-xl text-slate-400 mb-8 leading-relaxed max-w-xl mx-auto lg:mx-0" style={{ maxWidth: '60ch' }}>
-                  Track M-Pesa, budget smarter, and build wealth with tools designed for how you actually manage money.
+                <p style={{
+                  fontSize: isLargeScreen ? '1.25rem' : '1.125rem',
+                  color: '#94a3b8',
+                  marginBottom: '2rem',
+                  lineHeight: 1.7,
+                  maxWidth: '540px',
+                  marginLeft: isLargeScreen ? 0 : 'auto',
+                  marginRight: isLargeScreen ? 0 : 'auto',
+                }}>
+                  Track M-Pesa, budget smarter, and build wealth with tools designed for how Kenyans actually manage money.
                 </p>
 
                 {/* CTAs */}
-                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
+                <div style={{ display: 'flex', flexDirection: isSmallScreen ? 'row' : 'column', gap: '1rem', justifyContent: isLargeScreen ? 'flex-start' : 'center', marginBottom: '2rem' }}>
                   <Link
                     to="/signup"
-                    className="inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl transition-all shadow-lg shadow-blue-600/25 hover:shadow-blue-600/40 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-950"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '1rem 2rem',
+                      fontSize: '1rem',
+                      fontWeight: 600,
+                      color: '#ffffff',
+                      background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+                      borderRadius: '0.875rem',
+                      boxShadow: '0 10px 40px -10px rgba(59, 130, 246, 0.5), 0 0 0 1px rgba(255,255,255,0.1) inset',
+                      textDecoration: 'none',
+                      transition: 'all 0.2s ease',
+                    }}
                   >
-                    Start Free
+                    Start Free →
                   </Link>
                   <Link
                     to="/login"
-                    className="inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-slate-300 bg-slate-800/50 hover:bg-slate-800 border border-slate-700 hover:border-slate-600 rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 focus:ring-offset-slate-950"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '1rem 2rem',
+                      fontSize: '1rem',
+                      fontWeight: 600,
+                      color: '#e2e8f0',
+                      background: 'rgba(30, 41, 59, 0.5)',
+                      border: '1px solid rgba(148, 163, 184, 0.2)',
+                      borderRadius: '0.875rem',
+                      backdropFilter: 'blur(10px)',
+                      textDecoration: 'none',
+                      transition: 'all 0.2s ease',
+                    }}
                   >
                     Sign In
                   </Link>
                 </div>
 
-                {/* Trust Chips - Simple text badges */}
-                <div className="flex flex-wrap gap-2 justify-center lg:justify-start text-sm text-slate-500">
-                  <span className="flex items-center gap-1.5">
-                    <span className="text-green-400">&#10003;</span> Private by design
-                  </span>
-                  <span className="text-slate-600">|</span>
-                  <span className="flex items-center gap-1.5">
-                    <span className="text-blue-400">&#10003;</span> Export anytime
-                  </span>
-                  <span className="text-slate-600">|</span>
-                  <span className="flex items-center gap-1.5">
-                    <span className="text-purple-400">&#10003;</span> PIN & Biometrics
-                  </span>
+                {/* Trust Chips */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', justifyContent: isLargeScreen ? 'flex-start' : 'center', fontSize: '0.875rem', color: '#64748b' }}>
+                  {[
+                    { icon: '🔒', text: 'Private by design' },
+                    { icon: '📤', text: 'Export anytime' },
+                    { icon: '🔐', text: 'PIN & Biometrics' },
+                  ].map((chip, i) => (
+                    <span key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span>{chip.icon}</span>
+                      <span>{chip.text}</span>
+                    </span>
+                  ))}
                 </div>
               </div>
 
@@ -163,70 +307,87 @@ export default function LandingPage() {
               <div className="relative flex justify-center shrink-0" data-section="demo">
                 <div className="relative">
                   {/* Glow effect */}
-                  <div className="absolute -inset-4 bg-gradient-to-r from-blue-600/20 via-purple-600/10 to-blue-600/20 rounded-[3rem] blur-2xl" />
+                  <div style={{
+                    position: 'absolute',
+                    inset: '-20px',
+                    background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(139, 92, 246, 0.2) 50%, rgba(16, 185, 129, 0.2) 100%)',
+                    borderRadius: '3rem',
+                    filter: 'blur(40px)',
+                  }} />
 
                   {/* Phone frame - outer shell */}
-                  <div style={{ background: 'linear-gradient(to bottom, #475569, #1e293b)', padding: '4px', borderRadius: '2.5rem', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}>
+                  <div style={{
+                    background: 'linear-gradient(180deg, #475569 0%, #1e293b 100%)',
+                    padding: '4px',
+                    borderRadius: '2.5rem',
+                    boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1) inset',
+                    position: 'relative',
+                  }}>
                     {/* Phone body */}
                     <div style={{ background: '#0f172a', borderRadius: '2.3rem', padding: '4px' }}>
                       {/* Inner screen */}
-                      <div style={{ background: '#020617', borderRadius: '2rem', overflow: 'hidden', width: '260px' }}>
+                      <div style={{ background: '#020617', borderRadius: '2rem', overflow: 'hidden', width: '280px' }}>
                         {/* Notch */}
-                        <div style={{ position: 'absolute', top: '8px', left: '50%', transform: 'translateX(-50%)', width: '60px', height: '20px', background: '#000', borderRadius: '999px', zIndex: 20 }} />
+                        <div style={{ position: 'absolute', top: '12px', left: '50%', transform: 'translateX(-50%)', width: '80px', height: '24px', background: '#000', borderRadius: '999px', zIndex: 20 }} />
 
-                      {/* Screen content */}
-                      <div className="pt-10 pb-6 px-4">
-                        {/* Mini header */}
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="flex items-center gap-1.5">
-                            <div className="w-5 h-5 rounded bg-blue-500 flex items-center justify-center">
-                              <span className="text-[8px] text-white font-bold">U</span>
+                        {/* Screen content */}
+                        <div style={{ padding: '3rem 1rem 1.5rem' }}>
+                          {/* Mini header */}
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                              <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <span style={{ fontSize: '12px', color: '#fff', fontWeight: 700 }}>U</span>
+                              </div>
+                              <span style={{ color: '#fff', fontSize: '14px', fontWeight: 600 }}>Utajiri</span>
                             </div>
-                            <span className="text-white text-xs font-medium">Utajiri</span>
+                            <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'linear-gradient(135deg, #334155, #1e293b)', border: '2px solid #475569' }} />
                           </div>
-                          <div className="w-6 h-6 rounded-full bg-slate-800" />
-                        </div>
 
-                        {/* Balance card */}
-                        <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl p-3 mb-3">
-                          <p className="text-blue-200 text-[10px] mb-0.5">Total Balance</p>
-                          <p className="text-white text-lg font-bold">KES 847,250</p>
-                          <p className="text-green-300 text-[10px]">+12.4% this month</p>
-                        </div>
-
-                        {/* Stats row */}
-                        <div className="grid grid-cols-2 gap-2 mb-3">
-                          <div className="bg-slate-800/80 rounded-lg p-2">
-                            <p className="text-slate-500 text-[9px]">Income</p>
-                            <p className="text-green-400 text-xs font-semibold">+65,200</p>
+                          {/* Balance card */}
+                          <div style={{
+                            background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+                            borderRadius: '1rem',
+                            padding: '1rem',
+                            marginBottom: '0.75rem',
+                            boxShadow: '0 10px 30px -10px rgba(59, 130, 246, 0.5)',
+                          }}>
+                            <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '11px', marginBottom: '4px' }}>Total Balance</p>
+                            <p style={{ color: '#fff', fontSize: '1.5rem', fontWeight: 700 }}>KES 847,250</p>
+                            <p style={{ color: '#86efac', fontSize: '11px', marginTop: '4px' }}>↑ 12.4% this month</p>
                           </div>
-                          <div className="bg-slate-800/80 rounded-lg p-2">
-                            <p className="text-slate-500 text-[9px]">Expenses</p>
-                            <p className="text-red-400 text-xs font-semibold">-42,800</p>
-                          </div>
-                        </div>
 
-                        {/* Transactions */}
-                        <div className="bg-slate-800/50 rounded-lg p-2">
-                          <p className="text-slate-400 text-[9px] font-medium mb-2">Recent</p>
-                          <div className="space-y-1.5">
-                            <div className="flex justify-between items-center">
-                              <span className="text-white text-[10px]">Safaricom</span>
-                              <span className="text-red-400 text-[10px]">-1,500</span>
+                          {/* Stats row */}
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                            <div style={{ background: 'rgba(30, 41, 59, 0.8)', borderRadius: '0.75rem', padding: '0.75rem', border: '1px solid rgba(71, 85, 105, 0.3)' }}>
+                              <p style={{ color: '#64748b', fontSize: '10px' }}>Income</p>
+                              <p style={{ color: '#4ade80', fontSize: '14px', fontWeight: 600 }}>+65,200</p>
                             </div>
-                            <div className="flex justify-between items-center">
-                              <span className="text-white text-[10px]">Salary</span>
-                              <span className="text-green-400 text-[10px]">+65,000</span>
+                            <div style={{ background: 'rgba(30, 41, 59, 0.8)', borderRadius: '0.75rem', padding: '0.75rem', border: '1px solid rgba(71, 85, 105, 0.3)' }}>
+                              <p style={{ color: '#64748b', fontSize: '10px' }}>Expenses</p>
+                              <p style={{ color: '#f87171', fontSize: '14px', fontWeight: 600 }}>-42,800</p>
                             </div>
-                            <div className="flex justify-between items-center">
-                              <span className="text-white text-[10px]">Groceries</span>
-                              <span className="text-red-400 text-[10px]">-3,200</span>
-                            </div>
+                          </div>
+
+                          {/* Transactions */}
+                          <div style={{ background: 'rgba(30, 41, 59, 0.5)', borderRadius: '0.75rem', padding: '0.75rem', border: '1px solid rgba(71, 85, 105, 0.2)' }}>
+                            <p style={{ color: '#94a3b8', fontSize: '10px', fontWeight: 500, marginBottom: '0.5rem' }}>Recent Transactions</p>
+                            {[
+                              { name: 'Safaricom', amount: '-1,500', color: '#f87171', icon: '📱' },
+                              { name: 'Salary Deposit', amount: '+65,000', color: '#4ade80', icon: '💼' },
+                              { name: 'Naivas Groceries', amount: '-3,200', color: '#f87171', icon: '🛒' },
+                            ].map((tx, i) => (
+                              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 0', borderBottom: i < 2 ? '1px solid rgba(71, 85, 105, 0.2)' : 'none' }}>
+                                <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                  <span style={{ fontSize: '12px' }}>{tx.icon}</span>
+                                  <span style={{ color: '#fff', fontSize: '11px' }}>{tx.name}</span>
+                                </span>
+                                <span style={{ color: tx.color, fontSize: '11px', fontWeight: 500 }}>{tx.amount}</span>
+                              </div>
+                            ))}
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
                   </div>
                 </div>
               </div>
@@ -235,13 +396,27 @@ export default function LandingPage() {
         </section>
 
         {/* Stats Bar */}
-        <section className="py-10 border-y border-slate-800/50 bg-slate-900/30">
+        <section style={{
+          padding: '3rem 0',
+          borderTop: '1px solid rgba(71, 85, 105, 0.2)',
+          borderBottom: '1px solid rgba(71, 85, 105, 0.2)',
+          background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.5) 0%, rgba(30, 41, 59, 0.3) 100%)',
+        }}>
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-wrap justify-center gap-8 lg:gap-20">
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: isLargeScreen ? '5rem' : '3rem' }}>
               {stats.map((stat) => (
-                <div key={stat.label} className="text-center">
-                  <p className="text-3xl lg:text-4xl font-bold text-white mb-1">{stat.value}</p>
-                  <p className="text-sm text-slate-500 font-medium uppercase tracking-wider">{stat.label}</p>
+                <div key={stat.label} style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>{stat.icon}</div>
+                  <p style={{
+                    fontSize: isLargeScreen ? '2.5rem' : '2rem',
+                    fontWeight: 700,
+                    background: 'linear-gradient(135deg, #fff 0%, #94a3b8 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                    marginBottom: '0.25rem',
+                  }}>{stat.value}</p>
+                  <p style={{ fontSize: '0.875rem', color: '#64748b', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{stat.label}</p>
                 </div>
               ))}
             </div>
@@ -249,56 +424,106 @@ export default function LandingPage() {
         </section>
 
         {/* Features Section - Track / Plan / Grow */}
-        <section className="py-20 lg:py-24" data-section="features">
+        <section style={{ padding: isLargeScreen ? '6rem 0' : '4rem 0' }} data-section="features">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
+            <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
+              <span style={{
+                display: 'inline-block',
+                padding: '0.5rem 1rem',
+                borderRadius: '9999px',
+                background: 'rgba(59, 130, 246, 0.1)',
+                color: '#60a5fa',
+                fontSize: '0.875rem',
+                fontWeight: 500,
+                marginBottom: '1rem',
+              }}>Features</span>
+              <h2 style={{
+                fontSize: isLargeScreen ? '2.5rem' : '2rem',
+                fontWeight: 700,
+                color: '#fff',
+                marginBottom: '1rem',
+              }}>
                 Everything You Need to Succeed
               </h2>
-              <p className="text-lg text-slate-400 max-w-2xl mx-auto" style={{ maxWidth: '60ch' }}>
+              <p style={{ fontSize: '1.125rem', color: '#94a3b8', maxWidth: '540px', margin: '0 auto' }}>
                 From tracking every shilling to building lasting wealth.
               </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
+            <div style={{ display: 'grid', gridTemplateColumns: isMediumScreen ? 'repeat(3, 1fr)' : 'repeat(1, 1fr)', gap: '1.5rem' }}>
               {featureBlocks.map((block) => (
                 <div
                   key={block.theme}
-                  className="group bg-slate-900/50 hover:bg-slate-900/80 border border-slate-800 hover:border-slate-700 rounded-2xl p-6 lg:p-8 transition-all duration-300"
+                  style={{
+                    ...glassCardStyle,
+                    padding: isLargeScreen ? '2rem' : '1.5rem',
+                    transition: 'all 0.3s ease',
+                  }}
                 >
-                  {/* Theme badge */}
-                  <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold mb-4 ${
-                    block.color === 'blue' ? 'bg-blue-500/10 text-blue-400' :
-                    block.color === 'green' ? 'bg-green-500/10 text-green-400' :
-                    'bg-purple-500/10 text-purple-400'
-                  }`}>
-                    {block.theme}
-                  </div>
+                  {/* Gradient border effect */}
+                  <div style={{
+                    position: 'absolute',
+                    inset: 0,
+                    borderRadius: '1.5rem',
+                    padding: '1px',
+                    background: `linear-gradient(135deg, ${block.color === 'blue' ? 'rgba(59, 130, 246, 0.3)' : block.color === 'green' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(139, 92, 246, 0.3)'} 0%, transparent 50%)`,
+                    WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                    WebkitMaskComposite: 'xor',
+                    maskComposite: 'exclude',
+                    pointerEvents: 'none',
+                  }} />
 
-                  {/* Icon */}
-                  <div className={`w-10 h-10 flex items-center justify-center rounded-lg mb-4 transition-colors ${
-                    block.color === 'blue' ? 'bg-blue-500/10 text-blue-400 group-hover:bg-blue-500/20' :
-                    block.color === 'green' ? 'bg-green-500/10 text-green-400 group-hover:bg-green-500/20' :
-                    'bg-purple-500/10 text-purple-400 group-hover:bg-purple-500/20'
-                  }`}>
+                  {/* Icon with gradient background */}
+                  <div style={{
+                    width: '56px',
+                    height: '56px',
+                    borderRadius: '1rem',
+                    background: block.iconBg,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: '1.5rem',
+                    boxShadow: `0 10px 30px -10px ${block.color === 'blue' ? 'rgba(59, 130, 246, 0.5)' : block.color === 'green' ? 'rgba(16, 185, 129, 0.5)' : 'rgba(139, 92, 246, 0.5)'}`,
+                    color: '#fff',
+                  }}>
                     {block.icon}
                   </div>
 
+                  {/* Theme badge */}
+                  <span style={{
+                    display: 'inline-block',
+                    padding: '0.25rem 0.75rem',
+                    borderRadius: '9999px',
+                    background: `${block.color === 'blue' ? 'rgba(59, 130, 246, 0.1)' : block.color === 'green' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(139, 92, 246, 0.1)'}`,
+                    color: `${block.color === 'blue' ? '#60a5fa' : block.color === 'green' ? '#34d399' : '#a78bfa'}`,
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    marginBottom: '1rem',
+                  }}>{block.theme}</span>
+
                   {/* Content */}
-                  <h3 className="text-xl font-semibold text-white mb-2">{block.title}</h3>
-                  <p className="text-slate-400 mb-4">{block.description}</p>
+                  <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: '#fff', marginBottom: '0.5rem' }}>{block.title}</h3>
+                  <p style={{ color: '#94a3b8', marginBottom: '1.5rem', lineHeight: 1.6 }}>{block.description}</p>
 
                   {/* Bullet points */}
-                  <ul className="space-y-2">
+                  <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                     {block.bullets.map((bullet, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-slate-400">
-                        <svg className={`w-3.5 h-3.5 mt-0.5 flex-shrink-0 ${
-                          block.color === 'blue' ? 'text-blue-400' :
-                          block.color === 'green' ? 'text-green-400' :
-                          'text-purple-400'
-                        }`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
+                      <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', marginBottom: '0.75rem', fontSize: '0.875rem', color: '#cbd5e1' }}>
+                        <span style={{
+                          width: '20px',
+                          height: '20px',
+                          borderRadius: '50%',
+                          background: `${block.color === 'blue' ? 'rgba(59, 130, 246, 0.2)' : block.color === 'green' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(139, 92, 246, 0.2)'}`,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0,
+                          marginTop: '2px',
+                        }}>
+                          <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke={block.color === 'blue' ? '#60a5fa' : block.color === 'green' ? '#34d399' : '#a78bfa'} strokeWidth={3}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                        </span>
                         <span>{bullet}</span>
                       </li>
                     ))}
@@ -309,107 +534,67 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Screens Preview Section - NEW */}
-        <section className="py-20 lg:py-24 bg-slate-900/50" data-section="screens">
+        {/* Screens Preview Section */}
+        <section style={{
+          padding: isLargeScreen ? '6rem 0' : '4rem 0',
+          background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.5) 0%, rgba(30, 41, 59, 0.3) 50%, rgba(15, 23, 42, 0.5) 100%)',
+        }} data-section="screens">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
+            <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+              <span style={{
+                display: 'inline-block',
+                padding: '0.5rem 1rem',
+                borderRadius: '9999px',
+                background: 'rgba(139, 92, 246, 0.1)',
+                color: '#a78bfa',
+                fontSize: '0.875rem',
+                fontWeight: 500,
+                marginBottom: '1rem',
+              }}>Preview</span>
+              <h2 style={{ fontSize: isLargeScreen ? '2.5rem' : '2rem', fontWeight: 700, color: '#fff', marginBottom: '1rem' }}>
                 See Utajiri in Action
               </h2>
-              <p className="text-lg text-slate-400 max-w-2xl mx-auto">
+              <p style={{ fontSize: '1.125rem', color: '#94a3b8', maxWidth: '540px', margin: '0 auto' }}>
                 Clean, intuitive screens designed for real people managing real money.
               </p>
             </div>
 
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div style={{ display: 'grid', gridTemplateColumns: isLargeScreen ? 'repeat(4, 1fr)' : isSmallScreen ? 'repeat(2, 1fr)' : 'repeat(1, 1fr)', gap: '1.5rem' }}>
               {appScreens.map((screen, index) => (
-                <div key={screen.name} className="group">
-                  {/* Screen mockup placeholder */}
-                  <div className="relative bg-slate-800 rounded-2xl border border-slate-700/50 overflow-hidden mb-4 aspect-[9/16] transition-all group-hover:border-slate-600 group-hover:shadow-lg group-hover:shadow-blue-500/10">
-                    {/* Placeholder screen content */}
-                    <div className="absolute inset-0 bg-gradient-to-b from-slate-800 to-slate-900 p-4">
-                      {/* Status bar */}
-                      <div className="flex justify-between items-center text-[10px] text-slate-500 mb-4">
-                        <span>9:41</span>
-                        <div className="flex gap-1">
-                          <div className="w-3 h-1.5 bg-slate-600 rounded-sm" />
-                          <div className="w-3 h-1.5 bg-slate-600 rounded-sm" />
-                          <div className="w-4 h-2 bg-slate-600 rounded-sm" />
-                        </div>
-                      </div>
+                <div key={screen.name} style={{ textAlign: 'center' }}>
+                  {/* Screen mockup */}
+                  <div style={{
+                    ...glassCardStyle,
+                    aspectRatio: '9/16',
+                    marginBottom: '1rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '1.5rem',
+                  }}>
+                    {/* Gradient overlay */}
+                    <div style={{
+                      position: 'absolute',
+                      inset: 0,
+                      background: `linear-gradient(135deg, ${
+                        index === 0 ? 'rgba(59, 130, 246, 0.1)' :
+                        index === 1 ? 'rgba(16, 185, 129, 0.1)' :
+                        index === 2 ? 'rgba(245, 158, 11, 0.1)' :
+                        'rgba(139, 92, 246, 0.1)'
+                      } 0%, transparent 100%)`,
+                      borderRadius: '1.5rem',
+                    }} />
 
-                      {/* Screen-specific content */}
-                      {index === 0 && (
-                        // Dashboard
-                        <div className="space-y-3">
-                          <div className="bg-blue-600/20 rounded-xl p-3 border border-blue-500/20">
-                            <div className="h-2 w-16 bg-slate-600 rounded mb-2" />
-                            <div className="h-4 w-24 bg-white/20 rounded" />
-                          </div>
-                          <div className="grid grid-cols-2 gap-2">
-                            <div className="bg-slate-700/50 rounded-lg p-2 h-16" />
-                            <div className="bg-slate-700/50 rounded-lg p-2 h-16" />
-                          </div>
-                          <div className="bg-slate-700/50 rounded-lg p-2 h-20" />
-                        </div>
-                      )}
-                      {index === 1 && (
-                        // Transactions
-                        <div className="space-y-2">
-                          <div className="h-3 w-20 bg-slate-600 rounded mb-4" />
-                          {[1,2,3,4,5].map(i => (
-                            <div key={i} className="flex items-center justify-between bg-slate-700/30 rounded-lg p-2">
-                              <div className="flex items-center gap-2">
-                                <div className="w-6 h-6 bg-slate-600 rounded-full" />
-                                <div className="h-2 w-16 bg-slate-600 rounded" />
-                              </div>
-                              <div className="h-2 w-12 bg-slate-500 rounded" />
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      {index === 2 && (
-                        // Budgets
-                        <div className="space-y-3">
-                          <div className="h-3 w-16 bg-slate-600 rounded mb-4" />
-                          {[
-                            { color: 'bg-green-500', width: '70%' },
-                            { color: 'bg-yellow-500', width: '85%' },
-                            { color: 'bg-blue-500', width: '45%' },
-                          ].map((bar, i) => (
-                            <div key={i} className="space-y-1">
-                              <div className="h-2 w-20 bg-slate-600 rounded" />
-                              <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
-                                <div className={`h-full ${bar.color} rounded-full`} style={{ width: bar.width }} />
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      {index === 3 && (
-                        // Reports
-                        <div className="space-y-3">
-                          <div className="h-3 w-16 bg-slate-600 rounded mb-4" />
-                          <div className="bg-slate-700/50 rounded-lg p-2 h-24 flex items-end gap-1 px-3">
-                            {[30, 50, 40, 70, 55, 80, 65].map((h, i) => (
-                              <div key={i} className="flex-1 bg-blue-500/60 rounded-t" style={{ height: `${h}%` }} />
-                            ))}
-                          </div>
-                          <div className="grid grid-cols-2 gap-2">
-                            <div className="bg-slate-700/50 rounded-lg p-2 h-12" />
-                            <div className="bg-slate-700/50 rounded-lg p-2 h-12" />
-                          </div>
-                        </div>
-                      )}
+                    <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      <span style={{ fontSize: '3rem', marginBottom: '1rem' }}>{screen.icon}</span>
+                      <span style={{ color: '#64748b', fontSize: '0.75rem', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Preview</span>
                     </div>
-
-                    {/* Overlay gradient on hover */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-blue-600/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
 
                   {/* Label */}
-                  <h3 className="font-semibold text-white mb-1">{screen.name}</h3>
-                  <p className="text-sm text-slate-500">{screen.description}</p>
+                  <h3 style={{ fontWeight: 600, color: '#fff', marginBottom: '0.25rem' }}>{screen.name}</h3>
+                  <p style={{ fontSize: '0.875rem', color: '#64748b' }}>{screen.description}</p>
                 </div>
               ))}
             </div>
@@ -417,25 +602,53 @@ export default function LandingPage() {
         </section>
 
         {/* FAQ Section */}
-        <section className="py-20 lg:py-24" data-section="faq">
-          <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
+        <section style={{ padding: isLargeScreen ? '6rem 0' : '4rem 0' }} data-section="faq">
+          <div style={{ maxWidth: '48rem', margin: '0 auto', padding: '0 1rem' }}>
+            <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+              <span style={{
+                display: 'inline-block',
+                padding: '0.5rem 1rem',
+                borderRadius: '9999px',
+                background: 'rgba(16, 185, 129, 0.1)',
+                color: '#34d399',
+                fontSize: '0.875rem',
+                fontWeight: 500,
+                marginBottom: '1rem',
+              }}>FAQ</span>
+              <h2 style={{ fontSize: isLargeScreen ? '2.5rem' : '2rem', fontWeight: 700, color: '#fff', marginBottom: '1rem' }}>
                 Common Questions
               </h2>
-              <p className="text-lg text-slate-400">
+              <p style={{ fontSize: '1.125rem', color: '#94a3b8' }}>
                 Everything you need to know to get started.
               </p>
             </div>
 
-            <div className="space-y-4">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {faqs.map((faq, index) => (
                 <div
                   key={index}
-                  className="bg-slate-900/50 border border-slate-800 hover:border-slate-700 rounded-xl p-6 transition-colors"
+                  style={{
+                    ...glassCardStyle,
+                    padding: '1.5rem',
+                  }}
                 >
-                  <h3 className="text-lg font-semibold text-white mb-2">{faq.question}</h3>
-                  <p className="text-slate-400 leading-relaxed" style={{ maxWidth: '65ch' }}>{faq.answer}</p>
+                  <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+                    <span style={{
+                      fontSize: '1.5rem',
+                      width: '48px',
+                      height: '48px',
+                      borderRadius: '0.75rem',
+                      background: 'rgba(30, 41, 59, 0.8)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}>{faq.icon}</span>
+                    <div>
+                      <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: '#fff', marginBottom: '0.5rem' }}>{faq.question}</h3>
+                      <p style={{ color: '#94a3b8', lineHeight: 1.7 }}>{faq.answer}</p>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -443,21 +656,57 @@ export default function LandingPage() {
         </section>
 
         {/* CTA Section */}
-        <section className="py-20 lg:py-24 bg-gradient-to-t from-slate-900 to-transparent">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl lg:text-5xl font-bold text-white mb-6">
+        <section style={{
+          padding: isLargeScreen ? '6rem 0' : '4rem 0',
+          background: 'linear-gradient(180deg, transparent 0%, rgba(59, 130, 246, 0.05) 50%, transparent 100%)',
+          position: 'relative',
+        }}>
+          {/* Decorative elements */}
+          <div style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '600px',
+            height: '400px',
+            background: 'radial-gradient(ellipse, rgba(59, 130, 246, 0.1) 0%, transparent 70%)',
+            filter: 'blur(60px)',
+            pointerEvents: 'none',
+          }} />
+
+          <div style={{ maxWidth: '48rem', margin: '0 auto', padding: '0 1rem', textAlign: 'center', position: 'relative' }}>
+            <h2 style={{
+              fontSize: isLargeScreen ? '3rem' : '2rem',
+              fontWeight: 700,
+              color: '#fff',
+              marginBottom: '1.5rem',
+              lineHeight: 1.2,
+            }}>
               Ready to Take Control?
             </h2>
-            <p className="text-lg text-slate-400 mb-10 max-w-2xl mx-auto" style={{ maxWidth: '60ch' }}>
+            <p style={{ fontSize: '1.125rem', color: '#94a3b8', marginBottom: '2.5rem', maxWidth: '480px', margin: '0 auto 2.5rem' }}>
               Join thousands of Kenyans building better financial habits with Utajiri.
             </p>
             <Link
               to="/signup"
-              className="inline-flex items-center justify-center px-10 py-4 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl transition-all shadow-lg shadow-blue-600/25 hover:shadow-blue-600/40 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-950"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '1.25rem 3rem',
+                fontSize: '1.125rem',
+                fontWeight: 600,
+                color: '#ffffff',
+                background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+                borderRadius: '1rem',
+                boxShadow: '0 20px 50px -10px rgba(59, 130, 246, 0.5), 0 0 0 1px rgba(255,255,255,0.1) inset',
+                textDecoration: 'none',
+                transition: 'all 0.2s ease',
+              }}
             >
-              Create Free Account
+              Create Free Account →
             </Link>
-            <p className="text-sm text-slate-500 mt-6">No credit card required</p>
+            <p style={{ fontSize: '0.875rem', color: '#64748b', marginTop: '1.5rem' }}>No credit card required</p>
           </div>
         </section>
       </main>

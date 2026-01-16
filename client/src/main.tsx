@@ -33,6 +33,8 @@ const NotificationsPage = React.lazy(() => import("./pages/NotificationsPage"));
 const ReportsPage = React.lazy(() => import("./pages/ReportsPage"));
 const BlogPage = React.lazy(() => import("./pages/BlogPage"));
 const BlogArticle = React.lazy(() => import("./pages/blog/BlogArticle"));
+const PrivacyPage = React.lazy(() => import("./pages/PrivacyPage"));
+const TermsPage = React.lazy(() => import("./pages/TermsPage"));
 const NotFoundPage = React.lazy(() => import("./pages/NotFoundPage"));
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
@@ -43,9 +45,11 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
         <TimeRangeProvider>
           <Suspense fallback={<div className="app-container p-4">Loading…</div>}>
             <Routes>
-              {/* Standalone landing page without layout */}
+              {/* Standalone pages without layout */}
               <Route path="/" element={<ErrorBoundary><LandingPage /></ErrorBoundary>} />
-              
+              <Route path="/privacy" element={<ErrorBoundary><PrivacyPage /></ErrorBoundary>} />
+              <Route path="/terms" element={<ErrorBoundary><TermsPage /></ErrorBoundary>} />
+
               {/* Auth and app routes with layout */}
               <Route path="/" element={<ErrorBoundary><Layout /></ErrorBoundary>}>
                 <Route path="login" element={<LoginPage />} />
