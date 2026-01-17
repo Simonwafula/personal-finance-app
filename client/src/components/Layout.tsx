@@ -81,7 +81,7 @@ export default function Layout() {
   }, []);
 
   return (
-    <div className="min-h-screen flex bg-[var(--bg-body)] text-[var(--text-main)]">
+    <div className="app-shell min-h-screen flex bg-[var(--bg-body)] text-[var(--text-main)]">
       <Toast
         message={welcomeMessage}
         visible={welcomeVisible}

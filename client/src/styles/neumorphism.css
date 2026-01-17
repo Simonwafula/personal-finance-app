@@ -1,7 +1,9 @@
 /* Neumorphism Styles for Forms */
 
-/* Global SVG constraint to prevent expansion */
-svg {
+/* SVG constraint scoped to neumorphic components only */
+.neu-page svg,
+.neu-card svg,
+.neu-input svg {
   max-width: 100%;
   max-height: 100%;
   flex-shrink: 0;
@@ -314,6 +316,19 @@ svg {
   color: #e2e8f0;
 }
 
+.neu-link-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.neu-message-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
 /* Error Message */
 .neu-error {
   display: flex;
@@ -338,6 +353,30 @@ svg {
     inset 4px 4px 10px #1a202c,
     inset -4px -4px 10px #4a5568;
   color: #fc8181;
+}
+
+.neu-success {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+  background: #e0e5ec;
+  border-radius: 15px;
+  box-shadow:
+    inset 4px 4px 10px #b6e4c1,
+    inset -4px -4px 10px #ffffff;
+  color: #2f855a;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.dark .neu-success {
+  background: #2d3748;
+  box-shadow:
+    inset 4px 4px 10px #1a202c,
+    inset -4px -4px 10px #4a5568;
+  color: #68d391;
 }
 
 @keyframes gentleShake {

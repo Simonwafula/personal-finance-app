@@ -72,14 +72,14 @@ export default function BlogSidebar({ featureKey, maxPosts = 5 }: BlogSidebarPro
   return (
     <div className="space-y-4">
       {/* Wisdom Header */}
-      <div className="bg-white rounded-2xl shadow-sm p-4">
+      <div className="bg-white rounded-2xl shadow-sm p-4 dark:bg-slate-900/70 dark:border dark:border-slate-800">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-xl">
             📚
           </div>
           <div>
-            <h3 className="font-semibold text-sm text-gray-900">Financial Wisdom</h3>
-            <p className="text-xs text-gray-500">{blogPosts.length} Articles</p>
+            <h3 className="font-semibold text-sm text-gray-900 dark:text-white">Financial Wisdom</h3>
+            <p className="text-xs text-gray-500 dark:text-slate-400">{blogPosts.length} Articles</p>
           </div>
         </div>
         <Link
@@ -92,24 +92,24 @@ export default function BlogSidebar({ featureKey, maxPosts = 5 }: BlogSidebarPro
 
       {/* Related Posts (if featureKey provided) */}
       {!showAllCategories && relatedPosts.length > 0 && (
-        <div className="bg-white rounded-2xl shadow-sm p-4">
-          <h4 className="font-semibold text-sm mb-3 text-gray-900">Related Articles</h4>
+        <div className="bg-white rounded-2xl shadow-sm p-4 dark:bg-slate-900/70 dark:border dark:border-slate-800">
+          <h4 className="font-semibold text-sm mb-3 text-gray-900 dark:text-white">Related Articles</h4>
           <div className="space-y-2">
             {relatedPosts.map((post) => (
               <Link
                 key={post.id}
                 to={`/blog/${post.id}`}
-                className="block p-2 rounded-lg hover:bg-gray-50 transition-all group"
+                className="block p-2 rounded-lg hover:bg-gray-50 transition-all group dark:hover:bg-slate-800/60"
               >
                 <div className="flex items-start gap-2">
                   <div className={`w-6 h-6 rounded-md bg-gradient-to-br ${post.gradient} flex items-center justify-center text-xs flex-shrink-0 group-hover:scale-110 transition-transform`}>
                     {post.emoji}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-xs font-medium leading-tight text-gray-900 group-hover:text-blue-600 transition-colors">
+                    <div className="text-xs font-medium leading-tight text-gray-900 dark:text-white group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors">
                       {post.title}
                     </div>
-                    <div className="text-xs text-gray-500 mt-0.5">{post.category}</div>
+                    <div className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">{post.category}</div>
                   </div>
                 </div>
               </Link>
@@ -121,20 +121,20 @@ export default function BlogSidebar({ featureKey, maxPosts = 5 }: BlogSidebarPro
       {/* All Categories (default view) */}
       {showAllCategories &&
         Object.entries(categorizedPosts).slice(0, 3).map(([category, posts]) => (
-          <div key={category} className="bg-white rounded-2xl shadow-sm p-4">
-            <h4 className="font-semibold text-sm mb-3 text-gray-900">{category}</h4>
+          <div key={category} className="bg-white rounded-2xl shadow-sm p-4 dark:bg-slate-900/70 dark:border dark:border-slate-800">
+            <h4 className="font-semibold text-sm mb-3 text-gray-900 dark:text-white">{category}</h4>
             <div className="space-y-2">
               {posts.slice(0, 3).map((post) => (
                 <Link
                   key={post.id}
                   to={`/blog/${post.id}`}
-                  className="block p-2 rounded-lg hover:bg-gray-50 transition-all group"
+                  className="block p-2 rounded-lg hover:bg-gray-50 transition-all group dark:hover:bg-slate-800/60"
                 >
                   <div className="flex items-start gap-2">
                     <div className={`w-6 h-6 rounded-md bg-gradient-to-br ${post.gradient} flex items-center justify-center text-xs flex-shrink-0 group-hover:scale-110 transition-transform`}>
                       {post.emoji}
                     </div>
-                    <span className="text-xs font-medium leading-tight text-gray-900 group-hover:text-blue-600 transition-colors">
+                    <span className="text-xs font-medium leading-tight text-gray-900 dark:text-white group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors">
                       {post.title}
                     </span>
                   </div>

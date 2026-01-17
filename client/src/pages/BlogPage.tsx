@@ -179,7 +179,7 @@ export default function BlogPage() {
     : blogPosts;
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-100">
+    <div className="min-h-screen flex flex-col bg-gray-100 text-gray-900 dark:bg-slate-950 dark:text-slate-100">
       <PublicHeader />
       
       <main className="flex-1">
@@ -188,14 +188,14 @@ export default function BlogPage() {
           <section className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
               <div>
-                <h1 className="text-2xl font-semibold text-gray-900">
+                <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
                   📚 Financial Wisdom
                 </h1>
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
                   Expert tips, guides, and insights to help you master your money
                 </p>
               </div>
-              <div className="inline-flex px-4 py-2 rounded-full bg-blue-50 text-sm font-semibold text-blue-600">
+              <div className="inline-flex px-4 py-2 rounded-full bg-blue-50 text-sm font-semibold text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
                 {filteredPosts.length} Articles
               </div>
             </div>
@@ -204,12 +204,12 @@ export default function BlogPage() {
             <div className="flex flex-wrap gap-2 mb-6">
               <button
                 onClick={() => setSelectedCategory(null)}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                  selectedCategory === null 
-                    ? 'bg-blue-600 text-white shadow-sm' 
-                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                }`}
-              >
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                    selectedCategory === null 
+                      ? 'bg-blue-600 text-white shadow-sm dark:bg-blue-500' 
+                      : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-slate-900/70 dark:text-slate-200 dark:border-slate-700 dark:hover:bg-slate-800'
+                  }`}
+                >
                 All Articles
               </button>
               {categories.map((category) => (
@@ -218,8 +218,8 @@ export default function BlogPage() {
                   onClick={() => setSelectedCategory(category)}
                   className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
                     selectedCategory === category 
-                      ? 'bg-blue-600 text-white shadow-sm' 
-                      : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                      ? 'bg-blue-600 text-white shadow-sm dark:bg-blue-500' 
+                      : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 dark:bg-slate-900/70 dark:text-slate-200 dark:border-slate-700 dark:hover:bg-slate-800'
                   }`}
                 >
                   {category}
@@ -233,21 +233,21 @@ export default function BlogPage() {
                 <Link
                   key={post.id}
                   to={`/blog/${post.id}`}
-                  className="bg-white rounded-2xl shadow-sm p-4 md:p-5 hover:shadow-md transition-all group"
+                  className="bg-white rounded-2xl shadow-sm p-4 md:p-5 hover:shadow-md transition-all group dark:bg-slate-900/70 dark:border dark:border-slate-800 dark:hover:border-slate-600"
                 >
                   <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${post.gradient} flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform`}>
                     {post.emoji}
                   </div>
-                  <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
+                  <div className="text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wide mb-2">
                     {post.category}
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors">
                     {post.title}
                   </h3>
-                  <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                  <p className="text-sm text-gray-600 dark:text-slate-300 mb-4 line-clamp-2">
                     {post.excerpt}
                   </p>
-                  <div className="flex items-center justify-between text-xs text-gray-500">
+                  <div className="flex items-center justify-between text-xs text-gray-500 dark:text-slate-400">
                     <span>{post.readTime}</span>
                     <span className="group-hover:translate-x-1 transition-transform">→</span>
                   </div>
