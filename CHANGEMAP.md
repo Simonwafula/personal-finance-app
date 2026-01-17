@@ -187,8 +187,12 @@ This file tracks changes made to the Sonko project with commit hashes and detail
     - Tightened static policy page widths for improved readability
     - Locations: `client/src/pages/SavingsPage.tsx`, `client/src/pages/InvestmentsPage.tsx`, `client/src/pages/DebtPlannerPage.tsx`, `client/src/pages/CategoriesPage.tsx`, `client/src/pages/ReportsPage.tsx`, `client/src/pages/SubscriptionsPage.tsx`, `client/src/pages/ProfilePage.tsx`, `client/src/pages/PrivacyPage.tsx`, `client/src/pages/TermsPage.tsx`
 
+24. **✅ Improve header button visibility**
+    - Boosted app header icon button contrast and mobile nav link color
+    - Location: `client/src/index.css`
+
 ### Summary:
-Aligned the Sonko landing page with the latest copy and imagery, refreshed section rhythm, and updated header/footer navigation labels alongside the CTA background mockup. Restored Tailwind v4 import to get utilities rendering again, synced the landing visuals to the app's dark default theme, balanced blog colors for light/dark modes, simplified the public footer layout, fixed footer link typing, and completed a mobile spacing polish pass across all remaining app pages.
+Aligned the Sonko landing page with the latest copy and imagery, refreshed section rhythm, and updated header/footer navigation labels alongside the CTA background mockup. Restored Tailwind v4 import to get utilities rendering again, synced the landing visuals to the app's dark default theme, balanced blog colors for light/dark modes, simplified the public footer layout, fixed footer link typing, completed a mobile spacing polish pass across all remaining app pages, and improved header control visibility.
 
 ---
 

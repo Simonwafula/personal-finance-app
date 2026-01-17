@@ -346,6 +346,17 @@
   transform: translateY(-1px);
 }
 
+.app-header .icon-btn {
+  background: var(--surface-hover);
+  border-color: rgba(148, 163, 184, 0.35);
+}
+
+.dark .app-header .icon-btn {
+  background: rgba(30, 41, 59, 0.9);
+  border-color: rgba(148, 163, 184, 0.35);
+  color: #e6eef8;
+}
+
 /* visually hidden (screen reader only) */
 .sr-only {
   position: absolute !important;
@@ -920,7 +931,7 @@ body {
 }
 
 .mobile-nav nav a {
-  color: var(--text-muted);
+  color: var(--text-main);
   text-decoration: none;
   padding: 12px 12px;
   border-radius: 10px;
