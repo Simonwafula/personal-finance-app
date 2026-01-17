@@ -177,13 +177,13 @@ export default function SavingsPage() {
             Track progress toward your financial objectives
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <span className="inline-flex px-4 py-2 rounded-full bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 text-sm font-semibold">
             {savingsGoals.length} {savingsGoals.length === 1 ? 'Goal' : 'Goals'}
           </span>
           <button 
             onClick={() => setShowGoalModal(true)}
-            className="btn-primary flex items-center gap-2"
+            className="btn-primary flex w-full sm:w-auto items-center gap-2"
           >
             <Plus size={20} />
             New Goal
@@ -192,10 +192,10 @@ export default function SavingsPage() {
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex gap-2 border-b border-[var(--border-subtle)] pb-1">
+      <div className="flex flex-wrap gap-2 border-b border-[var(--border-subtle)] pb-1">
         <button
           onClick={() => setActiveTab('goals')}
-          className={`px-6 py-3 rounded-t-lg font-semibold transition-all flex items-center gap-2 ${
+          className={`flex-1 min-w-[140px] px-6 py-3 rounded-t-lg font-semibold transition-all flex items-center gap-2 ${
             activeTab === 'goals'
               ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg'
               : 'bg-[var(--surface)] hover:bg-[var(--surface-hover)] text-[var(--text-muted)]'
@@ -206,7 +206,7 @@ export default function SavingsPage() {
         </button>
         <button
           onClick={() => setActiveTab('tracker')}
-          className={`px-6 py-3 rounded-t-lg font-semibold transition-all flex items-center gap-2 ${
+          className={`flex-1 min-w-[140px] px-6 py-3 rounded-t-lg font-semibold transition-all flex items-center gap-2 ${
             activeTab === 'tracker'
               ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg'
               : 'bg-[var(--surface)] hover:bg-[var(--surface-hover)] text-[var(--text-muted)]'

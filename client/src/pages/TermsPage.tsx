@@ -199,7 +199,7 @@ export default function TermsPage() {
             pointerEvents: 'none',
           }} />
 
-          <div style={{ maxWidth: '48rem', margin: '0 auto', padding: '0 1rem', position: 'relative' }}>
+          <div style={{ maxWidth: '52rem', margin: '0 auto', padding: '0 1rem', position: 'relative' }}>
             <Link
               to="/"
               style={{
@@ -258,7 +258,7 @@ export default function TermsPage() {
 
         {/* Content Sections */}
         <section style={{ padding: '0 0 6rem' }}>
-          <div style={{ maxWidth: '48rem', margin: '0 auto', padding: '0 1rem' }}>
+          <div style={{ maxWidth: '52rem', margin: '0 auto', padding: '0 1rem' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               {sections.map((section, index) => (
                 <div key={index} style={glassCardStyle}>

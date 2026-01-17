@@ -145,7 +145,7 @@ export default function WealthPage() {
   const netWorthValue = Number(netWorth?.net_worth ?? 0);
 
   return (
-    <div className="space-y-4 pb-20 max-w-6xl mx-auto">
+    <div className="space-y-6 pb-20 max-w-6xl mx-auto">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>

@@ -219,9 +219,9 @@ export default function DashboardPage() {
       {!loading && (
         <>
           {/* Primary KPI Cards - 4 columns on large screens, 2 on mobile */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 items-stretch">
             {/* Income Card */}
-            <div className="kpi-card neu-stat-card">
+            <div className="kpi-card neu-stat-card h-full">
               <div className="kpi-label">Total Income</div>
               <div className="kpi-value" style={{ color: 'var(--success-400)' }}>
                 {formatMoney(totals.income)}
@@ -248,7 +248,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Expenses Card */}
-            <div className="kpi-card neu-stat-card">
+            <div className="kpi-card neu-stat-card h-full">
               <div className="kpi-label">Total Expenses</div>
               <div className="kpi-value" style={{ color: 'var(--danger-400)' }}>
                 {formatMoney(totals.expenses)}
@@ -275,7 +275,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Net Cash Flow Card */}
-            <div className="kpi-card neu-stat-card">
+            <div className="kpi-card neu-stat-card h-full">
               <div className="kpi-label">Net Cash Flow</div>
               <div className="kpi-value" style={{ color: totals.savings >= 0 ? 'var(--primary-400)' : 'var(--danger-400)' }}>
                 {formatMoney(totals.savings)}
@@ -302,7 +302,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Liquidity Card - Available Cash */}
-            <div className="kpi-card neu-stat-card cursor-pointer" onClick={() => navigate('/accounts')}>
+            <div className="kpi-card neu-stat-card cursor-pointer h-full" onClick={() => navigate('/accounts')}>
               <div className="kpi-label">Available Cash</div>
               <div className="kpi-value" style={{ color: 'var(--success-400)' }}>
                 {formatMoney(liquidity)}
@@ -315,9 +315,9 @@ export default function DashboardPage() {
           </div>
 
           {/* Secondary KPI Cards - Wealth Overview - 3 columns centered */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6 mb-6 items-stretch">
             {/* Net Worth Card */}
-            <div className="kpi-card neu-stat-card cursor-pointer" onClick={() => navigate('/wealth')}>
+            <div className="kpi-card neu-stat-card cursor-pointer h-full" onClick={() => navigate('/wealth')}>
               <div className="kpi-label">Net Worth</div>
               <div className="kpi-value" style={{ color: 'var(--accent-400)' }}>
                 {formatMoney(netWorthTotals.netWorth)}
@@ -334,7 +334,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Savings Goals Card */}
-            <div className="kpi-card neu-stat-card cursor-pointer" onClick={() => navigate('/savings')}>
+            <div className="kpi-card neu-stat-card cursor-pointer h-full" onClick={() => navigate('/savings')}>
               <div className="kpi-label">Savings Goals</div>
               <div className="kpi-value" style={{ color: 'var(--primary-400)' }}>
                 {formatMoney(savingsCard.total_saved)}
@@ -351,7 +351,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Investments Card */}
-            <div className="kpi-card neu-stat-card cursor-pointer" onClick={() => navigate('/investments')}>
+            <div className="kpi-card neu-stat-card cursor-pointer h-full" onClick={() => navigate('/investments')}>
               <div className="kpi-label">Investments</div>
               <div className="kpi-value" style={{ color: 'var(--accent-400)' }}>
                 {formatMoney(investmentsCard.total_current_value)}

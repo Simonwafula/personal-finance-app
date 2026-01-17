@@ -297,8 +297,8 @@ export default function InvestmentsPage() {
           <h1 className="text-2xl font-bold">📈 Investments</h1>
           <p className="text-sm text-[var(--text-muted)]">Track and manage your investment portfolio</p>
         </div>
-        <div className="flex gap-2">
-          <Link to="/wealth" className="btn btn-secondary text-sm">
+        <div className="flex flex-wrap gap-2">
+          <Link to="/wealth" className="btn btn-secondary text-sm w-full sm:w-auto">
             ← Back to Wealth
           </Link>
           <button
@@ -306,7 +306,7 @@ export default function InvestmentsPage() {
               resetForm();
               setShowForm(!showForm);
             }}
-            className="btn btn-primary flex items-center gap-2"
+            className="btn btn-primary w-full sm:w-auto flex items-center gap-2"
           >
             {showForm ? <HiX className="w-4 h-4" /> : <HiPlus className="w-4 h-4" />}
             {showForm ? "Cancel" : "Add Investment"}
@@ -326,7 +326,7 @@ export default function InvestmentsPage() {
 
       {/* Summary Cards */}
       {summary && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="card p-4">
             <div className="text-sm text-[var(--text-muted)] mb-1">💰 Total Invested</div>
             <div className="text-xl font-bold">{formatMoney(summary.total_invested)}</div>

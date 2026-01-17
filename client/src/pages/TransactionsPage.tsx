@@ -338,7 +338,7 @@ export default function TransactionsPage() {
   const hasActiveFilters = filterCategory || filterKind || filterAccount;
 
   return (
-    <div className="space-y-4 pb-20 max-w-7xl mx-auto">
+    <div className="space-y-6 pb-20 max-w-7xl mx-auto">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
@@ -349,10 +349,10 @@ export default function TransactionsPage() {
             {range.startDate} → {range.endDate}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`btn-secondary inline-flex items-center gap-2 ${hasActiveFilters ? 'ring-2 ring-blue-500' : ''}`}
+            className={`btn-secondary inline-flex w-full sm:w-auto items-center gap-2 ${hasActiveFilters ? 'ring-2 ring-blue-500' : ''}`}
           >
             <HiFilter size={18} />
             <span className="hidden sm:inline">Filter</span>
@@ -368,7 +368,7 @@ export default function TransactionsPage() {
               setCategoryId("");
               setShowAddForm(!showAddForm);
             }}
-            className="btn-primary inline-flex items-center gap-2"
+            className="btn-primary inline-flex w-full sm:w-auto items-center gap-2"
           >
             <HiPlus size={18} />
             <span>Add</span>
@@ -383,7 +383,7 @@ export default function TransactionsPage() {
       )}
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="card p-3 text-center">
           <div className="text-xs text-[var(--text-muted)] uppercase tracking-wide">Income</div>
           <div className="text-lg font-bold text-green-600">{formatMoney(totalIncome)}</div>

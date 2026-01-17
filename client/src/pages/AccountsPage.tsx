@@ -136,7 +136,7 @@ export default function AccountsPage() {
   const totalAllAccounts = accounts.reduce((sum, a) => sum + Number(a.current_balance || a.opening_balance), 0);
 
   return (
-    <div className="space-y-4 pb-20 max-w-6xl mx-auto">
+    <div className="space-y-6 pb-20 max-w-6xl mx-auto">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
@@ -149,7 +149,7 @@ export default function AccountsPage() {
         </div>
         <button
           onClick={() => { setEditingId(null); setShowForm(!showForm); }}
-          className="btn-primary inline-flex items-center gap-2"
+          className="btn-primary inline-flex w-full sm:w-auto items-center gap-2"
         >
           <HiPlus size={18} />
           <span>Add Account</span>
@@ -164,7 +164,7 @@ export default function AccountsPage() {
 
       {/* Summary Cards */}
       {!loading && accounts.length > 0 && (
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="card p-3">
             <div className="flex items-center gap-2 mb-1">
               <span className="text-lg">💵</span>
@@ -183,7 +183,7 @@ export default function AccountsPage() {
             <div className="text-xs text-[var(--text-muted)]">{accounts.length} total account{accounts.length !== 1 ? 's' : ''}</div>
           </div>
 
-          <div className="card p-3 col-span-2 lg:col-span-1">
+          <div className="card p-3 sm:col-span-2 lg:col-span-1">
             <div className="flex items-center gap-2 mb-1">
               <span className="text-lg">📊</span>
               <span className="text-xs text-[var(--text-muted)] uppercase tracking-wide">By Type</span>

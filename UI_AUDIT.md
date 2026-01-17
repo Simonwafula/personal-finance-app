@@ -82,6 +82,23 @@
 7. Utility Pages (Reports, Subscriptions, Blog)
 8. Static Pages (Privacy, Terms, NotFound)
 
+### UI Balance TODO (Non-Auth, Non-Landing)
+- [x] Global spacing polish for mobile (cards/section headers)
+- [x] Transactions: responsive header controls + stats grid
+- [x] Accounts: responsive summary grid + mobile CTA width
+- [x] Wealth: normalize vertical rhythm
+- [x] Notifications: responsive controls
+- [x] Dashboard: normalize card heights and header spacing
+- [x] Budgets: balance summary grid + form spacing on mobile
+- [x] Savings: normalize goal card alignment and empty states
+- [x] Investments: align summary cards and filter rows on mobile
+- [x] Debt Planner: balance list/summary columns on smaller screens
+- [x] Categories: align list controls and ensure grid stacks on mobile
+- [x] Reports: align chart cards and filter inputs for small screens
+- [x] Subscriptions: normalize card spacing and action row alignment
+- [x] Profile: group sections with consistent spacing
+- [x] Privacy / Terms: tighten reading width and line-height
+
 ---
 
 ### 1. Login Page (`/login`)

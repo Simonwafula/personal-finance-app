@@ -263,7 +263,7 @@ export default function DebtPlannerPage() {
             Track your debts and create payoff strategies
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <span className="inline-flex px-4 py-2 rounded-full bg-gradient-to-r from-red-100 to-orange-100 dark:from-red-900/30 dark:to-orange-900/30 text-sm font-semibold">
             {liabilities.length} {liabilities.length === 1 ? 'Debt' : 'Debts'}
           </span>
@@ -276,10 +276,10 @@ export default function DebtPlannerPage() {
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex gap-2 border-b border-[var(--border-subtle)] pb-1">
+      <div className="flex flex-wrap gap-2 border-b border-[var(--border-subtle)] pb-1">
         <button
           onClick={() => setActiveTab('tracker')}
-          className={`px-6 py-3 rounded-t-lg font-semibold transition-all ${
+          className={`flex-1 min-w-[160px] px-6 py-3 rounded-t-lg font-semibold transition-all ${
             activeTab === 'tracker'
               ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white shadow-lg'
               : 'bg-[var(--surface)] hover:bg-[var(--surface-hover)] text-[var(--text-muted)]'
@@ -289,7 +289,7 @@ export default function DebtPlannerPage() {
         </button>
         <button
           onClick={() => setActiveTab('planner')}
-          className={`px-6 py-3 rounded-t-lg font-semibold transition-all ${
+          className={`flex-1 min-w-[160px] px-6 py-3 rounded-t-lg font-semibold transition-all ${
             activeTab === 'planner'
               ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg'
               : 'bg-[var(--surface)] hover:bg-[var(--surface-hover)] text-[var(--text-muted)]'
@@ -309,7 +309,7 @@ export default function DebtPlannerPage() {
         <>
           {/* Summary Cards */}
           {!loading && (
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <div className="card bg-gradient-to-br from-red-500/10 to-orange-500/10 border-red-500/20">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-xl bg-red-500/20 flex items-center justify-center text-2xl">💰</div>

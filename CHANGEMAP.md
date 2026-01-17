@@ -176,8 +176,19 @@ This file tracks changes made to the Sonko project with commit hashes and detail
     - Added explicit union type for footer links to satisfy react-router Link props
     - Location: `client/src/components/PublicFooter.tsx`
 
+22. **✅ Mobile balance pass for core app pages**
+    - Improved mobile spacing with global card/section tweaks
+    - Balanced dashboard KPI card heights and budget grids for smaller screens
+    - Smoothed account/transaction headers and summary grids for mobile
+    - Locations: `client/src/index.css`, `client/src/pages/DashboardPage.tsx`, `client/src/pages/BudgetsPage.tsx`, `client/src/pages/AccountsPage.tsx`, `client/src/pages/TransactionsPage.tsx`, `client/src/pages/WealthPage.tsx`, `client/src/pages/NotificationsPage.tsx`
+
+23. **✅ Mobile balance pass for remaining app pages**
+    - Adjusted mobile headers, tabs, and grids for savings, investments, debt planner, categories, reports, subscriptions, and profile
+    - Tightened static policy page widths for improved readability
+    - Locations: `client/src/pages/SavingsPage.tsx`, `client/src/pages/InvestmentsPage.tsx`, `client/src/pages/DebtPlannerPage.tsx`, `client/src/pages/CategoriesPage.tsx`, `client/src/pages/ReportsPage.tsx`, `client/src/pages/SubscriptionsPage.tsx`, `client/src/pages/ProfilePage.tsx`, `client/src/pages/PrivacyPage.tsx`, `client/src/pages/TermsPage.tsx`
+
 ### Summary:
-Aligned the Sonko landing page with the latest copy and imagery, refreshed section rhythm, and updated header/footer navigation labels alongside the CTA background mockup. Restored Tailwind v4 import to get utilities rendering again, synced the landing visuals to the app's dark default theme, balanced blog colors for light/dark modes, simplified the public footer layout, and fixed footer link typing.
+Aligned the Sonko landing page with the latest copy and imagery, refreshed section rhythm, and updated header/footer navigation labels alongside the CTA background mockup. Restored Tailwind v4 import to get utilities rendering again, synced the landing visuals to the app's dark default theme, balanced blog colors for light/dark modes, simplified the public footer layout, fixed footer link typing, and completed a mobile spacing polish pass across all remaining app pages.
 
 ---
 

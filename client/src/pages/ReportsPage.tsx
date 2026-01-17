@@ -461,11 +461,11 @@ export default function ReportsPage() {
           <p className="text-sm text-[var(--text-muted)] mt-1">Generate detailed financial summaries and insights</p>
         </div>
         {reportData && (
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <button
               onClick={downloadCSV}
               disabled={generating}
-              className="btn-secondary inline-flex items-center gap-2"
+              className="btn-secondary inline-flex w-full sm:w-auto items-center gap-2"
             >
               <HiDownload size={18} />
               {generating ? "..." : "CSV"}
@@ -473,7 +473,7 @@ export default function ReportsPage() {
             <button
               onClick={downloadPDF}
               disabled={generating}
-              className="btn-primary inline-flex items-center gap-2"
+              className="btn-primary inline-flex w-full sm:w-auto items-center gap-2"
             >
               <HiDocumentText size={18} />
               {generating ? "..." : "PDF"}
@@ -487,7 +487,7 @@ export default function ReportsPage() {
         <div className="flex flex-wrap gap-4 items-end">
           <div>
             <label className="block text-xs font-medium mb-2 text-[var(--text-muted)]">Report Period</label>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {(["month", "quarter", "year", "custom"] as ReportPeriod[]).map(p => (
                 <button
                   key={p}
@@ -512,7 +512,7 @@ export default function ReportsPage() {
                   type="date"
                   value={customStart}
                   onChange={e => setCustomStart(e.target.value)}
-                  className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800"
                 />
               </div>
               <div>
@@ -521,7 +521,7 @@ export default function ReportsPage() {
                   type="date"
                   value={customEnd}
                   onChange={e => setCustomEnd(e.target.value)}
-                  className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800"
                 />
               </div>
             </>

@@ -69,17 +69,17 @@ export default function NotificationsPage() {
             Stay updated with important alerts and reminders
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <select
             value={limit}
             onChange={(e) => setLimit(Number(e.target.value))}
-            className="border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
+            className="w-full sm:w-auto border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 text-base bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-200"
           >
             <option value={10}>10 per page</option>
             <option value={20}>20 per page</option>
             <option value={50}>50 per page</option>
           </select>
-          <button className="btn-primary" onClick={onMarkAll}>
+          <button className="btn-primary w-full sm:w-auto" onClick={onMarkAll}>
             ✓ Mark All Read
           </button>
         </div>

@@ -244,7 +244,7 @@ export default function CategoriesPage() {
       )}
 
       {/* Tabs */}
-      <div className="card p-1 flex gap-1 bg-[var(--surface)]">
+      <div className="card p-1 flex flex-wrap gap-1 bg-[var(--surface)]">
         <button
           onClick={() => setActiveTab("categories")}
           className={`flex-1 px-6 py-3 font-semibold rounded-lg transition-all ${
@@ -272,16 +272,16 @@ export default function CategoriesPage() {
       {/* Categories Tab */}
       {activeTab === "categories" && (
         <div className="space-y-6">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <h4 className="text-lg font-semibold">Manage Categories</h4>
-            <button onClick={openAddCategory} className="btn-primary inline-flex items-center gap-2">
+            <button onClick={openAddCategory} className="btn-primary inline-flex w-full sm:w-auto items-center gap-2">
               <HiPlus size={18} />
               Add Category
             </button>
           </div>
 
           {/* Category Type Filter */}
-          <div className="card p-1 flex gap-1 bg-[var(--surface)]">
+          <div className="card p-1 flex flex-wrap gap-1 bg-[var(--surface)]">
             <button
               onClick={() => setCategoryTypeFilter("ALL")}
               className={`flex-1 px-4 py-2.5 font-medium rounded-lg transition-all text-sm ${
@@ -458,9 +458,9 @@ export default function CategoriesPage() {
       {/* Tags Tab */}
       {activeTab === "tags" && (
         <div className="space-y-6">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <h4 className="text-lg font-semibold">Manage Tags</h4>
-            <button onClick={openAddTag} className="btn-primary inline-flex items-center gap-2">
+            <button onClick={openAddTag} className="btn-primary inline-flex w-full sm:w-auto items-center gap-2">
               <HiPlus size={18} />
               Add Tag
             </button>

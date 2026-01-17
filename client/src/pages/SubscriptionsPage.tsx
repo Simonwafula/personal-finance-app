@@ -290,10 +290,10 @@ export default function SubscriptionsPage() {
             Track recurring expenses and income
           </p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => loadAll()}
-            className="btn btn-secondary text-sm"
+            className="btn btn-secondary text-sm w-full sm:w-auto"
           >
             <HiRefresh className="w-4 h-4" />
           </button>
@@ -308,13 +308,13 @@ export default function SubscriptionsPage() {
                 setError("Failed to materialize recurring");
               }
             }}
-            className="btn btn-secondary text-sm"
+            className="btn btn-secondary text-sm w-full sm:w-auto"
           >
             ⚡ Generate 30 Days
           </button>
           <button
             onClick={() => setShowForm(true)}
-            className="btn btn-primary text-sm"
+            className="btn btn-primary text-sm w-full sm:w-auto"
           >
             <HiPlus className="w-4 h-4 mr-1" />
             Add Recurring
@@ -332,7 +332,7 @@ export default function SubscriptionsPage() {
 
       {/* Summary cards */}
       {!loading && (
-        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           <div className="card p-4">
             <div className="flex items-center gap-2 mb-2">
               <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">

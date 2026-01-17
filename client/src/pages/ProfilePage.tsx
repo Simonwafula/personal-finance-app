@@ -163,7 +163,7 @@ export default function ProfilePage() {
 
         <button
           type="button"
-          className="neu-button"
+          className="neu-button w-full sm:w-auto"
           onClick={handleLogout}
         >
           Sign Out
@@ -171,7 +171,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Tabs */}
-      <div className="card p-1 flex gap-1 bg-[var(--surface)]">
+      <div className="card p-1 flex flex-wrap gap-1 bg-[var(--surface)]">
         <button
           onClick={() => setActiveTab("profile")}
           className={`flex-1 px-4 py-3 font-semibold rounded-lg transition-all text-sm md:text-base ${

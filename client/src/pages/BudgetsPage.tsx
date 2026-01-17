@@ -400,7 +400,7 @@ export default function BudgetsPage() {
             </button>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <div className="col-span-2">
               <label className="block text-xs font-medium mb-1 text-[var(--text-muted)]">Budget Name *</label>
               <input
@@ -488,7 +488,7 @@ export default function BudgetsPage() {
 
       {/* Budgets Section */}
       {budgets.length > 0 && (
-        <div className="grid lg:grid-cols-4 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Budget List */}
           <div className="lg:col-span-1">
             <div className="card p-4 sticky top-4">
@@ -589,7 +589,7 @@ export default function BudgetsPage() {
               <>
                 {/* Budget Overview Cards */}
                 {activeSummary && (
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="card p-4">
                       <div className="flex items-center gap-3">
                         <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
@@ -760,7 +760,7 @@ export default function BudgetsPage() {
                       }}
                       className="p-3 bg-[var(--surface)] rounded-lg mb-4 animate-slide-in"
                     >
-                      <div className="grid sm:grid-cols-3 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         <div className="sm:col-span-2">
                           <label className="block text-xs font-medium mb-1 text-[var(--text-muted)]">Category</label>
                           <select
@@ -840,7 +840,7 @@ export default function BudgetsPage() {
                               : 'bg-[var(--surface)] border-transparent'
                           }`}>
                             {editing ? (
-                              <div className="grid sm:grid-cols-3 gap-3">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                                 <select
                                   value={editCategoryId}
                                   onChange={(e) => setEditCategoryId(e.target.value ? Number(e.target.value) : "")}
@@ -1104,7 +1104,7 @@ export default function BudgetsPage() {
           <h3 className="font-semibold mb-3 flex items-center gap-2">
             <span className="text-xl">💡</span> Budgeting Tips
           </h3>
-          <div className="grid sm:grid-cols-3 gap-4 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
             <div className="flex gap-3">
               <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0">
                 <span className="text-emerald-600 font-bold">50</span>
