@@ -172,8 +172,12 @@ This file tracks changes made to the Sonko project with commit hashes and detail
     - Switched public footer to a 3-column layout for clearer navigation
     - Location: `client/src/components/PublicFooter.tsx`
 
+21. **✅ Fix footer link typing**
+    - Added explicit union type for footer links to satisfy react-router Link props
+    - Location: `client/src/components/PublicFooter.tsx`
+
 ### Summary:
-Aligned the Sonko landing page with the latest copy and imagery, refreshed section rhythm, and updated header/footer navigation labels alongside the CTA background mockup. Restored Tailwind v4 import to get utilities rendering again, synced the landing visuals to the app's dark default theme, balanced blog colors for light/dark modes, and simplified the public footer layout.
+Aligned the Sonko landing page with the latest copy and imagery, refreshed section rhythm, and updated header/footer navigation labels alongside the CTA background mockup. Restored Tailwind v4 import to get utilities rendering again, synced the landing visuals to the app's dark default theme, balanced blog colors for light/dark modes, simplified the public footer layout, and fixed footer link typing.
 
 ---
 

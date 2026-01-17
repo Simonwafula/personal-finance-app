@@ -1,10 +1,12 @@
 import { Link } from 'react-router-dom';
 import Logo from './Logo';
 
+type FooterLink = { label: string; to: string } | { label: string; href: string };
+
 export default function PublicFooter() {
   const currentYear = new Date().getFullYear();
 
-  const footerLinks = {
+  const footerLinks: { product: FooterLink[]; legal: Array<{ label: string; to: string }> } = {
     product: [
       { label: 'Features', href: '/#features' },
       { label: 'Screens', href: '/#screens' },
