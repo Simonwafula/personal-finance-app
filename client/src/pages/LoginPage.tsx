@@ -41,7 +41,7 @@ export default function LoginPage() {
           {/* Logo Header */}
           <div className="neu-header">
             <div className="neu-icon">
-              <Logo width={40} height={40} />
+              <Logo variant="icon" width={40} height={40} />
             </div>
             <h2>Welcome Back</h2>
             <p>Sign in to continue to Sonko</p>

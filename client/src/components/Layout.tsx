@@ -92,7 +92,7 @@ export default function Layout() {
         <aside className="sidebar animate-fade-in relative z-[60]">
           <div className="brand mb-8">
             <div style={{ width: 44, height: 44 }}>
-              <Logo width={44} height={44} />
+              <Logo variant="icon" width={44} height={44} />
             </div>
             <div>
               <h2 className="text-xl">Sonko</h2>
@@ -192,7 +192,7 @@ export default function Layout() {
             
             <div className="flex items-center gap-3">
               <Link to="/" aria-label="Home" className="hidden md:flex">
-                <Logo width={32} height={32} />
+                <Logo variant="icon" width={32} height={32} />
               </Link>
               <div className="hidden md:block">
                 <h3 className="text-lg font-bold m-0">Finance Dashboard</h3>

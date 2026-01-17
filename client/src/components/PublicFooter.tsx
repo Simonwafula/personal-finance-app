@@ -64,7 +64,7 @@ export default function PublicFooter() {
                 justifyContent: 'center',
                 boxShadow: '0 4px 20px -4px rgba(59, 130, 246, 0.5)',
               }}>
-                <Logo width={24} height={24} title="Sonko" />
+                <Logo variant="icon" width={24} height={24} title="Sonko" />
               </div>
               <span style={{ fontWeight: 700, color: '#fff', fontSize: '1.25rem' }}>Sonko</span>
             </div>

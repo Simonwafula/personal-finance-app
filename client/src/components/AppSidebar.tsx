@@ -13,7 +13,7 @@ export default function AppSidebar() {
       <div className="h-full flex flex-col p-4">
         {/* Brand Section */}
         <Link to="/dashboard" className="flex items-center gap-3 mb-8 hover:opacity-80 transition-opacity">
-          <Logo width={44} height={44} />
+          <Logo variant="icon" width={44} height={44} />
           <div>
             <h2 className="text-xl font-semibold text-gray-900">Sonko</h2>
             <div className="text-xs text-gray-500">Financial Dashboard</div>
