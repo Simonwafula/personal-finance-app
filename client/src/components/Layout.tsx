@@ -95,8 +95,8 @@ export default function Layout() {
               <Logo width={44} height={44} />
             </div>
             <div>
-              <h2 className="text-xl">Mstatili Finance</h2>
-              <div className="muted text-xs">Personal Dashboard</div>
+              <h2 className="text-xl">Sonko</h2>
+              <div className="muted text-xs">Financial Dashboard</div>
             </div>
           </div>
           

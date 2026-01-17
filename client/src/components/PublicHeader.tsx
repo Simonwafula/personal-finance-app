@@ -14,8 +14,8 @@ export default function PublicHeader() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2.5 hover:opacity-90 transition-opacity">
-          <Logo width={36} height={36} title="Utajiri" />
-          <span className="font-bold text-white text-lg tracking-tight hidden sm:inline">Utajiri</span>
+          <Logo width={36} height={36} title="Sonko" />
+          <span className="font-bold text-white text-lg tracking-tight hidden sm:inline">Sonko</span>
         </Link>
 
         {/* Navigation */}

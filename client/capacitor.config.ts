@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.mstatilitechnologies.finance',
-  appName: 'Personal Finance',
+  appId: 'com.mstatilitechnologies.sonko',
+  appName: 'Sonko',
   webDir: 'dist',
   // Production configuration - app uses bundled assets
   // API calls go to production backend via VITE_API_BASE_URL

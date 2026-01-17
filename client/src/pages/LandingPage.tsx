@@ -105,13 +105,13 @@ const benefits = [
 
 const faqs = [
   {
-    question: "What can I track with Utajiri?",
+    question: "What can I track with Sonko?",
     answer: "Track all your finances: bank accounts, M-Pesa, cash, income, expenses, budgets, savings goals, investments, and debts. Everything in one place.",
     icon: "📋",
   },
   {
     question: "How does SMS import work?",
-    answer: "On mobile, Utajiri can read your M-Pesa and bank SMS messages and automatically extract transaction details. This happens locally on your device for privacy.",
+    answer: "On mobile, Sonko can read your M-Pesa and bank SMS messages and automatically extract transaction details. This happens locally on your device for privacy.",
     icon: "📱",
   },
   {
@@ -121,7 +121,7 @@ const faqs = [
   },
   {
     question: "Can I access it on multiple devices?",
-    answer: "Yes. Use Utajiri on the web or download our Android app. Your data syncs across all your devices.",
+    answer: "Yes. Use Sonko on the web or download our Android app. Your data syncs across all your devices.",
     icon: "📲",
   },
 ];
@@ -336,7 +336,7 @@ export default function LandingPage() {
                               <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 <span style={{ fontSize: '12px', color: '#fff', fontWeight: 700 }}>U</span>
                               </div>
-                              <span style={{ color: '#fff', fontSize: '14px', fontWeight: 600 }}>Utajiri</span>
+                              <span style={{ color: '#fff', fontSize: '14px', fontWeight: 600 }}>Sonko</span>
                             </div>
                             <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'linear-gradient(135deg, #334155, #1e293b)', border: '2px solid #475569' }} />
                           </div>
@@ -556,7 +556,7 @@ export default function LandingPage() {
                 marginBottom: '1rem',
               }}>Preview</span>
               <h2 style={{ fontSize: isLargeScreen ? '2.5rem' : '2rem', fontWeight: 700, color: '#fff', marginBottom: '1rem' }}>
-                See Utajiri in Action
+                See Sonko in Action
               </h2>
               <p style={{ fontSize: '1.125rem', color: '#94a3b8', maxWidth: '540px', margin: '0 auto' }}>
                 Clean, intuitive screens designed for real people managing real money.
@@ -689,7 +689,7 @@ export default function LandingPage() {
               Ready to Take Control?
             </h2>
             <p style={{ fontSize: '1.125rem', color: '#94a3b8', marginBottom: '2.5rem', maxWidth: '480px', margin: '0 auto 2.5rem' }}>
-              Join thousands of Kenyans building better financial habits with Utajiri.
+              Build better financial habits and make informed decisions with Sonko.
             </p>
             <Link
               to="/signup"

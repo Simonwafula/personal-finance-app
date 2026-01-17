@@ -44,7 +44,7 @@ export default function LoginPage() {
               <Logo width={40} height={40} />
             </div>
             <h2>Welcome Back</h2>
-            <p>Sign in to continue to Mstatili Finance</p>
+            <p>Sign in to continue to Sonko</p>
           </div>
 
           {/* Login Form */}

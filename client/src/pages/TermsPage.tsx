@@ -32,10 +32,10 @@ export default function TermsPage() {
       icon: '✅',
       content: [
         {
-          text: 'By accessing or using Utajiri, you agree to be bound by these Terms of Service and our Privacy Policy. If you do not agree to these terms, please do not use our service.',
+          text: 'By accessing or using Sonko, you agree to be bound by these Terms of Service and our Privacy Policy. If you do not agree to these terms, please do not use our service.',
         },
         {
-          text: 'We may update these terms from time to time. We will notify you of significant changes via email or through the app. Continued use of Utajiri after changes constitutes acceptance of the new terms.',
+          text: 'We may update these terms from time to time. We will notify you of significant changes via email or through the app. Continued use of Sonko after changes constitutes acceptance of the new terms.',
         },
       ],
     },
@@ -45,7 +45,7 @@ export default function TermsPage() {
       content: [
         {
           subtitle: 'Eligibility',
-          text: 'You must be at least 18 years old to use Utajiri. By creating an account, you represent that you meet this requirement.',
+          text: 'You must be at least 18 years old to use Sonko. By creating an account, you represent that you meet this requirement.',
         },
         {
           subtitle: 'Account Security',
@@ -63,7 +63,7 @@ export default function TermsPage() {
       content: [
         {
           subtitle: 'Permitted Use',
-          text: 'Utajiri is designed for personal financial management. You may use the service to track your own transactions, budgets, and financial goals.',
+          text: 'Sonko is designed for personal financial management. You may use the service to track your own transactions, budgets, and financial goals.',
         },
         {
           subtitle: 'Prohibited Activities',
@@ -71,7 +71,7 @@ export default function TermsPage() {
         },
         {
           subtitle: 'Data Accuracy',
-          text: 'You are responsible for the accuracy of the financial data you enter. Utajiri is a tracking tool and does not verify the accuracy of your entries.',
+          text: 'You are responsible for the accuracy of the financial data you enter. Sonko is a tracking tool and does not verify the accuracy of your entries.',
         },
       ],
     },
@@ -81,7 +81,7 @@ export default function TermsPage() {
       content: [
         {
           subtitle: 'Features',
-          text: 'Utajiri provides personal finance management tools including transaction tracking, budgeting, savings goals, debt planning, and financial reports.',
+          text: 'Sonko provides personal finance management tools including transaction tracking, budgeting, savings goals, debt planning, and financial reports.',
         },
         {
           subtitle: 'SMS Parsing (Mobile)',
@@ -89,7 +89,7 @@ export default function TermsPage() {
         },
         {
           subtitle: 'Not Financial Advice',
-          text: 'Utajiri is a tracking and organizational tool. We do not provide financial, investment, tax, or legal advice. Consult qualified professionals for such advice.',
+          text: 'Sonko is a tracking and organizational tool. We do not provide financial, investment, tax, or legal advice. Consult qualified professionals for such advice.',
         },
       ],
     },
@@ -99,7 +99,7 @@ export default function TermsPage() {
       content: [
         {
           subtitle: 'Free Tier',
-          text: 'Utajiri offers a free tier with core features. Some advanced features may require a paid subscription.',
+          text: 'Sonko offers a free tier with core features. Some advanced features may require a paid subscription.',
         },
         {
           subtitle: 'Billing',
@@ -121,15 +121,15 @@ export default function TermsPage() {
       content: [
         {
           subtitle: 'Our Property',
-          text: 'Utajiri, including its design, features, and content, is owned by Mstatili Technologies. Our trademarks and brand features may not be used without permission.',
+          text: 'Sonko, including its design, features, and content, is owned by Mstatili Technologies. Our trademarks and brand features may not be used without permission.',
         },
         {
           subtitle: 'Your Data',
-          text: 'You retain ownership of the financial data you enter into Utajiri. We do not claim any ownership rights over your personal information.',
+          text: 'You retain ownership of the financial data you enter into Sonko. We do not claim any ownership rights over your personal information.',
         },
         {
           subtitle: 'Feedback',
-          text: 'If you provide feedback or suggestions about Utajiri, you grant us the right to use that feedback without compensation to you.',
+          text: 'If you provide feedback or suggestions about Sonko, you grant us the right to use that feedback without compensation to you.',
         },
       ],
     },
@@ -143,11 +143,11 @@ export default function TermsPage() {
         },
         {
           subtitle: 'No Warranty',
-          text: 'Utajiri is provided "as is" without warranties of any kind. We do not warrant that the service will be error-free or meet your specific requirements.',
+          text: 'Sonko is provided "as is" without warranties of any kind. We do not warrant that the service will be error-free or meet your specific requirements.',
         },
         {
           subtitle: 'Limitation of Liability',
-          text: 'To the maximum extent permitted by law, Mstatili Technologies shall not be liable for any indirect, incidental, or consequential damages arising from your use of Utajiri.',
+          text: 'To the maximum extent permitted by law, Mstatili Technologies shall not be liable for any indirect, incidental, or consequential damages arising from your use of Sonko.',
         },
       ],
     },
@@ -165,7 +165,7 @@ export default function TermsPage() {
         },
         {
           subtitle: 'Effect of Termination',
-          text: 'Upon termination, your right to use Utajiri ceases immediately. We may delete your data in accordance with our data retention policies.',
+          text: 'Upon termination, your right to use Sonko ceases immediately. We may delete your data in accordance with our data retention policies.',
         },
       ],
     },
@@ -174,7 +174,7 @@ export default function TermsPage() {
       icon: '⚖️',
       content: [
         {
-          text: 'These Terms of Service are governed by the laws of Kenya. Any disputes arising from these terms or your use of Utajiri shall be subject to the exclusive jurisdiction of the courts of Kenya.',
+          text: 'These Terms of Service are governed by the laws of Kenya. Any disputes arising from these terms or your use of Sonko shall be subject to the exclusive jurisdiction of the courts of Kenya.',
         },
       ],
     },
@@ -247,7 +247,7 @@ export default function TermsPage() {
               lineHeight: 1.7,
               marginBottom: '1rem',
             }}>
-              Please read these terms carefully before using Utajiri. By using our service, you agree to these terms.
+              Please read these terms carefully before using Sonko. By using our service, you agree to these terms.
             </p>
 
             <p style={{ fontSize: '0.875rem', color: '#64748b' }}>

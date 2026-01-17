@@ -64,12 +64,12 @@ export default function PublicFooter() {
                 justifyContent: 'center',
                 boxShadow: '0 4px 20px -4px rgba(59, 130, 246, 0.5)',
               }}>
-                <Logo width={24} height={24} title="Utajiri" />
+                <Logo width={24} height={24} title="Sonko" />
               </div>
-              <span style={{ fontWeight: 700, color: '#fff', fontSize: '1.25rem' }}>Utajiri</span>
+              <span style={{ fontWeight: 700, color: '#fff', fontSize: '1.25rem' }}>Sonko</span>
             </div>
             <p style={{ color: '#94a3b8', fontSize: '0.9375rem', lineHeight: 1.7, marginBottom: '1.5rem', maxWidth: '360px' }}>
-              The modern personal finance app for Kenya. Track M-Pesa, budget smarter, and build lasting wealth.
+              Track your budgets, expenses, transactions, savings, investments, loans, assets and liabilities. Build responsible financial habits and make informed decisions.
             </p>
             <p style={{ color: '#64748b', fontSize: '0.875rem' }}>
               A product by{' '}
@@ -209,7 +209,7 @@ export default function PublicFooter() {
             {/* Social links */}
             {[
               {
-                href: 'https://twitter.com/utajiriapp',
+                href: 'https://twitter.com/sonkoapp',
                 label: 'Twitter',
                 icon: (
                   <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">

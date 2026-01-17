@@ -9,7 +9,7 @@
 
   <!-- Header -->
   <rect x="16" y="70" width="32" height="32" rx="8" fill="#3B82F6"/>
-  <text x="56" y="92" fill="#FFFFFF" font-size="18" font-weight="600" font-family="system-ui">Utajiri</text>
+  <text x="56" y="92" fill="#FFFFFF" font-size="18" font-weight="600" font-family="system-ui">Sonko</text>
   <circle cx="343" cy="86" r="18" fill="#1E293B"/>
   <text x="337" y="91" fill="#94A3B8" font-size="12" font-family="system-ui">SW</text>
 

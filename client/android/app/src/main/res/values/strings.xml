@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Personal Finance</string>
-    <string name="title_activity_main">Personal Finance</string>
-    <string name="package_name">com.mstatilitechnologies.finance</string>
-    <string name="custom_url_scheme">com.mstatilitechnologies.finance</string>
+    <string name="app_name">Sonko</string>
+    <string name="title_activity_main">Sonko</string>
+    <string name="package_name">com.mstatilitechnologies.sonko</string>
+    <string name="custom_url_scheme">com.mstatilitechnologies.sonko</string>
 </resources>

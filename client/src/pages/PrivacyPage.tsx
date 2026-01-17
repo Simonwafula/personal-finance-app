@@ -55,7 +55,7 @@ export default function PrivacyPage() {
         },
         {
           subtitle: 'Improve the App',
-          text: 'Anonymous usage data helps us understand how people use Utajiri so we can make improvements and fix issues.',
+          text: 'Anonymous usage data helps us understand how people use Sonko so we can make improvements and fix issues.',
         },
         {
           subtitle: 'Communications',
@@ -95,7 +95,7 @@ export default function PrivacyPage() {
         },
         {
           subtitle: 'Legal Requirements',
-          text: 'We may disclose information if required by law or to protect the rights, property, or safety of Utajiri, our users, or others.',
+          text: 'We may disclose information if required by law or to protect the rights, property, or safety of Sonko, our users, or others.',
         },
       ],
     },
@@ -200,7 +200,7 @@ export default function PrivacyPage() {
               lineHeight: 1.7,
               marginBottom: '1rem',
             }}>
-              At Utajiri, we believe your financial data is deeply personal. This policy explains how we collect, use, and protect your information.
+              At Sonko, we believe your financial data is deeply personal. This policy explains how we collect, use, and protect your information.
             </p>
 
             <p style={{ fontSize: '0.875rem', color: '#64748b' }}>
