@@ -247,6 +247,47 @@ export async function exportTransactionsCsv(params: ExportParams = {}) {
   return res.data;
 }
 
+export interface StatementImportRow {
+  date: string;
+  amount: string;
+  kind: "INCOME" | "EXPENSE";
+  description: string;
+  balance?: string | null;
+}
+
+export interface StatementImportPreview {
+  statement_type: string;
+  transactions: StatementImportRow[];
+  summary: { total: number; income: number; expense: number };
+}
+
+export async function previewStatementPdf(
+  file: File,
+  options: { opening_balance?: string; first_transaction_kind?: "INCOME" | "EXPENSE" } = {},
+): Promise<StatementImportPreview> {
+  const fd = new FormData();
+  fd.append("file", file);
+  if (options.opening_balance) {
+    fd.append("opening_balance", options.opening_balance);
+  }
+  if (options.first_transaction_kind) {
+    fd.append("first_transaction_kind", options.first_transaction_kind);
+  }
+  const res = await api.post("/api/finance/transactions/import-pdf-preview/", fd, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return res.data;
+}
+
+export async function confirmStatementPdfImport(payload: {
+  account: number;
+  transactions: StatementImportRow[];
+  allow_duplicates?: boolean;
+}): Promise<{ imported: number; skipped: number; errors?: { row: number; error: string }[] }> {
+  const res = await api.post("/api/finance/transactions/import-pdf-confirm/", payload);
+  return res.data;
+}
+
 // Tags
 export async function fetchTags(): Promise<Tag[]> {
   const res = await api.get("/api/finance/tags/");

@@ -1,6 +1,6 @@
 # finance/views.py
 import datetime
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from uuid import uuid4
 
 from rest_framework import viewsets, permissions, status
@@ -28,6 +28,7 @@ from notifications.models import Notification as NotificationModel
 from wealth.models import Liability
 from savings.models import SavingsGoal, GoalContribution
 from investments.models import Investment
+from .statement_import import build_preview, parse_statement_pdf
 
 User = get_user_model()
 
@@ -664,6 +665,112 @@ class TransactionViewSet(viewsets.ModelViewSet):
                 errors.append({"row": idx + 1, "error": str(e)})
 
         return Response({"created": created, "errors": errors})
+
+    @action(detail=False, methods=["post"], url_path="import-pdf-preview")
+    def import_pdf_preview(self, request):
+        """
+        Parse a statement PDF and return a preview list of transactions.
+        """
+        f = request.FILES.get("file")
+        if not f:
+            return Response({"detail": "file is required"}, status=400)
+
+        opening_balance = request.data.get("opening_balance")
+        first_kind = request.data.get("first_transaction_kind")
+        if first_kind and first_kind not in Transaction.Kind.values:
+            return Response({"detail": "invalid first_transaction_kind"}, status=400)
+
+        opening_balance_value = None
+        if opening_balance not in (None, ""):
+            try:
+                opening_balance_value = Decimal(str(opening_balance).replace(",", ""))
+            except (InvalidOperation, ValueError):
+                return Response({"detail": "invalid opening_balance"}, status=400)
+
+        try:
+            parsed = parse_statement_pdf(f.read())
+        except Exception as exc:
+            return Response({"detail": str(exc)}, status=400)
+
+        preview_rows, summary = build_preview(
+            parsed.transactions, opening_balance_value, first_kind
+        )
+        return Response(
+            {
+                "statement_type": parsed.statement_type,
+                "transactions": preview_rows,
+                "summary": summary,
+            }
+        )
+
+    @action(detail=False, methods=["post"], url_path="import-pdf-confirm")
+    def import_pdf_confirm(self, request):
+        """
+        Create transactions from a parsed PDF preview payload.
+        """
+        account_id = request.data.get("account")
+        rows = request.data.get("transactions", [])
+        allow_duplicates_raw = request.data.get("allow_duplicates")
+        if isinstance(allow_duplicates_raw, bool):
+            allow_duplicates = allow_duplicates_raw
+        else:
+            allow_duplicates = str(allow_duplicates_raw).lower() in {"true", "1", "yes", "on"}
+
+        if not account_id:
+            return Response({"detail": "account is required"}, status=400)
+        if not isinstance(rows, list):
+            return Response({"detail": "transactions must be a list"}, status=400)
+
+        account = Account.objects.filter(
+            user=request.user, id=account_id
+        ).first()
+        if not account:
+            return Response({"detail": "account not found"}, status=400)
+
+        created = 0
+        skipped = 0
+        errors = []
+
+        for idx, row in enumerate(rows):
+            try:
+                date = row.get("date")
+                amount = row.get("amount")
+                description = (row.get("description") or "")[:255]
+                kind = (row.get("kind") or Transaction.Kind.EXPENSE).upper()
+                if kind not in Transaction.Kind.values:
+                    raise ValueError("invalid kind")
+                if not date or amount in (None, ""):
+                    raise ValueError("missing date or amount")
+                amount_value = abs(Decimal(str(amount).replace(",", "")))
+
+                if not allow_duplicates:
+                    exists = Transaction.objects.filter(
+                        user=request.user,
+                        account=account,
+                        date=date,
+                        amount=amount_value,
+                        kind=kind,
+                        description=description,
+                    ).exists()
+                    if exists:
+                        skipped += 1
+                        continue
+
+                Transaction.objects.create(
+                    user=request.user,
+                    account=account,
+                    date=date,
+                    amount=amount_value,
+                    fee=0,
+                    kind=kind,
+                    description=description,
+                    source=Transaction.Source.IMPORT,
+                )
+                created += 1
+            except Exception as exc:
+                errors.append({"row": idx + 1, "error": str(exc)})
+
+        return Response({"imported": created, "skipped": skipped, "errors": errors})
 
     @action(detail=False, methods=["get"], url_path="export-csv")
     def export_csv(self, request):

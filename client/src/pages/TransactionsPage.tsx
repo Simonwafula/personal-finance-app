@@ -12,13 +12,15 @@ import {
   updateTransaction,
   deleteTransaction,
   importTransactionsCsv,
+  previewStatementPdf,
+  confirmStatementPdfImport,
   exportTransactionsCsv,
 } from "../api/finance";
 import { fetchLiabilities } from "../api/wealth";
 import { getSavingsGoals, type SavingsGoal } from "../api/savings";
 import { getInvestments, type Investment as InvestmentItem } from "../api/investments";
 import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { HiPlus, HiUpload, HiDownload, HiX, HiPencil, HiTrash, HiFilter, HiChevronDown } from "react-icons/hi";
+import { HiPlus, HiUpload, HiDownload, HiX, HiPencil, HiTrash, HiFilter, HiChevronDown, HiDocumentText } from "react-icons/hi";
 import type {
   Transaction,
   Account,
@@ -77,6 +79,25 @@ export default function TransactionsPage() {
   const [exporting, setExporting] = useState(false);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [showPdfModal, setShowPdfModal] = useState(false);
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [pdfPreview, setPdfPreview] = useState<{
+    statement_type: string;
+    transactions: {
+      date: string;
+      amount: string;
+      kind: "INCOME" | "EXPENSE";
+      description: string;
+      balance?: string | null;
+    }[];
+    summary: { total: number; income: number; expense: number };
+  } | null>(null);
+  const [pdfAccountId, setPdfAccountId] = useState<number | "">("");
+  const [pdfOpeningBalance, setPdfOpeningBalance] = useState("");
+  const [pdfAllowDuplicates, setPdfAllowDuplicates] = useState(false);
+  const [pdfParsing, setPdfParsing] = useState(false);
+  const [pdfImporting, setPdfImporting] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
   const [searchParams] = useSearchParams();
   const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([]);
   const { range } = useTimeRange();
@@ -108,6 +129,9 @@ export default function TransactionsPage() {
       
       if (accs.length > 0 && accountId === "") {
         setAccountId(accs[0].id);
+      }
+      if (accs.length > 0 && pdfAccountId === "") {
+        setPdfAccountId(accs[0].id);
       }
     } catch (err) {
       console.error(err);
@@ -277,6 +301,59 @@ export default function TransactionsPage() {
       setError("Failed to create transaction");
     } finally {
       setSaving(false);
+    }
+  }
+
+  function resetPdfImportState() {
+    setPdfFile(null);
+    setPdfPreview(null);
+    setPdfOpeningBalance("");
+    setPdfAllowDuplicates(false);
+    setPdfError(null);
+  }
+
+  async function handlePdfPreview() {
+    if (!pdfFile) {
+      setPdfError("Please select a PDF file first.");
+      return;
+    }
+    try {
+      setPdfParsing(true);
+      setPdfError(null);
+      const res = await previewStatementPdf(pdfFile, {
+        opening_balance: pdfOpeningBalance || undefined,
+      });
+      setPdfPreview(res);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      setPdfError(message);
+    } finally {
+      setPdfParsing(false);
+    }
+  }
+
+  async function handlePdfConfirm() {
+    if (!pdfPreview || !pdfAccountId) {
+      setPdfError("Select an account and parse the PDF first.");
+      return;
+    }
+    try {
+      setPdfImporting(true);
+      setPdfError(null);
+      const res = await confirmStatementPdfImport({
+        account: pdfAccountId as number,
+        transactions: pdfPreview.transactions,
+        allow_duplicates: pdfAllowDuplicates,
+      });
+      setImportResult({ success: { imported: res.imported, skipped: res.skipped } });
+      await loadTransactions();
+      setShowPdfModal(false);
+      resetPdfImportState();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      setPdfError(message);
+    } finally {
+      setPdfImporting(false);
     }
   }
 
@@ -579,6 +656,16 @@ export default function TransactionsPage() {
           <span>Import CSV</span>
         </button>
         <button
+          onClick={() => {
+            setShowPdfModal(true);
+            setPdfError(null);
+          }}
+          className="inline-flex items-center gap-2 px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+        >
+          <HiDocumentText size={16} className="text-blue-600" />
+          <span>Import PDF</span>
+        </button>
+        <button
           onClick={async () => {
             try {
               setExporting(true);
@@ -639,6 +726,158 @@ export default function TransactionsPage() {
         <div className={`card text-sm p-4 ${importResult.error ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`}>
           {importResult.error && `Error: ${String(importResult.error)}`}
           {importResult.success && `Successfully imported ${importResult.success.imported} transactions (${importResult.success.skipped} skipped)`}
+        </div>
+      )}
+
+      {showPdfModal && (
+        <div
+          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
+          onClick={() => {
+            setShowPdfModal(false);
+            resetPdfImportState();
+          }}
+        >
+          <div
+            className="card w-full max-w-4xl p-4 sm:p-6 space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between">
+              <h4 className="font-semibold">Import Statement (PDF)</h4>
+              <button
+                onClick={() => {
+                  setShowPdfModal(false);
+                  resetPdfImportState();
+                }}
+                className="text-[var(--text-muted)] hover:text-[var(--text)]"
+              >
+                <HiX size={20} />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label className="block text-xs font-medium mb-1 text-[var(--text-muted)]">PDF file</label>
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  onChange={(e) => {
+                    const nextFile = e.target.files?.[0] || null;
+                    setPdfFile(nextFile);
+                    setPdfPreview(null);
+                    setPdfError(null);
+                  }}
+                  className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium mb-1 text-[var(--text-muted)]">Account</label>
+                <select
+                  className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800"
+                  value={pdfAccountId}
+                  onChange={(e) => setPdfAccountId(e.target.value ? Number(e.target.value) : "")}
+                >
+                  <option value="">Select account</option>
+                  {accounts.map((acc) => (
+                    <option key={acc.id} value={acc.id}>{acc.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium mb-1 text-[var(--text-muted)]">Opening balance (optional)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={pdfOpeningBalance}
+                  onChange={(e) => setPdfOpeningBalance(e.target.value)}
+                  placeholder="0.00"
+                  className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800"
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                onClick={handlePdfPreview}
+                disabled={pdfParsing || !pdfFile}
+                className="btn-secondary text-sm disabled:opacity-50"
+              >
+                {pdfParsing ? "Parsing..." : "Parse PDF"}
+              </button>
+              <label className="inline-flex items-center gap-2 text-sm text-[var(--text-muted)]">
+                <input
+                  type="checkbox"
+                  checked={pdfAllowDuplicates}
+                  onChange={(e) => setPdfAllowDuplicates(e.target.checked)}
+                />
+                Allow duplicates
+              </label>
+              {pdfPreview && (
+                <div className="text-sm text-[var(--text-muted)]">
+                  {pdfPreview.statement_type.toUpperCase()} • {pdfPreview.summary.total} rows
+                </div>
+              )}
+            </div>
+
+            {pdfError && (
+              <div className="text-sm text-red-600 bg-red-50 dark:bg-red-900/20 rounded-lg px-3 py-2">
+                {pdfError}
+              </div>
+            )}
+
+            {pdfPreview && (
+              <div className="space-y-3">
+                <div className="text-sm text-[var(--text-muted)]">
+                  Income: {pdfPreview.summary.income} • Expenses: {pdfPreview.summary.expense}
+                </div>
+                <div className="border border-[var(--glass-border)] rounded-lg overflow-hidden">
+                  <div className="max-h-[50vh] overflow-auto">
+                    <table className="w-full text-sm">
+                      <thead className="bg-[var(--surface-hover)] text-left">
+                        <tr>
+                          <th className="px-3 py-2">Date</th>
+                          <th className="px-3 py-2">Description</th>
+                          <th className="px-3 py-2 text-right">Amount</th>
+                          <th className="px-3 py-2">Kind</th>
+                          <th className="px-3 py-2 text-right">Balance</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {pdfPreview.transactions.map((row, idx) => (
+                          <tr key={`${row.date}-${idx}`} className="border-t border-[var(--glass-border)]">
+                            <td className="px-3 py-2">{row.date}</td>
+                            <td className="px-3 py-2">{row.description}</td>
+                            <td className="px-3 py-2 text-right">
+                              {row.kind === "EXPENSE" ? "-" : ""}{formatMoney(row.amount)}
+                            </td>
+                            <td className="px-3 py-2">{row.kind}</td>
+                            <td className="px-3 py-2 text-right">{row.balance ? formatMoney(row.balance) : "-"}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <div className="flex items-center justify-end gap-2">
+                  <button
+                    onClick={() => {
+                      setShowPdfModal(false);
+                      resetPdfImportState();
+                    }}
+                    className="btn-secondary text-sm"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handlePdfConfirm}
+                    disabled={pdfImporting || !pdfAccountId}
+                    className="btn-primary text-sm disabled:opacity-50"
+                  >
+                    {pdfImporting ? "Importing..." : "Confirm Import"}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
