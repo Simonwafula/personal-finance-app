@@ -54,25 +54,25 @@ export default function TimeRangeSelector({ onChange, initialStart, initialEnd }
   return (
     <div className="space-y-2">
       <div className="flex gap-2 flex-wrap">
-        <button aria-label="7 days" aria-pressed={preset === "7d"} onClick={() => applyPreset("7d")} className={`text-xs sm:text-sm px-2 py-1 rounded ${preset === "7d" ? "bg-[var(--primary-600)] text-white" : "bg-white/5"}`}>
+        <button aria-label="7 days" aria-pressed={preset === "7d"} onClick={() => applyPreset("7d")} className={`text-xs sm:text-sm px-2 py-1 rounded border transition-colors ${preset === "7d" ? "bg-[var(--primary-600)] text-white border-transparent" : "bg-[var(--surface)] text-[var(--text-muted)] border-[var(--border-subtle)] hover:border-[var(--primary-400)] hover:text-[var(--text-main)]"}`}>
           7d
         </button>
-        <button aria-label="30 days" aria-pressed={preset === "30d"} onClick={() => applyPreset("30d")} className={`text-xs sm:text-sm px-2 py-1 rounded ${preset === "30d" ? "bg-[var(--primary-600)] text-white" : "bg-white/5"}`}>
+        <button aria-label="30 days" aria-pressed={preset === "30d"} onClick={() => applyPreset("30d")} className={`text-xs sm:text-sm px-2 py-1 rounded border transition-colors ${preset === "30d" ? "bg-[var(--primary-600)] text-white border-transparent" : "bg-[var(--surface)] text-[var(--text-muted)] border-[var(--border-subtle)] hover:border-[var(--primary-400)] hover:text-[var(--text-main)]"}`}>
           30d
         </button>
-        <button aria-label="90 days" aria-pressed={preset === "90d"} onClick={() => applyPreset("90d")} className={`text-xs sm:text-sm px-2 py-1 rounded ${preset === "90d" ? "bg-[var(--primary-600)] text-white" : "bg-white/5"}`}>
+        <button aria-label="90 days" aria-pressed={preset === "90d"} onClick={() => applyPreset("90d")} className={`text-xs sm:text-sm px-2 py-1 rounded border transition-colors ${preset === "90d" ? "bg-[var(--primary-600)] text-white border-transparent" : "bg-[var(--surface)] text-[var(--text-muted)] border-[var(--border-subtle)] hover:border-[var(--primary-400)] hover:text-[var(--text-main)]"}`}>
           90d
         </button>
-        <button aria-label="1 year" aria-pressed={preset === "1y"} onClick={() => applyPreset("1y")} className={`text-xs sm:text-sm px-2 py-1 rounded ${preset === "1y" ? "bg-[var(--primary-600)] text-white" : "bg-white/5"}`}>
+        <button aria-label="1 year" aria-pressed={preset === "1y"} onClick={() => applyPreset("1y")} className={`text-xs sm:text-sm px-2 py-1 rounded border transition-colors ${preset === "1y" ? "bg-[var(--primary-600)] text-white border-transparent" : "bg-[var(--surface)] text-[var(--text-muted)] border-[var(--border-subtle)] hover:border-[var(--primary-400)] hover:text-[var(--text-main)]"}`}>
           1y
         </button>
       </div>
 
       <div className="flex gap-2 items-center flex-wrap">
         <label className="text-xs muted hidden sm:inline">Start</label>
-        <input type="date" value={start} onChange={(e) => { setStart(e.target.value); setPreset("custom"); if (onChange) onChange({ startDate: e.target.value, endDate: end }); else ctx?.setRange({ startDate: e.target.value, endDate: end }); }} className="rounded px-2 py-1 text-sm bg-transparent border border-white/5 max-w-[150px]" />
+        <input type="date" value={start} onChange={(e) => { setStart(e.target.value); setPreset("custom"); if (onChange) onChange({ startDate: e.target.value, endDate: end }); else ctx?.setRange({ startDate: e.target.value, endDate: end }); }} className="rounded px-2 py-1 text-sm bg-[var(--surface)] border border-[var(--border-subtle)] text-[var(--text-main)] max-w-[150px]" />
         <label className="text-xs muted hidden sm:inline">End</label>
-        <input type="date" value={end} onChange={(e) => { setEnd(e.target.value); setPreset("custom"); if (onChange) onChange({ startDate: start, endDate: e.target.value }); else ctx?.setRange({ startDate: start, endDate: e.target.value }); }} className="rounded px-2 py-1 text-sm bg-transparent border border-white/5 max-w-[150px]" />
+        <input type="date" value={end} onChange={(e) => { setEnd(e.target.value); setPreset("custom"); if (onChange) onChange({ startDate: start, endDate: e.target.value }); else ctx?.setRange({ startDate: start, endDate: e.target.value }); }} className="rounded px-2 py-1 text-sm bg-[var(--surface)] border border-[var(--border-subtle)] text-[var(--text-main)] max-w-[150px]" />
       </div>
     </div>
   );

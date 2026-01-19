@@ -47,16 +47,16 @@ export default function PublicHeader() {
             >
               Blog
             </Link>
-          </nav>
-
-          {/* Desktop Actions */}
-          <div className="hidden md:flex items-center gap-4">
             <Link
               to="/login"
               className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors dark:text-slate-300 dark:hover:text-white"
             >
               Sign In
             </Link>
+          </nav>
+
+          {/* Desktop Actions */}
+          <div className="hidden md:flex items-center gap-4">
             <Link
               to="/signup"
               className="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-400 rounded-lg transition-colors shadow-sm"
