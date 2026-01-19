@@ -747,7 +747,7 @@ export default function WealthPage() {
                             <td className="px-4 py-3 font-medium">{l.name}</td>
                             <td className="px-4 py-3 text-right font-semibold text-red-600">{formatMoney(l.principal_balance)}</td>
                             <td className="px-4 py-3 text-right">{Number(l.interest_rate || 0) > 0 ? `${l.interest_rate}%` : "-"}</td>
-                            <td className="px-4 py-3 text-right">{Number(l.minimum_payment || 0) > 0 ? formatMoney(l.minimum_payment) : "-"}</td>
+                            <td className="px-4 py-3 text-right">{Number(l.minimum_payment || 0) > 0 ? formatMoney(Number(l.minimum_payment || 0)) : "-"}</td>
                             <td className="px-4 py-3 text-right">
                               <div className="flex gap-1 justify-end">
                                 <button onClick={() => editLiability(l)} className="p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded">

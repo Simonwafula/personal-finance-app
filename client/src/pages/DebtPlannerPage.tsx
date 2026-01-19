@@ -158,12 +158,12 @@ export default function DebtPlannerPage() {
     e.preventDefault();
     try {
       setSavingDebt(true);
-      const payload = {
+      const payload: Partial<Liability> = {
         name: debtName,
         liability_type: debtType,
         principal_balance: debtBalance,
-        interest_rate: debtInterestRate ? Number(debtInterestRate) : null,
-        minimum_payment: debtMinPayment ? Number(debtMinPayment) : null,
+        interest_rate: debtInterestRate ? debtInterestRate : null,
+        minimum_payment: debtMinPayment ? debtMinPayment : null,
         tenure_months: debtTenure ? Number(debtTenure) : null,
         start_date: debtStartDate || null,
         due_day_of_month: debtDueDay ? Number(debtDueDay) : null,

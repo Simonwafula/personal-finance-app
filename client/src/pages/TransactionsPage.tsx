@@ -314,7 +314,7 @@ export default function TransactionsPage() {
   function startEdit(tx: Transaction) {
     let editTx = tx;
     let fromAccount = tx.account;
-    let toAccount = tx.transfer_account || "";
+    let toAccount: number | "" = tx.transfer_account ?? "";
     if (tx.kind === "TRANSFER" && tx.transfer_direction === "IN" && tx.transfer_group) {
       const outbound = transactions.find(
         (t) => t.transfer_group === tx.transfer_group && t.transfer_direction === "OUT"
@@ -322,7 +322,7 @@ export default function TransactionsPage() {
       if (outbound) {
         editTx = outbound;
         fromAccount = outbound.account;
-        toAccount = outbound.transfer_account || "";
+        toAccount = outbound.transfer_account ?? "";
       } else if (tx.transfer_account) {
         fromAccount = tx.transfer_account;
         toAccount = tx.account;
