@@ -21,7 +21,11 @@ class InvestmentSerializer(serializers.ModelSerializer):
     annualized_return = serializers.ReadOnlyField()
     annual_income = serializers.ReadOnlyField()
     net_rental_yield = serializers.ReadOnlyField()
-    transactions = InvestmentTransactionSerializer(many=True, read_only=True)
+    transactions = InvestmentTransactionSerializer(
+        many=True,
+        read_only=True,
+        source="investment_transactions",
+    )
     investment_type_display = serializers.CharField(source='get_investment_type_display', read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     bond_type_display = serializers.CharField(source='get_bond_type_display', read_only=True)

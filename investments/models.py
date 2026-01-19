@@ -232,7 +232,7 @@ class InvestmentTransaction(models.Model):
     investment = models.ForeignKey(
         Investment,
         on_delete=models.CASCADE,
-        related_name="transactions"
+        related_name="investment_transactions"
     )
     transaction_type = models.CharField(max_length=10, choices=TRANSACTION_TYPE)
     date = models.DateField()
