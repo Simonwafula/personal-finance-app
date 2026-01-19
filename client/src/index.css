@@ -684,6 +684,25 @@ body {
   cursor: pointer;
 }
 
+/* Investments table/card visibility without relying on Tailwind breakpoints */
+.investments-table {
+  display: block;
+}
+
+.investments-cards {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .investments-table {
+    display: none;
+  }
+
+  .investments-cards {
+    display: block;
+  }
+}
+
 /* Enhanced Form inputs */
 .app-shell input[type="text"],
 .app-shell input[type="email"],

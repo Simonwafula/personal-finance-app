@@ -1345,7 +1345,7 @@ export default function InvestmentsPage() {
           ) : (
             <>
               {/* Desktop Table */}
-              <div className="hidden md:block card overflow-x-auto">
+              <div className="card overflow-x-auto investments-table">
                 <table className="w-full min-w-[900px]">
                   <thead className="bg-[var(--surface)] border-b border-[var(--border-subtle)]">
                     <tr>
@@ -1444,7 +1444,7 @@ export default function InvestmentsPage() {
               </div>
 
               {/* Mobile Cards */}
-              <div className="md:hidden space-y-3">
+              <div className="space-y-3 investments-cards">
                 {investments.map((inv) => (
                   <div key={inv.id} className="card p-4">
                     <div className="flex justify-between items-start mb-3">
