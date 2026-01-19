@@ -283,6 +283,8 @@ export async function confirmStatementPdfImport(payload: {
   account: number;
   transactions: StatementImportRow[];
   allow_duplicates?: boolean;
+  statement_type?: string;
+  statement_name?: string;
 }): Promise<{ imported: number; skipped: number; errors?: { row: number; error: string }[] }> {
   const res = await api.post("/api/finance/transactions/import-pdf-confirm/", payload);
   return res.data;

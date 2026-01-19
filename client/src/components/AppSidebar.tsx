@@ -1,5 +1,5 @@
 import { NavLink, Link } from 'react-router-dom';
-import { HiHome, HiCreditCard, HiChartBar, HiTrendingUp, HiCalculator, HiBriefcase, HiTag, HiUser, HiBell, HiBookOpen } from 'react-icons/hi';
+import { HiHome, HiCreditCard, HiChartBar, HiTrendingUp, HiCalculator, HiBriefcase, HiTag, HiUser, HiBell, HiBookOpen, HiClock } from 'react-icons/hi';
 import Logo from './Logo';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -79,6 +79,19 @@ export default function AppSidebar() {
               >
                 <HiBell className="w-5 h-5" />
                 <span>Notifications</span>
+              </NavLink>
+              <NavLink
+                to="/activity"
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                    isActive
+                      ? 'bg-blue-50 text-blue-600'
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`
+                }
+              >
+                <HiClock className="w-5 h-5" />
+                <span>Activity</span>
               </NavLink>
             </div>
           </div>

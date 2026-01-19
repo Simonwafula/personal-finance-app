@@ -1,4 +1,4 @@
-package com.mstatilitechnologies.finance.plugins;
+package com.mstatilitechnologies.sonko.plugins;
 
 import android.Manifest;
 import android.content.BroadcastReceiver;

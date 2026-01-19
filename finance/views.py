@@ -24,6 +24,14 @@ from .serializers import (
 from .models import RecurringTransaction, Tag
 from .serializers import RecurringTransactionSerializer, TagSerializer
 from notifications.utils import create_notification
+from activity.utils import (
+    log_activity,
+    ACTION_TRANSACTION_CREATED,
+    ACTION_TRANSACTION_UPDATED,
+    ACTION_TRANSACTION_DELETED,
+    ACTION_IMPORT_CSV,
+    ACTION_IMPORT_PDF,
+)
 from notifications.models import Notification as NotificationModel
 from wealth.models import Liability
 from savings.models import SavingsGoal, GoalContribution
@@ -270,6 +278,63 @@ class TransactionViewSet(viewsets.ModelViewSet):
             return
         tx.save(update_fields=["investment_action"])
 
+    def _log_transaction_activity(self, action, tx, before=None):
+        if not tx:
+            return
+        try:
+            summary = self._build_transaction_summary(action, tx)
+            metadata = {
+                "transaction_id": tx.id,
+                "kind": tx.kind,
+                "amount": str(tx.amount),
+                "date": tx.date.isoformat(),
+                "account_id": tx.account_id,
+                "description": tx.description or "",
+            }
+            if tx.transfer_account_id:
+                metadata["transfer_account_id"] = tx.transfer_account_id
+            if before:
+                metadata["before"] = {
+                    "kind": before.kind,
+                    "amount": str(before.amount),
+                    "date": before.date.isoformat(),
+                    "account_id": before.account_id,
+                    "description": before.description or "",
+                }
+            log_activity(
+                user=self.request.user,
+                action=action,
+                summary=summary,
+                entity_type="transaction",
+                entity_id=tx.id,
+                metadata=metadata,
+            )
+        except Exception:
+            # Activity logging should not block transaction flows
+            pass
+
+    def _build_transaction_summary(self, action, tx):
+        action_map = {
+            ACTION_TRANSACTION_CREATED: "Created",
+            ACTION_TRANSACTION_UPDATED: "Updated",
+            ACTION_TRANSACTION_DELETED: "Deleted",
+        }
+        verb = action_map.get(action, "Updated")
+        currency = getattr(tx.account, "currency", "")
+        amount = f"{tx.amount} {currency}".strip()
+
+        if tx.kind == Transaction.Kind.TRANSFER and tx.transfer_account:
+            summary = (
+                f"{verb} transfer {amount} from {tx.account.name} "
+                f"to {tx.transfer_account.name}"
+            )
+        else:
+            base = f"{verb} {tx.kind.lower()} transaction {amount} on {tx.date}"
+            if tx.description:
+                base = f"{base} - {tx.description}"
+            summary = base
+        return summary[:255]
+
     def _build_transfer_shared_fields(self, data, fallback):
         fields = [
             "date",
@@ -438,6 +503,7 @@ class TransactionViewSet(viewsets.ModelViewSet):
                 self._sync_investment(None, tx)
 
         self._notify_budget_thresholds(tx)
+        self._log_transaction_activity(ACTION_TRANSACTION_CREATED, tx)
         out = self.get_serializer(tx)
         headers = self.get_success_headers(out.data)
         return Response(out.data, status=status.HTTP_201_CREATED, headers=headers)
@@ -489,6 +555,7 @@ class TransactionViewSet(viewsets.ModelViewSet):
             self._sync_investment(before, updated)
 
         self._notify_budget_thresholds(updated)
+        self._log_transaction_activity(ACTION_TRANSACTION_UPDATED, updated, before=before)
         return Response(self.get_serializer(updated).data)
 
     def destroy(self, request, *args, **kwargs):
@@ -505,6 +572,7 @@ class TransactionViewSet(viewsets.ModelViewSet):
                 self._sync_savings(before, None)
                 self._sync_investment(before, None)
                 instance.delete()
+        self._log_transaction_activity(ACTION_TRANSACTION_DELETED, before)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=["get"])
@@ -664,6 +732,25 @@ class TransactionViewSet(viewsets.ModelViewSet):
             except Exception as e:
                 errors.append({"row": idx + 1, "error": str(e)})
 
+        try:
+            file_name = getattr(f, "name", "")
+            summary = f"Imported {created} transactions from CSV"
+            if file_name:
+                summary = f"{summary} ({file_name})"
+            log_activity(
+                user=request.user,
+                action=ACTION_IMPORT_CSV,
+                summary=summary,
+                entity_type="transaction",
+                metadata={
+                    "imported": created,
+                    "errors": len(errors),
+                    "file_name": file_name,
+                },
+            )
+        except Exception:
+            pass
+
         return Response({"created": created, "errors": errors})
 
     @action(detail=False, methods=["post"], url_path="import-pdf-preview")
@@ -711,6 +798,8 @@ class TransactionViewSet(viewsets.ModelViewSet):
         account_id = request.data.get("account")
         rows = request.data.get("transactions", [])
         allow_duplicates_raw = request.data.get("allow_duplicates")
+        statement_type = request.data.get("statement_type")
+        statement_name = request.data.get("statement_name")
         if isinstance(allow_duplicates_raw, bool):
             allow_duplicates = allow_duplicates_raw
         else:
@@ -769,6 +858,29 @@ class TransactionViewSet(viewsets.ModelViewSet):
                 created += 1
             except Exception as exc:
                 errors.append({"row": idx + 1, "error": str(exc)})
+
+        try:
+            meta = {
+                "imported": created,
+                "skipped": skipped,
+                "errors": len(errors),
+            }
+            if statement_type:
+                meta["statement_type"] = statement_type
+            if statement_name:
+                meta["statement_name"] = statement_name
+            summary = f"Imported {created} transactions from PDF statement"
+            if statement_name:
+                summary = f"{summary} ({statement_name})"
+            log_activity(
+                user=request.user,
+                action=ACTION_IMPORT_PDF,
+                summary=summary,
+                entity_type="transaction",
+                metadata=meta,
+            )
+        except Exception:
+            pass
 
         return Response({"imported": created, "skipped": skipped, "errors": errors})
 

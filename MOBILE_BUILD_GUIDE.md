@@ -59,7 +59,7 @@ npm run android:bundle
 
 ### App Details
 
-- **App ID**: `com.mstatilitechnologies.finance`
+- **App ID**: `com.mstatilitechnologies.sonko`
 - **App Name**: Personal Finance
 - **Version**: 1.0.0 (update in `android/app/build.gradle`)
 

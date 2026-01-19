@@ -119,7 +119,7 @@ export interface CreateTransactionPayload {
 Created `client/capacitor.config.ts`:
 ```typescript
 {
-  appId: 'com.mstatilitechnologies.finance',
+  appId: 'com.mstatilitechnologies.sonko',
   appName: 'Personal Finance',
   webDir: 'dist',
   android: {

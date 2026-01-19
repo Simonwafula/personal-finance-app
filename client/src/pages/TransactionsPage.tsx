@@ -344,6 +344,8 @@ export default function TransactionsPage() {
         account: pdfAccountId as number,
         transactions: pdfPreview.transactions,
         allow_duplicates: pdfAllowDuplicates,
+        statement_type: pdfPreview.statement_type,
+        statement_name: pdfFile?.name,
       });
       setImportResult({ success: { imported: res.imported, skipped: res.skipped } });
       await loadTransactions();

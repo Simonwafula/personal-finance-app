@@ -1,16 +1,25 @@
 // src/pages/DashboardPage.tsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchAggregatedTransactions, fetchTopCategories, fetchAccounts } from "../api/finance";
-import { fetchTransactions } from "../api/finance";
+import {
+  fetchAggregatedTransactions,
+  fetchTopCategories,
+  fetchAccounts,
+  fetchCategories,
+  createTransaction,
+  fetchTransactions,
+} from "../api/finance";
 import { fetchCurrentNetWorth, fetchNetWorthSnapshots } from "../api/wealth";
 import { getSavingsSummary, type SavingsSummary } from "../api/savings";
 import { getInvestmentSummary, type InvestmentSummary } from "../api/investments";
-import type { Account } from "../api/types";
+import { fetchActivityLogsPage, type ActivityLog } from "../api/activity";
+import type { Account, Category } from "../api/types";
 import { useTimeRange } from "../contexts/TimeRangeContext";
 // TimeRangeSelector comes from global context (rendered in Layout)
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, CartesianGrid } from "recharts";
 import type { NetWorthCurrent } from "../api/types";
+import SmsTransactionPrompt from "../features/sms/SmsTransactionPrompt";
+import { PLATFORM_FEATURES } from "../utils/platform";
 
 interface DashboardTotals {
   income: number;
@@ -37,8 +46,11 @@ export default function DashboardPage() {
   const [liquidity, setLiquidity] = useState<number>(0);
   const [savingsGoals, setSavingsGoals] = useState<SavingsSummary | null>(null);
   const [investmentsSummary, setInvestmentsSummary] = useState<InvestmentSummary | null>(null);
+  const [recentActivity, setRecentActivity] = useState<ActivityLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
 
   const navigate = useNavigate();
   const { range } = useTimeRange();
@@ -49,13 +61,17 @@ export default function DashboardPage() {
         setLoading(true);
         setError(null);
 
-        const [nw, nws, accountsData, savingsSummary, invSummary] = await Promise.all([
+        const [nw, nws, accountsData, categoriesData, savingsSummary, invSummary] = await Promise.all([
           fetchCurrentNetWorth().catch(() => null),
           fetchNetWorthSnapshots().catch(() => []),
           fetchAccounts().catch(() => [] as Account[]),
+          fetchCategories().catch(() => [] as Category[]),
           getSavingsSummary().catch(() => null),
           getInvestmentSummary().catch(() => null),
         ]);
+
+        setAccounts(accountsData);
+        setCategories(categoriesData);
 
         if (savingsSummary) setSavingsGoals(savingsSummary);
         if (invSummary) setInvestmentsSummary(invSummary);
@@ -73,16 +89,18 @@ export default function DashboardPage() {
           end: range.endDate,
           group_by: 'day',
         };
-        const [agg, top, recent] = await Promise.all([
+        const [agg, top, recent, activity] = await Promise.all([
           fetchAggregatedTransactions(q),
           fetchTopCategories({ start: range.startDate, end: range.endDate, limit: 6 }),
           fetchTransactions({ start: range.startDate, end: range.endDate, limit: 6 }).catch(() => []),
+          fetchActivityLogsPage({ limit: 6, offset: 0 }).catch(() => ({ results: [] })),
         ]);
 
         // no local txs were fetched; aggregated series drives charts
         setAggregatedSeries((agg.series && agg.series.length > 0) ? agg.series : generateEmptyDaySeries(range.startDate, range.endDate));
         setCategorySeries(top.categories.map((c:any) => ({ id: c.id, name: c.name, amount: c.amount })));
         setRecentTx(recent || []);
+        setRecentActivity(activity.results || []);
 
         // Compute totals from aggregated series
         let income = 0;
@@ -117,6 +135,8 @@ export default function DashboardPage() {
           setCategorySeries(top.categories.map((c:any) => ({ id: c.id, name: c.name, amount: c.amount })));
           const recent = await fetchTransactions({ start: range.startDate, end: range.endDate, limit: 6 }).catch(() => []);
           setRecentTx(recent || []);
+          const activity = await fetchActivityLogsPage({ limit: 6, offset: 0 }).catch(() => ({ results: [] }));
+          setRecentActivity(activity.results || []);
           let income = 0; let expenses = 0;
           (agg.series || []).forEach((p:any) => { income += p.income; expenses += p.expenses; });
           setTotals({ income, expenses, savings: income - expenses });
@@ -128,6 +148,29 @@ export default function DashboardPage() {
     window.addEventListener('transactionsUpdated', onUpdated);
     return () => window.removeEventListener('transactionsUpdated', onUpdated);
   }, [range.startDate, range.endDate]);
+
+  const handleSmsSaveTransaction = async (transaction: {
+    amount: number;
+    type: "income" | "expense";
+    category: number;
+    account: number;
+    description: string;
+    date: string;
+    reference?: string;
+  }) => {
+    await createTransaction({
+      account: transaction.account,
+      amount: transaction.amount,
+      kind: transaction.type === "income" ? "INCOME" : "EXPENSE",
+      category: transaction.category,
+      description: transaction.description,
+      date: transaction.date,
+      source: "SMS",
+      sms_reference: transaction.reference,
+      sms_detected_at: new Date().toISOString(),
+    });
+    window.dispatchEvent(new Event("transactionsUpdated"));
+  };
 
   // Chart data helpers
   const startDate = range.startDate;
@@ -164,6 +207,11 @@ export default function DashboardPage() {
     liabilities: Number(netWorth?.total_liabilities ?? 0),
   };
 
+  const smsAccountOptions = accounts.map((account) => ({
+    id: account.id,
+    name: account.name,
+  }));
+
   const savingsCard = savingsGoals ?? {
     total_goals: 0,
     total_target: 0,
@@ -195,6 +243,15 @@ export default function DashboardPage() {
           </p>
         </div>
       </div>
+
+      {PLATFORM_FEATURES.SMS_DETECTION && smsAccountOptions.length > 0 && categories.length > 0 && (
+        <SmsTransactionPrompt
+          accounts={smsAccountOptions}
+          categories={categories}
+          onSaveTransaction={handleSmsSaveTransaction}
+          className="mb-6"
+        />
+      )}
 
       {loading && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
@@ -423,6 +480,45 @@ export default function DashboardPage() {
                     </div>
                       );
                     })()
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Recent Activity */}
+          <div className="card-elevated">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold">Recent Activity</h3>
+              <button
+                onClick={() => navigate('/activity')}
+                className="text-sm font-semibold text-[var(--primary-400)] hover:text-[var(--primary-500)] transition-colors"
+              >
+                View all →
+              </button>
+            </div>
+            <div>
+              {recentActivity.length === 0 && (
+                <div className="text-center py-8 text-[var(--text-muted)]">
+                  No activity yet
+                </div>
+              )}
+              {recentActivity.length > 0 && (
+                <div className="space-y-3">
+                  {recentActivity.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex items-center justify-between p-3 rounded-lg bg-[var(--surface-glass)] hover:bg-[var(--surface-hover)] transition-all"
+                    >
+                      <div className="flex-1">
+                        <div className="font-semibold text-[var(--text-main)]">
+                          {item.summary}
+                        </div>
+                        <div className="text-xs text-[var(--text-muted)] mt-1">
+                          {new Date(item.created_at).toLocaleString()}
+                        </div>
+                      </div>
+                    </div>
                   ))}
                 </div>
               )}

@@ -163,7 +163,7 @@ jobs:
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_STORE_SERVICE_ACCOUNT }}
-          packageName: com.mstatilitechnologies.finance
+          packageName: com.mstatilitechnologies.sonko
           releaseFiles: android/app/build/outputs/bundle/release/*.aab
           track: internal  # or 'beta', 'production'
 ```

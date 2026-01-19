@@ -90,6 +90,7 @@ INSTALLED_APPS = [
     'debt_planner',
     'profiles',
     'notifications',
+    'activity',
     'savings',
     'investments',
 ]

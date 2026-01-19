@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { fetchProfile, updateProfile, changePassword, logout, type UserProfile } from "../api/auth";
 import { useAuth } from "../contexts/AuthContext";
 import { exportTransactionsCsv } from "../api/finance";
+import SmsSettings from "../features/sms/SmsSettings";
+import { PLATFORM_FEATURES } from "../utils/platform";
 import { useTimeRange } from "../contexts/TimeRangeContext";
 
 interface ProfileFormData extends UserProfile {
@@ -16,7 +18,7 @@ export default function ProfilePage() {
   const { range } = useTimeRange();
 
   const [activeTab, setActiveTab] = useState<
-    "profile" | "security" | "notifications" | "backup" | "sessions"
+    "profile" | "security" | "notifications" | "sms" | "backup" | "sessions"
   >("profile");
 
   const [profile, setProfile] = useState<ProfileFormData | null>(null);
@@ -202,6 +204,18 @@ export default function ProfilePage() {
         >
           🔔 Notifications
         </button>
+        {PLATFORM_FEATURES.SMS_DETECTION && (
+          <button
+            onClick={() => setActiveTab("sms")}
+            className={`flex-1 px-4 py-3 font-semibold rounded-lg transition-all text-sm md:text-base ${
+              activeTab === "sms"
+                ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
+                : "text-[var(--text-muted)] hover:bg-[var(--glass-bg)]"
+            }`}
+          >
+            📲 SMS Detection
+          </button>
+        )}
         <button
           onClick={() => setActiveTab("backup")}
           className={`flex-1 px-4 py-3 font-semibold rounded-lg transition-all text-sm md:text-base ${
@@ -539,6 +553,20 @@ export default function ProfilePage() {
               Open Notifications
             </button>
           </div>
+        </div>
+      )}
+
+      {/* SMS Detection */}
+      {activeTab === "sms" && PLATFORM_FEATURES.SMS_DETECTION && (
+        <div className="space-y-4">
+          <div className="card">
+            <h3 className="text-lg font-semibold mb-2">SMS Transaction Detection</h3>
+            <p className="text-sm text-[var(--text-muted)]">
+              Manage the SMS senders you trust and keep automatic transaction detection tuned for your accounts.
+              This feature runs only on the Android mobile app.
+            </p>
+          </div>
+          <SmsSettings />
         </div>
       )}
 

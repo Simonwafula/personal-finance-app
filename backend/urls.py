@@ -88,6 +88,7 @@ urlpatterns = [
     path("api/savings/", include("savings.urls")),
     path("api/investments/", include("investments.urls")),
     path("api/", include("notifications.urls")),
+    path("api/activity/", include("activity.urls")),
     
     # Static file helpers
     path("favicon.ico", favicon_view),
