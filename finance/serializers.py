@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from .models import Account, Category, Transaction, Tag
 from .models import RecurringTransaction
+from wealth.models import Liability
+from investments.models import Investment
 
 
 class AccountSerializer(serializers.ModelSerializer):
@@ -43,9 +45,12 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class TransactionSerializer(serializers.ModelSerializer):
     account_name = serializers.ReadOnlyField(source="account.name")
+    transfer_account_name = serializers.ReadOnlyField(source="transfer_account.name")
     category_name = serializers.ReadOnlyField(source="category.name")
     savings_goal_name = serializers.ReadOnlyField(source="savings_goal.name")
     savings_goal_emoji = serializers.ReadOnlyField(source="savings_goal.emoji")
+    liability_name = serializers.ReadOnlyField(source="liability.name")
+    investment_name = serializers.ReadOnlyField(source="investment.name")
 
     class Meta:
         model = Transaction
@@ -53,8 +58,16 @@ class TransactionSerializer(serializers.ModelSerializer):
             "id",
             "account",
             "account_name",
+            "transfer_group",
+            "transfer_account",
+            "transfer_account_name",
+            "transfer_direction",
+            "investment",
+            "investment_name",
+            "investment_action",
             "date",
             "amount",
+            "fee",
             "kind",
             "category",
             "category_name",
@@ -65,6 +78,8 @@ class TransactionSerializer(serializers.ModelSerializer):
             "savings_goal",
             "savings_goal_name",
             "savings_goal_emoji",
+            "liability",
+            "liability_name",
             # SMS tracking fields (Mobile-only feature)
             "source",
             "sms_reference",
@@ -72,16 +87,79 @@ class TransactionSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "created_at", "updated_at"]
+        read_only_fields = [
+            "id",
+            "transfer_group",
+            "transfer_direction",
+            "created_at",
+            "updated_at",
+        ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get("request")
+        if request and request.user and request.user.is_authenticated:
+            self.fields["transfer_account"].queryset = Account.objects.filter(
+                user=request.user
+            )
+            self.fields["liability"].queryset = Liability.objects.filter(
+                user=request.user
+            )
+            self.fields["investment"].queryset = Investment.objects.filter(
+                user=request.user
+            )
 
     def validate(self, attrs):
         """Validate SMS fields if source is SMS"""
         source = attrs.get('source', 'MANUAL')
+        kind = attrs.get("kind") or getattr(self.instance, "kind", None)
+        account = attrs.get("account") or getattr(self.instance, "account", None)
+        transfer_account = attrs.get("transfer_account") or getattr(
+            self.instance, "transfer_account", None
+        )
+        liability = attrs.get("liability") or getattr(self.instance, "liability", None)
+        savings_goal = attrs.get("savings_goal") or getattr(self.instance, "savings_goal", None)
+        investment = attrs.get("investment") or getattr(self.instance, "investment", None)
+        investment_action = attrs.get("investment_action") or getattr(
+            self.instance, "investment_action", None
+        )
 
         # If source is SMS, sms_reference should be provided
         if source == 'SMS' and not attrs.get('sms_reference'):
             raise serializers.ValidationError({
                 'sms_reference': 'SMS reference is required when source is SMS'
+            })
+
+        if kind == Transaction.Kind.TRANSFER:
+            if transfer_account and account and transfer_account == account:
+                raise serializers.ValidationError({
+                    "transfer_account": "Transfer account must differ from the source account."
+                })
+            if liability:
+                raise serializers.ValidationError({
+                    "liability": "Debt link is only allowed for expense transactions."
+                })
+            if "investment" in attrs and investment:
+                raise serializers.ValidationError({
+                    "investment": "Investment link is only allowed for income or expense transactions."
+                })
+            if "savings_goal" in attrs and savings_goal:
+                raise serializers.ValidationError({
+                    "savings_goal": "Savings goal link is only allowed for income or expense transactions."
+                })
+        else:
+            if transfer_account:
+                raise serializers.ValidationError({
+                    "transfer_account": "Transfer account is only allowed for transfer transactions."
+                })
+
+        if liability and kind != Transaction.Kind.EXPENSE:
+            raise serializers.ValidationError({
+                "liability": "Debt link is only allowed for expense transactions."
+            })
+        if investment_action and not investment:
+            raise serializers.ValidationError({
+                "investment_action": "Investment action requires an investment selection."
             })
 
         return attrs
@@ -147,4 +225,3 @@ class TagSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
-

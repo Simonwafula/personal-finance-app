@@ -22,15 +22,21 @@ def calculate_budget_summary(budget: Budget):
     for line in budget.lines.select_related("category"):
         planned = line.planned_amount or Decimal("0")
 
-        actual = (
+        totals = (
             Transaction.objects.filter(
                 user=user,
                 date__gte=budget.start_date,
                 date__lte=budget.end_date,
                 category=line.category,
-            ).aggregate(total=Sum("amount"))["total"]
-            or Decimal("0")
+                kind=line.category.kind,
+            ).aggregate(amount=Sum("amount"), fees=Sum("fee"))
         )
+        actual_amount = totals.get("amount") or Decimal("0")
+        actual_fees = totals.get("fees") or Decimal("0")
+        if line.category.kind == Transaction.Kind.INCOME:
+            actual = actual_amount - actual_fees
+        else:
+            actual = actual_amount + actual_fees
 
         diff = planned - actual
 
@@ -85,6 +91,7 @@ def notify_budget_thresholds_for_transaction(
                 bl
                 for bl in budget.lines.all()
                 if bl.category_id == getattr(tx, "category_id", None)
+                and tx.kind == bl.category.kind
             ),
             None,
         )
@@ -93,19 +100,25 @@ def notify_budget_thresholds_for_transaction(
 
         planned = Decimal(line.planned_amount)
         # Sum actual BEFORE this tx
-        prev_actual = (
+        prev_totals = (
             Transaction.objects.filter(
                 user=user,
                 date__gte=budget.start_date,
                 date__lte=budget.end_date,
                 category_id=line.category_id,
+                kind=line.category.kind,
             )
             .exclude(id=tx.id)
-            .aggregate(total=Sum("amount"))
-            .get("total")
-            or Decimal("0")
+            .aggregate(amount=Sum("amount"), fees=Sum("fee"))
         )
-        new_actual = prev_actual + Decimal(tx.amount)
+        prev_amount = prev_totals.get("amount") or Decimal("0")
+        prev_fees = prev_totals.get("fees") or Decimal("0")
+        if line.category.kind == Transaction.Kind.INCOME:
+            prev_actual = prev_amount - prev_fees
+            new_actual = prev_actual + Decimal(tx.amount) - Decimal(tx.fee or 0)
+        else:
+            prev_actual = prev_amount + prev_fees
+            new_actual = prev_actual + Decimal(tx.amount) + Decimal(tx.fee or 0)
         if planned <= 0:
             continue
 

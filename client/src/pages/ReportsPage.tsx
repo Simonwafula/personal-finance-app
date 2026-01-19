@@ -134,11 +134,11 @@ export default function ReportsPage() {
       // Calculate summary
       const totalIncome = transactions
         .filter(t => t.kind === "INCOME")
-        .reduce((sum, t) => sum + Number(t.amount), 0);
+        .reduce((sum, t) => sum + Number(t.amount) - Number(t.fee || 0), 0);
       
       const totalExpenses = transactions
         .filter(t => t.kind === "EXPENSE")
-        .reduce((sum, t) => sum + Number(t.amount), 0);
+        .reduce((sum, t) => sum + Number(t.amount) + Number(t.fee || 0), 0);
       
       const netSavings = totalIncome - totalExpenses;
       const savingsRate = totalIncome > 0 ? (netSavings / totalIncome) * 100 : 0;
@@ -155,7 +155,7 @@ export default function ReportsPage() {
           if (!catId) return;
           const cat = categoryLookup.get(catId);
           const existing = categoryMap.get(catId) || { name: cat?.name || "Unknown", amount: 0 };
-          existing.amount += Number(t.amount);
+          existing.amount += Number(t.amount) + Number(t.fee || 0);
           categoryMap.set(catId, existing);
         });
 
@@ -179,14 +179,14 @@ export default function ReportsPage() {
       // Top expenses
       const topExpenses = transactions
         .filter(t => t.kind === "EXPENSE")
-        .sort((a, b) => Number(b.amount) - Number(a.amount))
+        .sort((a, b) => (Number(b.amount) + Number(b.fee || 0)) - (Number(a.amount) + Number(a.fee || 0)))
         .slice(0, 10)
         .map(t => {
           const catObj = t.category as { id: number; name: string } | number | null;
           const catName = typeof catObj === 'object' && catObj ? catObj.name : categoryLookup.get(catObj as number)?.name || "-";
           return {
             description: t.description || "No description",
-            amount: Number(t.amount),
+            amount: Number(t.amount) + Number(t.fee || 0),
             category: catName,
             date: t.date
           };
@@ -886,25 +886,25 @@ export default function ReportsPage() {
                     <div>
                       <span className="text-[var(--text-muted)]">Filtered Income: </span>
                       <span className="font-semibold text-emerald-600">
-                        KES {formatMoney(filteredTransactions.filter(t => t.kind === "INCOME").reduce((s, t) => s + Number(t.amount), 0))}
+                        KES {formatMoney(filteredTransactions.filter(t => t.kind === "INCOME").reduce((s, t) => s + Number(t.amount) - Number(t.fee || 0), 0))}
                       </span>
                     </div>
                     <div>
                       <span className="text-[var(--text-muted)]">Filtered Expenses: </span>
                       <span className="font-semibold text-red-500">
-                        KES {formatMoney(filteredTransactions.filter(t => t.kind === "EXPENSE").reduce((s, t) => s + Number(t.amount), 0))}
+                        KES {formatMoney(filteredTransactions.filter(t => t.kind === "EXPENSE").reduce((s, t) => s + Number(t.amount) + Number(t.fee || 0), 0))}
                       </span>
                     </div>
                     <div>
                       <span className="text-[var(--text-muted)]">Net: </span>
                       <span className={`font-semibold ${
-                        filteredTransactions.filter(t => t.kind === "INCOME").reduce((s, t) => s + Number(t.amount), 0) -
-                        filteredTransactions.filter(t => t.kind === "EXPENSE").reduce((s, t) => s + Number(t.amount), 0) >= 0
+                        filteredTransactions.filter(t => t.kind === "INCOME").reduce((s, t) => s + Number(t.amount) - Number(t.fee || 0), 0) -
+                        filteredTransactions.filter(t => t.kind === "EXPENSE").reduce((s, t) => s + Number(t.amount) + Number(t.fee || 0), 0) >= 0
                           ? "text-emerald-600" : "text-red-500"
                       }`}>
                         KES {formatMoney(
-                          filteredTransactions.filter(t => t.kind === "INCOME").reduce((s, t) => s + Number(t.amount), 0) -
-                          filteredTransactions.filter(t => t.kind === "EXPENSE").reduce((s, t) => s + Number(t.amount), 0)
+                          filteredTransactions.filter(t => t.kind === "INCOME").reduce((s, t) => s + Number(t.amount) - Number(t.fee || 0), 0) -
+                          filteredTransactions.filter(t => t.kind === "EXPENSE").reduce((s, t) => s + Number(t.amount) + Number(t.fee || 0), 0)
                         )}
                       </span>
                     </div>

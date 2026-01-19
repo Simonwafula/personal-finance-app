@@ -105,8 +105,8 @@ export default function WealthPage() {
   function resetLiabilityForm() {
     setLiabilityName("");
     setLiabilityBalance("0");
-    setLiabilityInterest("0");
-    setLiabilityMinimum("0");
+    setLiabilityInterest("");
+    setLiabilityMinimum("");
     setEditingLiabilityId(null);
     setShowLiabilityForm(false);
   }
@@ -123,8 +123,8 @@ export default function WealthPage() {
     setEditingLiabilityId(l.id);
     setLiabilityName(l.name);
     setLiabilityBalance(String(l.principal_balance));
-    setLiabilityInterest(String(l.interest_rate || 0));
-    setLiabilityMinimum(String(l.minimum_payment || 0));
+    setLiabilityInterest(l.interest_rate ? String(l.interest_rate) : "");
+    setLiabilityMinimum(l.minimum_payment ? String(l.minimum_payment) : "");
     setShowLiabilityForm(true);
   }
 
@@ -635,15 +635,15 @@ export default function WealthPage() {
                         await updateLiability(editingLiabilityId, {
                           name: liabilityName,
                           principal_balance: liabilityBalance,
-                          interest_rate: liabilityInterest,
-                          minimum_payment: liabilityMinimum,
+                          interest_rate: liabilityInterest ? Number(liabilityInterest) : null,
+                          minimum_payment: liabilityMinimum ? Number(liabilityMinimum) : null,
                         } as Partial<Liability>);
                       } else {
                         await createLiability({
                           name: liabilityName,
                           principal_balance: liabilityBalance,
-                          interest_rate: liabilityInterest,
-                          minimum_payment: liabilityMinimum,
+                          interest_rate: liabilityInterest ? Number(liabilityInterest) : null,
+                          minimum_payment: liabilityMinimum ? Number(liabilityMinimum) : null,
                         } as Partial<Liability>);
                       }
                       resetLiabilityForm();

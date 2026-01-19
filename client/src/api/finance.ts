@@ -132,11 +132,16 @@ export interface CreateTransactionPayload {
   account: number;
   date: string;              // 'YYYY-MM-DD'
   amount: number;
+  fee?: number;
   kind: "INCOME" | "EXPENSE" | "TRANSFER";
+  transfer_account?: number | null;
+  investment?: number | null;
+  investment_action?: "BUY" | "SELL" | "DIVIDEND" | "INTEREST" | "FEE" | null;
   category?: number | null;
   description?: string;
   tags?: string;
   savings_goal?: number | null;
+  liability?: number | null;
   source?: "MANUAL" | "SMS" | "IMPORT";
   sms_reference?: string;
   sms_detected_at?: string;

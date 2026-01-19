@@ -82,9 +82,15 @@ class Liability(TimeStampedModel):
     )
     principal_balance = models.DecimalField(max_digits=16, decimal_places=2)
     interest_rate = models.DecimalField(
-        max_digits=5, decimal_places=2, help_text="Annual interest rate in %"
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Annual interest rate in %",
     )
-    minimum_payment = models.DecimalField(max_digits=14, decimal_places=2)
+    minimum_payment = models.DecimalField(
+        max_digits=14, decimal_places=2, null=True, blank=True
+    )
     tenure_months = models.PositiveIntegerField(
         null=True, blank=True, help_text="Total loan tenure in months"
     )

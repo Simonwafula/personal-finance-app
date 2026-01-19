@@ -388,6 +388,17 @@ export default function DashboardPage() {
               {recentTx.length > 0 && (
                 <div className="space-y-3">
                   {recentTx.map((t:any) => (
+                    (() => {
+                      const baseAmount = Number(t.amount || 0);
+                      const feeAmount = Number(t.fee || 0);
+                      const isIncome = t.kind === "INCOME";
+                      const isExpense = t.kind === "EXPENSE";
+                      const netAmount = isIncome
+                        ? baseAmount - feeAmount
+                        : isExpense
+                          ? baseAmount + feeAmount
+                          : baseAmount;
+                      return (
                     <div
                       key={t.id}
                       className="flex items-center justify-between p-3 rounded-lg bg-[var(--surface-glass)] hover:bg-[var(--surface-hover)] transition-all cursor-pointer"
@@ -404,12 +415,14 @@ export default function DashboardPage() {
                       <div
                         className="text-lg font-bold"
                         style={{
-                          color: t.amount < 0 ? 'var(--danger-400)' : 'var(--success-400)'
+                          color: isExpense ? 'var(--danger-400)' : 'var(--success-400)'
                         }}
                       >
-                        {t.amount < 0 ? '-' : '+'}{formatMoney(Math.abs(t.amount))} KES
+                        {isExpense ? '-' : '+'}{formatMoney(Math.abs(netAmount))} KES
                       </div>
                     </div>
+                      );
+                    })()
                   ))}
                 </div>
               )}

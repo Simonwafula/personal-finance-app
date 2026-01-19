@@ -39,6 +39,13 @@ export type TransactionKind = "INCOME" | "EXPENSE" | "TRANSFER";
 
 export type TransactionSource = "MANUAL" | "SMS" | "IMPORT";
 
+export type InvestmentAction =
+  | "BUY"
+  | "SELL"
+  | "DIVIDEND"
+  | "INTEREST"
+  | "FEE";
+
 export interface RecurringRule {
   frequency: "daily" | "weekly" | "monthly" | "yearly";
   interval?: number;
@@ -51,8 +58,16 @@ export interface Transaction {
   id: number;
   account: number;
   account_name: string;
+  transfer_group: string | null;
+  transfer_account: number | null;
+  transfer_account_name: string | null;
+  transfer_direction: "IN" | "OUT" | null;
+  investment: number | null;
+  investment_name: string | null;
+  investment_action: InvestmentAction | null;
   date: string;
   amount: string;
+  fee: string;
   kind: TransactionKind;
   category: number | null;
   category_name: string | null;
@@ -63,6 +78,8 @@ export interface Transaction {
   savings_goal: number | null;
   savings_goal_name: string | null;
   savings_goal_emoji: string | null;
+  liability: number | null;
+  liability_name: string | null;
   // SMS tracking fields (Mobile-only feature)
   source?: TransactionSource;
   sms_reference?: string | null;
@@ -158,8 +175,8 @@ export interface Liability {
   name: string;
   liability_type: string;
   principal_balance: string;
-  interest_rate: string;
-  minimum_payment: string;
+  interest_rate: string | null;
+  minimum_payment: string | null;
   tenure_months: number | null;
   start_date: string | null;
   remaining_tenure: number | null;

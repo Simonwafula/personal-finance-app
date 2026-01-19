@@ -145,8 +145,8 @@ export default function DebtPlannerPage() {
     setDebtName(debt.name);
     setDebtType(debt.liability_type);
     setDebtBalance(debt.principal_balance);
-    setDebtInterestRate(debt.interest_rate);
-    setDebtMinPayment(debt.minimum_payment);
+    setDebtInterestRate(debt.interest_rate ? String(debt.interest_rate) : "");
+    setDebtMinPayment(debt.minimum_payment ? String(debt.minimum_payment) : "");
     setDebtTenure(debt.tenure_months?.toString() || "");
     setDebtStartDate(debt.start_date || "");
     setDebtDueDay(debt.due_day_of_month?.toString() || "");
@@ -162,8 +162,8 @@ export default function DebtPlannerPage() {
         name: debtName,
         liability_type: debtType,
         principal_balance: debtBalance,
-        interest_rate: debtInterestRate,
-        minimum_payment: debtMinPayment,
+        interest_rate: debtInterestRate ? Number(debtInterestRate) : null,
+        minimum_payment: debtMinPayment ? Number(debtMinPayment) : null,
         tenure_months: debtTenure ? Number(debtTenure) : null,
         start_date: debtStartDate || null,
         due_day_of_month: debtDueDay ? Number(debtDueDay) : null,
@@ -197,10 +197,17 @@ export default function DebtPlannerPage() {
   }
 
   // Calculate totals for debt tracker
-  const totalDebt = liabilities.reduce((sum, l) => sum + Number(l.principal_balance), 0);
-  const totalMinPayments = liabilities.reduce((sum, l) => sum + Number(l.minimum_payment), 0);
-  const avgInterestRate = liabilities.length > 0 
-    ? liabilities.reduce((sum, l) => sum + Number(l.interest_rate), 0) / liabilities.length 
+  const totalDebt = liabilities.reduce(
+    (sum, l) => sum + Number(l.principal_balance), 0
+  );
+  const totalMinPayments = liabilities.reduce(
+    (sum, l) => sum + Number(l.minimum_payment || 0), 0
+  );
+  const interestRates = liabilities
+    .filter((l) => l.interest_rate !== null)
+    .map((l) => Number(l.interest_rate));
+  const avgInterestRate = interestRates.length > 0
+    ? interestRates.reduce((sum, rate) => sum + rate, 0) / interestRates.length
     : 0;
 
   useEffect(() => { load(); }, []);
@@ -397,7 +404,7 @@ export default function DebtPlannerPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2">Interest Rate (%) *</label>
+                    <label className="block text-sm font-medium mb-2">Interest Rate (%)</label>
                     <input
                       type="number"
                       step="0.01"
@@ -405,11 +412,10 @@ export default function DebtPlannerPage() {
                       value={debtInterestRate}
                       onChange={(e) => setDebtInterestRate(e.target.value)}
                       placeholder="14.00"
-                      required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2">Minimum Payment (KES) *</label>
+                    <label className="block text-sm font-medium mb-2">Minimum Payment (KES)</label>
                     <input
                       type="number"
                       step="0.01"
@@ -417,7 +423,6 @@ export default function DebtPlannerPage() {
                       value={debtMinPayment}
                       onChange={(e) => setDebtMinPayment(e.target.value)}
                       placeholder="5000.00"
-                      required
                     />
                   </div>
                   <div>
@@ -513,8 +518,12 @@ export default function DebtPlannerPage() {
                         <td className="px-4 py-3 text-right font-semibold text-red-600 dark:text-red-400">
                           {formatMoney(debt.principal_balance)}
                         </td>
-                        <td className="px-4 py-3 text-right">{debt.interest_rate}%</td>
-                        <td className="px-4 py-3 text-right">{formatMoney(debt.minimum_payment)}</td>
+                        <td className="px-4 py-3 text-right">
+                          {debt.interest_rate !== null ? `${debt.interest_rate}%` : "-"}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          {debt.minimum_payment !== null ? formatMoney(debt.minimum_payment) : "-"}
+                        </td>
                         <td className="px-4 py-3 text-center">
                           {debt.tenure_months ? `${debt.tenure_months} mo` : '-'}
                         </td>

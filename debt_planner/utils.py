@@ -26,7 +26,7 @@ def generate_debt_schedule(
         return {"debts": [], "schedule": [], "months": 0}
 
     # sanity check: total minimum payments
-    total_minimum = sum(d.minimum_payment for d in debts)
+    total_minimum = sum((d.minimum_payment or 0) for d in debts)
     if plan.monthly_amount_available < total_minimum:
         return {
             "error": "Monthly amount is less than sum of minimum payments.",
@@ -38,7 +38,7 @@ def generate_debt_schedule(
     strategy = strategy_override or plan.strategy
 
     if strategy == DebtPlan.Strategy.AVALANCHE:
-        debts.sort(key=lambda d: d.interest_rate, reverse=True)
+        debts.sort(key=lambda d: d.interest_rate or 0, reverse=True)
     else:  # SNOWBALL
         debts.sort(key=lambda d: d.principal_balance)
 
@@ -54,7 +54,9 @@ def generate_debt_schedule(
 
         monthly_budget = Decimal(plan.monthly_amount_available)
         total_minimum = sum(
-            d.minimum_payment for d in debts if balances[d.id] > 0
+            (d.minimum_payment or 0)
+            for d in debts
+            if balances[d.id] > 0
         )
 
         if monthly_budget < total_minimum:
@@ -69,11 +71,13 @@ def generate_debt_schedule(
                 continue
 
             monthly_rate = (
-                Decimal(d.interest_rate) / Decimal("100") / Decimal("12")
+                Decimal(d.interest_rate or 0)
+                / Decimal("100")
+                / Decimal("12")
             )
             interest = (bal * monthly_rate).quantize(Decimal("0.01"))
 
-            payment = d.minimum_payment
+            payment = Decimal(d.minimum_payment or 0)
             if extra > 0 and idx == 0:
                 payment += extra
 

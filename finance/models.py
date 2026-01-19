@@ -59,12 +59,27 @@ class Account(TimeStampedModel):
         
         # For transfers, we need to check if this account is the source or destination
         # Transfers out reduce balance (negative), transfers in increase balance (positive)
-        # Assuming transfer amounts are stored as positive and we need to subtract them
-        transfers_out = self.transactions.filter(kind='TRANSFER').aggregate(
-            total=Sum('amount')
-        )['total'] or 0
+        transfers_out = self.transactions.filter(
+            kind='TRANSFER', transfer_direction='OUT'
+        ).aggregate(total=Sum('amount'))['total'] or 0
+        transfers_in = self.transactions.filter(
+            kind='TRANSFER', transfer_direction='IN'
+        ).aggregate(total=Sum('amount'))['total'] or 0
+        transfers_unknown = self.transactions.filter(
+            Q(kind='TRANSFER') & (Q(transfer_direction__isnull=True) | Q(transfer_direction=""))
+        ).aggregate(total=Sum('amount'))['total'] or 0
+
+        fees = self.transactions.aggregate(total=Sum('fee'))['total'] or 0
         
-        return self.opening_balance + income - expenses - transfers_out
+        return (
+            self.opening_balance
+            + income
+            - expenses
+            - transfers_out
+            - transfers_unknown
+            + transfers_in
+            - fees
+        )
 
 
 class Category(TimeStampedModel):
@@ -98,6 +113,17 @@ class Transaction(TimeStampedModel):
         INCOME = "INCOME", "Income"
         EXPENSE = "EXPENSE", "Expense"
         TRANSFER = "TRANSFER", "Transfer"
+    
+    class TransferDirection(models.TextChoices):
+        OUT = "OUT", "Out"
+        IN = "IN", "In"
+
+    class InvestmentAction(models.TextChoices):
+        BUY = "BUY", "Buy/Contribution"
+        SELL = "SELL", "Sell/Withdrawal"
+        DIVIDEND = "DIVIDEND", "Dividend"
+        INTEREST = "INTEREST", "Interest"
+        FEE = "FEE", "Fee/Charge"
 
     class Source(models.TextChoices):
         MANUAL = "MANUAL", "Manual Entry"
@@ -112,7 +138,32 @@ class Transaction(TimeStampedModel):
     )
     date = models.DateField()
     amount = models.DecimalField(max_digits=14, decimal_places=2)
+    fee = models.DecimalField(max_digits=14, decimal_places=2, default=0)
     kind = models.CharField(max_length=10, choices=Kind.choices)
+    transfer_group = models.UUIDField(null=True, blank=True, db_index=True)
+    transfer_account = models.ForeignKey(
+        Account,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="transfer_counterpart_transactions",
+    )
+    transfer_direction = models.CharField(
+        max_length=3, choices=TransferDirection.choices, null=True, blank=True
+    )
+    investment = models.ForeignKey(
+        'investments.Investment',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="transactions"
+    )
+    investment_action = models.CharField(
+        max_length=10,
+        choices=InvestmentAction.choices,
+        null=True,
+        blank=True,
+    )
     category = models.ForeignKey(
         Category, on_delete=models.SET_NULL, null=True, blank=True
     )
@@ -123,6 +174,13 @@ class Transaction(TimeStampedModel):
     # Link to savings goal if this transaction is for savings
     savings_goal = models.ForeignKey(
         'savings.SavingsGoal',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="transactions"
+    )
+    liability = models.ForeignKey(
+        'wealth.Liability',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,

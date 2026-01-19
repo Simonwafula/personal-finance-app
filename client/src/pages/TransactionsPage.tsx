@@ -14,7 +14,9 @@ import {
   importTransactionsCsv,
   exportTransactionsCsv,
 } from "../api/finance";
+import { fetchLiabilities } from "../api/wealth";
 import { getSavingsGoals, type SavingsGoal } from "../api/savings";
+import { getInvestments, type Investment as InvestmentItem } from "../api/investments";
 import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { HiPlus, HiUpload, HiDownload, HiX, HiPencil, HiTrash, HiFilter, HiChevronDown } from "react-icons/hi";
 import type {
@@ -23,6 +25,8 @@ import type {
   Category,
   Tag,
   TransactionKind,
+  Liability,
+  InvestmentAction,
 } from "../api/types";
 
 interface ImportResult {
@@ -46,6 +50,8 @@ export default function TransactionsPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [allTags, setAllTags] = useState<Tag[]>([]);
   const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>([]);
+  const [liabilities, setLiabilities] = useState<Liability[]>([]);
+  const [investments, setInvestments] = useState<InvestmentItem[]>([]);
 
   const [loading, setLoading] = useState(false);
   const [pageLimit] = useState(20);
@@ -59,9 +65,14 @@ export default function TransactionsPage() {
   const [categoryId, setCategoryId] = useState<number | "">("");
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [amount, setAmount] = useState<string>("");
+  const [fee, setFee] = useState<string>("");
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState("");
   const [savingsGoalId, setSavingsGoalId] = useState<number | "">("");
+  const [transferAccountId, setTransferAccountId] = useState<number | "">("");
+  const [liabilityId, setLiabilityId] = useState<number | "">("");
+  const [investmentId, setInvestmentId] = useState<number | "">("");
+  const [investmentAction, setInvestmentAction] = useState<InvestmentAction | "">("");
   const [saving, setSaving] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
@@ -80,16 +91,20 @@ export default function TransactionsPage() {
   async function loadRefs() {
     try {
       setLoadingRefs(true);
-      const [accs, cats, existingTags, goals] = await Promise.all([
+      const [accs, cats, existingTags, goals, debtItems, investmentItems] = await Promise.all([
         fetchAccounts(),
         fetchCategories(),
         fetchTags(),
         getSavingsGoals(),
+        fetchLiabilities(),
+        getInvestments(),
       ]);
       setAccounts(accs);
       setAllTags(existingTags);
       setCategories(cats);
       setSavingsGoals(goals);
+      setLiabilities(debtItems);
+      setInvestments(investmentItems);
       
       if (accs.length > 0 && accountId === "") {
         setAccountId(accs[0].id);
@@ -208,6 +223,14 @@ export default function TransactionsPage() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!accountId || !amount) return;
+    if (kind === "TRANSFER" && !transferAccountId) {
+      setError("Select a transfer destination account.");
+      return;
+    }
+    if (kind !== "TRANSFER" && investmentId && !investmentAction) {
+      setError("Select an investment action.");
+      return;
+    }
 
     try {
       setSaving(true);
@@ -217,17 +240,27 @@ export default function TransactionsPage() {
         account: accountId as number,
         date,
         amount: Number(amount),
+        fee: fee ? Number(fee) : 0,
         kind,
+        transfer_account: kind === "TRANSFER" && transferAccountId ? (transferAccountId as number) : null,
+        investment: kind !== "TRANSFER" && investmentId ? (investmentId as number) : null,
+        investment_action: kind !== "TRANSFER" && investmentId && investmentAction ? investmentAction : null,
         category: categoryId ? (categoryId as number) : null,
         description,
         tags,
-        savings_goal: savingsGoalId ? (savingsGoalId as number) : null,
+        savings_goal: kind !== "TRANSFER" && savingsGoalId ? (savingsGoalId as number) : null,
+        liability: kind === "EXPENSE" && liabilityId ? (liabilityId as number) : null,
       });
 
       setAmount("");
+      setFee("");
       setDescription("");
       setTags("");
       setSavingsGoalId("");
+      setTransferAccountId("");
+      setLiabilityId("");
+      setInvestmentId("");
+      setInvestmentAction("");
       setShowAddForm(false);
 
       await loadTransactions();
@@ -247,17 +280,20 @@ export default function TransactionsPage() {
     }
   }
 
-  const filteredCategories = categories.filter(
-    (c) => c.kind === kind || c.kind === "EXPENSE" || c.kind === "INCOME"
-  );
+  const filteredCategories = categories.filter((c) => {
+    if (kind === "TRANSFER") {
+      return c.kind === "TRANSFER";
+    }
+    return c.kind === kind || c.kind === "EXPENSE" || c.kind === "INCOME";
+  });
 
   // Calculate totals from filtered transactions
   const totalIncome = filteredTransactions
     .filter(tx => tx.kind === 'INCOME')
-    .reduce((sum, tx) => sum + Number(tx.amount), 0);
+    .reduce((sum, tx) => sum + Number(tx.amount) - Number(tx.fee || 0), 0);
   const totalExpenses = filteredTransactions
     .filter(tx => tx.kind === 'EXPENSE')
-    .reduce((sum, tx) => sum + Number(tx.amount), 0);
+    .reduce((sum, tx) => sum + Number(tx.amount) + Number(tx.fee || 0), 0);
   const netCashflow = totalIncome - totalExpenses;
 
   async function handleDelete(id: number) {
@@ -276,21 +312,57 @@ export default function TransactionsPage() {
   }
 
   function startEdit(tx: Transaction) {
-    setEditingTx(tx);
-    setAccountId(tx.account);
-    setKind(tx.kind);
-    setCategoryId(tx.category || "");
-    setDate(tx.date);
-    setAmount(tx.amount);
-    setDescription(tx.description);
-    setTags(tx.tags || "");
-    setSavingsGoalId(tx.savings_goal || "");
+    let editTx = tx;
+    let fromAccount = tx.account;
+    let toAccount = tx.transfer_account || "";
+    if (tx.kind === "TRANSFER" && tx.transfer_direction === "IN" && tx.transfer_group) {
+      const outbound = transactions.find(
+        (t) => t.transfer_group === tx.transfer_group && t.transfer_direction === "OUT"
+      );
+      if (outbound) {
+        editTx = outbound;
+        fromAccount = outbound.account;
+        toAccount = outbound.transfer_account || "";
+      } else if (tx.transfer_account) {
+        fromAccount = tx.transfer_account;
+        toAccount = tx.account;
+      }
+    }
+
+    setEditingTx(editTx);
+    setAccountId(fromAccount);
+    setKind(editTx.kind);
+    setCategoryId(editTx.category || "");
+    setDate(editTx.date);
+    setAmount(editTx.amount);
+    setFee(Number(editTx.fee) ? String(editTx.fee) : "");
+    setDescription(editTx.description);
+    setTags(editTx.tags || "");
+    setSavingsGoalId(editTx.savings_goal || "");
+    setTransferAccountId(toAccount);
+    setLiabilityId(editTx.liability || "");
+    setInvestmentId(editTx.investment || "");
+    if (editTx.investment) {
+      setInvestmentAction(
+        editTx.investment_action || (editTx.kind === "INCOME" ? "SELL" : "BUY")
+      );
+    } else {
+      setInvestmentAction("");
+    }
     setShowAddForm(true);
   }
 
   async function handleUpdate(e: FormEvent) {
     e.preventDefault();
     if (!editingTx || !accountId || !amount) return;
+    if (kind === "TRANSFER" && !transferAccountId) {
+      setError("Select a transfer destination account.");
+      return;
+    }
+    if (kind !== "TRANSFER" && investmentId && !investmentAction) {
+      setError("Select an investment action.");
+      return;
+    }
     
     try {
       setSaving(true);
@@ -300,18 +372,28 @@ export default function TransactionsPage() {
         account: accountId as number,
         date,
         amount: Number(amount),
+        fee: fee ? Number(fee) : 0,
         kind,
+        transfer_account: kind === "TRANSFER" && transferAccountId ? (transferAccountId as number) : null,
+        investment: kind !== "TRANSFER" && investmentId ? (investmentId as number) : null,
+        investment_action: kind !== "TRANSFER" && investmentId && investmentAction ? investmentAction : null,
         category: categoryId ? (categoryId as number) : null,
         description,
         tags,
-        savings_goal: savingsGoalId ? (savingsGoalId as number) : null,
+        savings_goal: kind !== "TRANSFER" && savingsGoalId ? (savingsGoalId as number) : null,
+        liability: kind === "EXPENSE" && liabilityId ? (liabilityId as number) : null,
       });
       
       // Reset form
       setAmount("");
+      setFee("");
       setDescription("");
       setTags("");
       setSavingsGoalId("");
+      setTransferAccountId("");
+      setLiabilityId("");
+      setInvestmentId("");
+      setInvestmentAction("");
       setEditingTx(null);
       setShowAddForm(false);
       
@@ -328,10 +410,15 @@ export default function TransactionsPage() {
   function cancelEdit() {
     setEditingTx(null);
     setAmount("");
+    setFee("");
     setDescription("");
     setTags("");
     setSavingsGoalId("");
     setCategoryId("");
+    setTransferAccountId("");
+    setLiabilityId("");
+    setInvestmentId("");
+    setInvestmentAction("");
     setShowAddForm(false);
   }
 
@@ -580,11 +667,11 @@ export default function TransactionsPage() {
 
           {accounts.length > 0 && (
             <>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div>
-                  <label className="block text-xs font-medium mb-1 text-[var(--text-muted)]">Date *</label>
-                  <input
-                    type="date"
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div>
+              <label className="block text-xs font-medium mb-1 text-[var(--text-muted)]">Date *</label>
+              <input
+                type="date"
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
                 required
@@ -608,7 +695,19 @@ export default function TransactionsPage() {
               <select
                 className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800"
                 value={kind}
-                onChange={(e) => setKind(e.target.value as TransactionKind)}
+                onChange={(e) => {
+                  const nextKind = e.target.value as TransactionKind;
+                  setKind(nextKind);
+                  if (nextKind !== "TRANSFER") setTransferAccountId("");
+                  if (nextKind !== "EXPENSE") setLiabilityId("");
+                  if (nextKind === "TRANSFER") {
+                    setInvestmentId("");
+                    setInvestmentAction("");
+                    setSavingsGoalId("");
+                  } else if (investmentId && !investmentAction) {
+                    setInvestmentAction(nextKind === "INCOME" ? "SELL" : "BUY");
+                  }
+                }}
               >
                 <option value="EXPENSE">Expense</option>
                 <option value="INCOME">Income</option>
@@ -620,7 +719,13 @@ export default function TransactionsPage() {
               <select
                 className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800"
                 value={accountId}
-                onChange={(e) => setAccountId(e.target.value ? Number(e.target.value) : "")}
+                onChange={(e) => {
+                  const nextAccount = e.target.value ? Number(e.target.value) : "";
+                  setAccountId(nextAccount);
+                  if (nextAccount && transferAccountId === nextAccount) {
+                    setTransferAccountId("");
+                  }
+                }}
                 required
               >
                 <option value="">Select...</option>
@@ -630,6 +735,44 @@ export default function TransactionsPage() {
               </select>
             </div>
           </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium mb-1 text-[var(--text-muted)]">Fee (optional)</label>
+              <input
+                type="number"
+                step="0.01"
+                value={fee}
+                onChange={(e) => setFee(e.target.value)}
+                placeholder="0.00"
+                className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800"
+              />
+            </div>
+          </div>
+
+          {kind === "TRANSFER" && (
+            <div>
+              <label className="block text-xs font-medium mb-1 text-[var(--text-muted)]">Transfer To *</label>
+              <select
+                className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800"
+                value={transferAccountId}
+                onChange={(e) => setTransferAccountId(e.target.value ? Number(e.target.value) : "")}
+                required
+              >
+                <option value="">Select...</option>
+                {accounts
+                  .filter((acc) => acc.id !== accountId)
+                  .map((acc) => (
+                    <option key={acc.id} value={acc.id}>{acc.name}</option>
+                  ))}
+              </select>
+              {accounts.length < 2 && (
+                <div className="text-xs text-[var(--text-muted)] mt-1">
+                  Add another account to complete transfers.
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
@@ -651,6 +794,7 @@ export default function TransactionsPage() {
                 className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800"
                 value={savingsGoalId}
                 onChange={(e) => setSavingsGoalId(e.target.value ? Number(e.target.value) : "")}
+                disabled={kind === "TRANSFER"}
               >
                 <option value="">None</option>
                 {savingsGoals.map((goal) => (
@@ -659,6 +803,65 @@ export default function TransactionsPage() {
               </select>
             </div>
           </div>
+
+          {kind !== "TRANSFER" && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium mb-1 text-[var(--text-muted)]">Investment (optional)</label>
+                <select
+                  className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800"
+                  value={investmentId}
+                  onChange={(e) => {
+                    const nextInvestment = e.target.value ? Number(e.target.value) : "";
+                    setInvestmentId(nextInvestment);
+                    if (nextInvestment && !investmentAction) {
+                      setInvestmentAction(kind === "INCOME" ? "SELL" : "BUY");
+                    }
+                    if (!nextInvestment) {
+                      setInvestmentAction("");
+                    }
+                  }}
+                >
+                  <option value="">None</option>
+                  {investments.map((inv) => (
+                    <option key={inv.id} value={inv.id}>{inv.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium mb-1 text-[var(--text-muted)]">Investment Action</label>
+                <select
+                  className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800"
+                  value={investmentAction}
+                  onChange={(e) => setInvestmentAction(e.target.value as InvestmentAction | "")}
+                  disabled={!investmentId}
+                >
+                  <option value="">Select...</option>
+                  <option value="BUY">Buy / Contribution</option>
+                  <option value="SELL">Sell / Withdrawal</option>
+                  <option value="DIVIDEND">Dividend (cash)</option>
+                  <option value="INTEREST">Interest (cash)</option>
+                  <option value="FEE">Fee / Charge</option>
+                </select>
+              </div>
+            </div>
+          )}
+
+          {kind === "EXPENSE" && (
+            <div>
+              <label className="block text-xs font-medium mb-1 text-[var(--text-muted)]">Debt (optional)</label>
+              <select
+                className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800"
+                value={liabilityId}
+                onChange={(e) => setLiabilityId(e.target.value ? Number(e.target.value) : "")}
+              >
+                <option value="">None</option>
+                {liabilities.map((debt) => (
+                  <option key={debt.id} value={debt.id}>{debt.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div>
             <label className="block text-xs font-medium mb-1 text-[var(--text-muted)]">Description</label>
@@ -755,15 +958,28 @@ export default function TransactionsPage() {
           {filteredTransactions.map((tx) => {
             const txTags = tx.tags ? tx.tags.split(",").map(t => t.trim()).filter(Boolean) : [];
             const tagColors = Object.fromEntries(allTags.map(t => [t.name, t.color]));
+            const transferLabel = tx.kind === "TRANSFER" && tx.transfer_account_name
+              ? `Transfer ${tx.transfer_direction === "IN" ? "from" : "to"} ${tx.transfer_account_name}`
+              : "";
+            const transferMeta = tx.description ? transferLabel : "";
+            const debtLabel = tx.liability_name ? `Debt: ${tx.liability_name}` : "";
+            const investmentLabel = tx.investment_name
+              ? `Investment: ${tx.investment_name}${tx.investment_action ? ` (${tx.investment_action})` : ""}`
+              : "";
+            const feeLabel = Number(tx.fee) > 0 ? `Fee: ${formatMoney(tx.fee)}` : "";
             
             return (
               <div key={tx.id} className="p-3 bg-[var(--surface)] rounded-lg">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium truncate">{tx.description || tx.category_name || "Transaction"}</div>
+                    <div className="font-medium truncate">{tx.description || transferLabel || tx.category_name || "Transaction"}</div>
                     <div className="text-xs text-[var(--text-muted)] mt-0.5">
                       {tx.date} • {tx.account_name}
                       {tx.savings_goal_name && <span> • {tx.savings_goal_emoji} {tx.savings_goal_name}</span>}
+                      {transferMeta && <span> • {transferMeta}</span>}
+                      {debtLabel && <span> • {debtLabel}</span>}
+                      {investmentLabel && <span> • {investmentLabel}</span>}
+                      {feeLabel && <span> • {feeLabel}</span>}
                     </div>
                   </div>
                   <div className="text-right flex-shrink-0">
@@ -840,6 +1056,13 @@ export default function TransactionsPage() {
                 {filteredTransactions.map((tx) => {
                   const txTags = tx.tags ? tx.tags.split(",").map(t => t.trim()).filter(Boolean) : [];
                   const tagColors = Object.fromEntries(allTags.map(t => [t.name, t.color]));
+                  const transferLabel = tx.kind === "TRANSFER" && tx.transfer_account_name
+                    ? `Transfer ${tx.transfer_direction === "IN" ? "from" : "to"} ${tx.transfer_account_name}`
+                    : "";
+                  const investmentLabel = tx.investment_name
+                    ? `Investment: ${tx.investment_name}${tx.investment_action ? ` (${tx.investment_action})` : ""}`
+                    : "";
+                  const feeLabel = Number(tx.fee) > 0 ? `Fee: ${formatMoney(tx.fee)}` : "";
                   
                   return (
                     <tr key={tx.id} className="hover:bg-[var(--surface)] transition-colors">
@@ -849,6 +1072,26 @@ export default function TransactionsPage() {
                         {tx.savings_goal_name && (
                           <div className="text-xs text-blue-600 dark:text-blue-400 mt-0.5">
                             {tx.savings_goal_emoji} {tx.savings_goal_name}
+                          </div>
+                        )}
+                        {transferLabel && (
+                          <div className="text-xs text-[var(--text-muted)] mt-0.5">
+                            {transferLabel}
+                          </div>
+                        )}
+                        {tx.liability_name && (
+                          <div className="text-xs text-[var(--text-muted)] mt-0.5">
+                            Debt: {tx.liability_name}
+                          </div>
+                        )}
+                        {investmentLabel && (
+                          <div className="text-xs text-[var(--text-muted)] mt-0.5">
+                            {investmentLabel}
+                          </div>
+                        )}
+                        {feeLabel && (
+                          <div className="text-xs text-[var(--text-muted)] mt-0.5">
+                            {feeLabel}
                           </div>
                         )}
                       </td>
