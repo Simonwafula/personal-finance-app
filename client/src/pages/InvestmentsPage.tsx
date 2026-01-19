@@ -1345,8 +1345,8 @@ export default function InvestmentsPage() {
           ) : (
             <>
               {/* Desktop Table */}
-              <div className="hidden md:block card overflow-hidden">
-                <table className="w-full">
+              <div className="hidden md:block card overflow-x-auto">
+                <table className="w-full min-w-[900px]">
                   <thead className="bg-[var(--surface)] border-b border-[var(--border-subtle)]">
                     <tr>
                       <th className="px-4 py-3 text-left text-xs font-medium text-[var(--text-muted)] uppercase">
