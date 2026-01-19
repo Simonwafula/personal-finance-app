@@ -1413,22 +1413,25 @@ export default function InvestmentsPage() {
                           <div className="flex justify-end gap-1">
                             <button
                               onClick={() => openPriceUpdate(inv)}
-                              className="p-1.5 text-purple-600 hover:bg-purple-50 rounded"
+                              className="p-1.5 text-purple-600 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30 rounded"
                               title="Update Price"
+                              aria-label="Update price"
                             >
                               <HiRefresh className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => handleEdit(inv)}
-                              className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"
+                              className="p-1.5 text-blue-600 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded"
                               title="Edit"
+                              aria-label="Edit investment"
                             >
                               <HiPencil className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => handleDelete(inv.id)}
-                              className="p-1.5 text-red-600 hover:bg-red-50 rounded"
+                              className="p-1.5 text-red-600 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30 rounded"
                               title="Delete"
+                              aria-label="Delete investment"
                             >
                               <HiTrash className="w-4 h-4" />
                             </button>
@@ -1461,13 +1464,25 @@ export default function InvestmentsPage() {
                         </div>
                       </div>
                       <div className="flex gap-1">
-                        <button onClick={() => openPriceUpdate(inv)} className="p-1.5 text-purple-600 hover:bg-purple-50 rounded">
+                        <button
+                          onClick={() => openPriceUpdate(inv)}
+                          className="p-1.5 text-purple-600 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30 rounded"
+                          aria-label="Update price"
+                        >
                           <HiRefresh className="w-4 h-4" />
                         </button>
-                        <button onClick={() => handleEdit(inv)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded">
+                        <button
+                          onClick={() => handleEdit(inv)}
+                          className="p-1.5 text-blue-600 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded"
+                          aria-label="Edit investment"
+                        >
                           <HiPencil className="w-4 h-4" />
                         </button>
-                        <button onClick={() => handleDelete(inv.id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded">
+                        <button
+                          onClick={() => handleDelete(inv.id)}
+                          className="p-1.5 text-red-600 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30 rounded"
+                          aria-label="Delete investment"
+                        >
                           <HiTrash className="w-4 h-4" />
                         </button>
                       </div>
