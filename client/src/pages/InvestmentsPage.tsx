@@ -226,10 +226,29 @@ export default function InvestmentsPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     try {
+      const normalizedData: CreateInvestmentData = {
+        ...formData,
+        current_price: formData.current_price || formData.purchase_price || formData.face_value || "0",
+        quantity: formData.quantity || formData.face_value || "1",
+        purchase_fees: formData.purchase_fees || "0",
+        interest_rate: formData.interest_rate || "0",
+        tax_rate: formData.tax_rate || "0",
+        monthly_rent: formData.monthly_rent || "0",
+        monthly_costs: formData.monthly_costs || "0",
+        property_tax_annual: formData.property_tax_annual || "0",
+        premium_amount: formData.premium_amount || "0",
+        dividend_rate: formData.dividend_rate || "0",
+        loan_interest_rebate: formData.loan_interest_rebate || "0",
+        next_payment_date: formData.next_payment_date || undefined,
+        maturity_date: formData.maturity_date || undefined,
+        face_value: formData.face_value || undefined,
+        sum_assured: formData.sum_assured || undefined,
+        surrender_value: formData.surrender_value || undefined,
+      };
       if (editingId) {
-        await updateInvestment(editingId, formData);
+        await updateInvestment(editingId, normalizedData);
       } else {
-        await createInvestment(formData);
+        await createInvestment(normalizedData);
       }
       resetForm();
       fetchData();
