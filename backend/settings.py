@@ -245,6 +245,9 @@ else:
         "http://127.0.0.1:5173",
         "http://localhost:5174",
         "http://127.0.0.1:5174",
+        "http://localhost",
+        "capacitor://localhost",
+        "ionic://localhost",
     ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -309,6 +312,9 @@ else:
         "http://127.0.0.1:5173",
         "http://localhost:5174",
         "http://127.0.0.1:5174",
+        "http://localhost",
+        "capacitor://localhost",
+        "ionic://localhost",
     ]
 
 SITE_ID = 1
