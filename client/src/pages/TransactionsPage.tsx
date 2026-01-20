@@ -45,6 +45,35 @@ function formatMoney(value: string | number) {
   });
 }
 
+function getFriendlyErrorMessage(err: unknown, fallback = "An unexpected error occurred") {
+  if (!err) {
+    return fallback;
+  }
+
+  if (typeof err === "string" && err.trim() !== "") {
+    return err;
+  }
+
+  if (typeof err === "object" && err !== null) {
+    const candidate = err as any;
+    if (candidate.payload?.detail) {
+      return candidate.payload.detail;
+    }
+    if (candidate.payload?.message) {
+      return candidate.payload.message;
+    }
+    if (typeof candidate.message === "string" && candidate.message.trim() !== "") {
+      return candidate.message;
+    }
+  }
+
+  try {
+    return JSON.stringify(err);
+  } catch {
+    return fallback;
+  }
+}
+
 export default function TransactionsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [aggregatedSeries, setAggregatedSeries] = useState<{date:string;income:number;expenses:number}[]>([]);
@@ -325,8 +354,7 @@ export default function TransactionsPage() {
       });
       setPdfPreview(res);
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      setPdfError(message);
+      setPdfError(getFriendlyErrorMessage(err, "Failed to parse PDF"));
     } finally {
       setPdfParsing(false);
     }
@@ -352,8 +380,7 @@ export default function TransactionsPage() {
       setShowPdfModal(false);
       resetPdfImportState();
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      setPdfError(message);
+      setPdfError(getFriendlyErrorMessage(err, "Failed to import statement"));
     } finally {
       setPdfImporting(false);
     }
@@ -681,8 +708,7 @@ export default function TransactionsPage() {
               a.remove();
               window.URL.revokeObjectURL(url);
             } catch (err) {
-              const message = err instanceof Error ? err.message : "Failed to export CSV";
-              setError(message);
+              setError(getFriendlyErrorMessage(err, "Failed to export CSV"));
             } finally {
               setExporting(false);
             }
@@ -717,10 +743,9 @@ export default function TransactionsPage() {
             const res = await importTransactionsCsv(f);
             setImportResult({ success: res });
             await loadTransactions();
-          } catch (err) {
-            const message = err instanceof Error ? err.message : String(err);
-            setImportResult({ error: message });
-          }
+            } catch (err) {
+              setImportResult({ error: getFriendlyErrorMessage(err, "Failed to import file") });
+            }
         }}
       />
 
