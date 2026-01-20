@@ -377,6 +377,7 @@ export default function TransactionsPage() {
       });
       setImportResult({ success: { imported: res.imported, skipped: res.skipped } });
       await loadTransactions();
+      window.dispatchEvent(new Event("transactionsUpdated"));
       setShowPdfModal(false);
       resetPdfImportState();
     } catch (err) {
